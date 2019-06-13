@@ -9,9 +9,9 @@ class Tag(models.Model):
 
 
 class Photo(models.Model):
-    path = models.CharField(max_length=1024)
+    key = models.CharField(max_length=1024)
     tags = models.ManyToManyField(Tag, blank=True)
     md5 = models.CharField(max_length=32)
 
     def __str__(self):
-        return "{}".format(self.path)
+        return "{}".format(self.key)

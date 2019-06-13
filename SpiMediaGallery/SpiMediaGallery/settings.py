@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'main'
 ]
 
 MIDDLEWARE = [
@@ -103,6 +104,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+MEDIA_BUCKETS = {
+    'main_bucket':
+        {'name': 'xmp',
+        'endpoint': 'http://localhost:9000',
+        'access_key': 'minio',
+        'secret_key': 'minio123'
+    }
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
