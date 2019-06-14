@@ -22,9 +22,9 @@ class Command(BaseCommand):
         bucket_name_photos = options["bucket_name_photos"]
         bucket_name_thumbnails = options["bucket_name_thumbnails"]
 
-        thumbnailGenerator = ThumbnailGenerator(bucket_name_photos, bucket_name_thumbnails)
+        thumbnail_generator = ThumbnailGenerator(bucket_name_photos, bucket_name_thumbnails)
 
-        thumbnailGenerator.generate_thumbnails()
+        thumbnail_generator.generate_thumbnails()
 
 
 class ThumbnailGenerator(object):

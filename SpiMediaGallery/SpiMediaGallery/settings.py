@@ -73,6 +73,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'SpiMediaGallery.wsgi.application'
 
 
+def path_file_in_home(file_name):
+    return os.path.join(str(pathlib.Path.home()), file_name)
+
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
@@ -80,7 +83,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
-            'read_default_file': '/etc/mysql/spi_media_gallery.cnf',
+            'read_default_file': path_file_in_home(".spi_media_gallery_mysql.cnf"),
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
         },
@@ -107,7 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # It's in this place for convenience in the staging environment
-with open(os.path.join(str(pathlib.Path.home()), ".spi_media_gallery.json")) as json_file:
+with open(path_file_in_home(".spi_media_gallery_buckets.json")) as json_file:
     BUCKETS_CONFIGURATION = json.load(json_file)
     """
     Example file:
