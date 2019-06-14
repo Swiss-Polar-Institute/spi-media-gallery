@@ -81,13 +81,12 @@ def path_file_in_home(file_name):
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': path_file_in_home("spi_media_gallery.sqlite")
-#        'OPTIONS': {
-#            'read_default_file': path_file_in_home(".spi_media_gallery_mysql.cnf"),
-#            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-#            'charset': 'utf8mb4',
-#        },
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file': path_file_in_home(".spi_media_gallery_mysql.cnf"),
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
     }
 }
 
