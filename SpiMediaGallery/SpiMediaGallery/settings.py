@@ -108,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # It's in this place for convenience in the staging environment
 with open(os.path.join(str(pathlib.Path.home()), ".spi_media_gallery.json")) as json_file:
-    secrets = json.load(json_file)
+    BUCKETS_CONFIGURATION = json.load(json_file)
     """
     Example file:
 

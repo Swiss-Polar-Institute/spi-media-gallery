@@ -8,8 +8,6 @@ class Tag(models.Model):
         return "{}".format(self.tag)
 
 
-
-
 class Thumbnail(models.Model):
     height = models.IntegerField()
     width = models.IntegerField()

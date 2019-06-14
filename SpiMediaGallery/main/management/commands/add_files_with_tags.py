@@ -1,14 +1,15 @@
 from django.core.management.base import BaseCommand, CommandError
 
 from main.models import Photo, Tag
-from django.conf import settings
 from libxmp.utils import file_to_dict
 from django.core.exceptions import ObjectDoesNotExist
+
 import os
-import boto3
-import sys
 import tempfile
 import hashlib
+import time
+
+from main import spi_s3_utils
 
 
 class Command(BaseCommand):
@@ -29,55 +30,43 @@ class Command(BaseCommand):
 
 class TagImporter(object):
     def __init__(self, bucket_name, prefix):
-        buckets = settings.MEDIA_BUCKETS
-
-        if bucket_name not in buckets:
-            print("Bucket name is '{}'. Possible bucket names: {}".format(bucket_name, ", ".join(buckets.keys())), file=sys.stderr)
-            sys.exit(1)
-
+        self._photo_bucket = spi_s3_utils.SpiS3Utils(bucket_name)
         self._prefix = prefix
 
-        self._bucket_configuration = buckets[bucket_name]
-
-    def _get_keys_from_bucket(self):
-        keys = set()
-        for o in self._get_objects_in_bucket():
-            keys.add(o.key)
-
-        return keys
-
-    def _get_objects_in_bucket(self):
-        s3_objects = self._connect_to_bucket().objects.filter(Prefix=self._prefix).all()
-
-        return s3_objects
-
-    def _connect_to_s3(self):
-        return boto3.resource(service_name="s3",
-                            aws_access_key_id=self._bucket_configuration['access_key'],
-                            aws_secret_access_key=self._bucket_configuration['secret_key'],
-                            endpoint_url=self._bucket_configuration['endpoint'])
-
-    def _connect_to_bucket(self):
-        bucket = self._connect_to_s3().Bucket(self._bucket_configuration['name'])
-
-        return bucket
-
     def import_tags(self):
-        keys_set = self._get_keys_from_bucket()
+        all_keys = self._photo_bucket.get_set_of_keys(self._prefix)
 
         non_xmp_without_xmp_associated = 0
         object_count = 0
 
-        for s3_object in self._get_objects_in_bucket():
+        print("Total number of files to process:", len(all_keys))
+
+        start_time = time.time()
+
+        for s3_object in self._photo_bucket.objects_in_bucket(self._prefix):
             object_count += 1
+
+            if object_count % 20 == 0:
+                elapsed_time = time.time() - start_time
+                speed = object_count / elapsed_time
+                percentage = (object_count / len(all_keys)) * 100
+
+                print("========== STATS")
+                print("Processing {} of {}. Elapsed time: {:.2f} minutes Percentage: {:.2f}%".format(object_count,
+                                                                                        len(all_keys),
+                                                                                        elapsed_time / 60,
+                                                                                        percentage))
+
+                total_time = (len(all_keys) * elapsed_time) / object_count
+                remaining_time = total_time - elapsed_time
+                print("Photos per minute: {:.2f} Total remaining time: {:.2f} minutes".format(speed, remaining_time / 60))
 
             if s3_object.key.lower().endswith(".xmp"):
                 continue
 
-            base, extension = os.path.splitext(s3_object.key)
             xmp_file = s3_object.key + ".xmp"
 
-            if xmp_file not in keys_set:
+            if xmp_file not in all_keys:
                 # Non XMP file without an XMP associated
                 non_xmp_without_xmp_associated += 1
                 continue
@@ -91,26 +80,19 @@ class TagImporter(object):
 
             # Copies XMP into a file (libxmp seems to only be able to read
             # from physical files)
-            xmp_object = self._connect_to_s3().Object(self._bucket_configuration["name"], xmp_file)
-            print(xmp_object)
+            xmp_object = self._photo_bucket.get_object(xmp_file)
 
             temporary_file = tempfile.NamedTemporaryFile()
             temporary_file.write(xmp_object.get()["Body"].read())
             temporary_file.seek(0)
 
             # Extracts tags
-            tags = self.extract_tags(temporary_file.name)
-
-            print(s3_object.key)
-            print(temporary_file.name)
-            print(tags)
-            print(md5)
-            print("-----------")
+            tags = self._extract_tags(temporary_file.name)
 
             # Inserts tags into the database
             if len(tags) > 0:
                 try:
-                    photo = Photo.objects.get(key=temporary_file)
+                    photo = Photo.objects.get(object_storage_key=temporary_file)
                 except ObjectDoesNotExist:
                     photo = Photo()
                     photo.key = s3_object.key
@@ -127,8 +109,8 @@ class TagImporter(object):
 
                     photo.tags.add(tag_model)
 
-
-    def extract_tags(self, file_path):
+    @staticmethod
+    def _extract_tags(file_path):
         tags = set()
 
         xmp = file_to_dict(file_path)

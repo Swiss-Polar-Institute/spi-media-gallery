@@ -100,20 +100,3 @@ class ThumbnailGenerator(object):
 
             photo.thumbnail = thumbnail
             photo.save()
-
-
-    def extract_tags(self, file_path):
-        tags = set()
-
-        xmp = file_to_dict(file_path)
-
-        if "http://www.digikam.org/ns/1.0/" in xmp:
-            for tag_section in xmp['http://www.digikam.org/ns/1.0/']:
-                if len(tag_section) == 0:
-                    continue
-
-                tag = tag_section[1]
-                if tag != "":
-                    tags.add(tag)
-
-        return tags
