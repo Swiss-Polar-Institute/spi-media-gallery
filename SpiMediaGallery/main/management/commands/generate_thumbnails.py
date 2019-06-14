@@ -86,7 +86,7 @@ class ThumbnailGenerator(object):
             # Upload photo to bucket
             thumbnail_bucket = self._connect_to_s3(self._bucket_thumbnails_configuration)
 
-            thumbnail_object_storage_key = photo.md5 + "-thumbnail.jpg"
+            thumbnail_object_storage_key = os.path.join("spi-media-gallery/thumbnails", photo.md5 + "-thumbnail.jpg")
 
             thumbnail_bucket.meta.client.upload_file(thumbnail_file.name, self._bucket_thumbnails_configuration['name'], photo.md5 + "-thumbnail.jpg")
 
