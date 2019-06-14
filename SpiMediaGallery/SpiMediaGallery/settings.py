@@ -105,11 +105,17 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 MEDIA_BUCKETS = {
-    'main_bucket':
-        {'name': 'xmp',
+    'photos':
+        {'name': 'photos',
         'endpoint': 'http://localhost:9000',
         'access_key': 'minio',
         'secret_key': 'minio123'
+        },
+    'thumbnails':
+        {'name': 'thumbnails',
+         'endpoint': 'http://localhost:9000',
+         'access_key': 'minio',
+         'secret_key': 'minio123'
     }
 }
 

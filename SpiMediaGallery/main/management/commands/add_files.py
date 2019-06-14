@@ -62,11 +62,6 @@ class TagImporter(object):
 
         return bucket
 
-    def _find_files_starting_with(self, prefix):
-        selected_files = list(filter(lambda x: x.startswith(prefix), self._files_list))
-
-        return selected_files
-
     def import_tags(self):
         keys_set = self._get_keys_from_bucket()
 
@@ -80,7 +75,7 @@ class TagImporter(object):
                 continue
 
             base, extension = os.path.splitext(s3_object.key)
-            xmp_file = base + ".xmp"
+            xmp_file = s3_object.key + ".xmp"
 
             if xmp_file not in keys_set:
                 # Non XMP file without an XMP associated
@@ -132,7 +127,6 @@ class TagImporter(object):
 
                     photo.tags.add(tag_model)
 
-                sys.exit(1)
 
     def extract_tags(self, file_path):
         tags = set()

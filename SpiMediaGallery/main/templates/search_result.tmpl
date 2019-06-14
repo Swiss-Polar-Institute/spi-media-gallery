@@ -1,0 +1,13 @@
+<html>
+<head>
+<title>SPI Image Gallery (Search Result)</title>
+</head>
+<body>
+Search result for: {{ tag_id }}
+
+<ul>
+{% for photo in photos %}
+<li><img src="{{photo.thumbnail}}">
+{% endfor %}
+</ul>
+</body>

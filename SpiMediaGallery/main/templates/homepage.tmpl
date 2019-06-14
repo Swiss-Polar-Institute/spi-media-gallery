@@ -1,0 +1,15 @@
+<html>
+<head>
+<title>SPI Image Gallery</title>
+</head>
+<body>
+Welcome to the SPI Image Gallery.
+<p>
+Total number of photos indexed: {{ total_number_photos }}<br>
+Total number of photos with thumbnail: {{ total_number_thumbnails }}<br>
+Tags:
+{% for tag in list_of_tags %}
+<a href="search_results/tag/{{tag.id}}">{{tag.tag}}</a>,
+{% endfor %}
+
+</body>
