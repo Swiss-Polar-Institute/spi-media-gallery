@@ -7,6 +7,7 @@ from PIL import Image
 from resizeimage import resizeimage
 import boto3
 import tempfile
+import os
 
 import sys
 
@@ -15,8 +16,8 @@ class Command(BaseCommand):
     help = 'Updates photo tagging'
 
     def add_arguments(self, parser):
-        parser.add_argument('bucket_name_photos', type=str, help="Bucket name - it needs to exist in settings.py in MEDIA_BUCKETS")
-        parser.add_argument('bucket_name_thumbnails', type=str, help="Bucket name - it needs to exist in settings.py in MEDIA_BUCKETS")
+        parser.add_argument('bucket_name_photos', type=str, help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
+        parser.add_argument('bucket_name_thumbnails', type=str, help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
 
     def handle(self, *args, **options):
         bucket_name_photos = options["bucket_name_photos"]
@@ -29,7 +30,7 @@ class Command(BaseCommand):
 
 class ThumbnailGenerator(object):
     def __init__(self, bucket_name_photos, bucket_name_thumbnails):
-        buckets = settings.MEDIA_BUCKETS
+        buckets = settings.BUCKETS_CONFIGURATION
 
         if bucket_name_photos not in buckets:
             print("Bucket name is '{}'. Possible bucket names: {}".format(bucket_name_photos, ", ".join(buckets.keys())), file=sys.stderr)
@@ -69,6 +70,7 @@ class ThumbnailGenerator(object):
         for photo in Photo.objects.filter(thumbnail__isnull=True):
             # Read Photo
             photo_object = self._connect_to_s3(self._bucket_photos_configuration).Object(self._bucket_photos_configuration["name"], photo.object_storage_key)
+            print("Processing thumbnail for: {}".format(photo.object_storage_key))
 
             photo_file = tempfile.NamedTemporaryFile()
             photo_file.write(photo_object.get()["Body"].read())
@@ -76,7 +78,16 @@ class ThumbnailGenerator(object):
 
             # Resize photo
             image = Image.open(photo_file)
-            resized = resizeimage.resize_width(image, 415)
+            try:
+                resized = resizeimage.resize_width(image, 415)
+            except OSError:
+                # Yes, trying it twice it works ??? TODO investigate
+                try:
+                    resized = resizeimage.resize_width(image, 415)
+                except OSError:
+                    print("Problems generating the thumbnail for: {}".format(photo.object_storage_key))
+                    continue
+
 
             thumbnail_file = tempfile.NamedTemporaryFile(prefix=photo.md5, delete=False)
             thumbnail_file.close()

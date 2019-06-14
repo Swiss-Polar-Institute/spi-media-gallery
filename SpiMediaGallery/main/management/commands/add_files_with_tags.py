@@ -16,7 +16,7 @@ class Command(BaseCommand):
     help = 'Updates photo tagging'
 
     def add_arguments(self, parser):
-        parser.add_argument('bucket_name', type=str, help="Bucket name - it needs to exist in settings.py in MEDIA_BUCKETS")
+        parser.add_argument('bucket_name', type=str, help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
         parser.add_argument('--prefix', type=str, default="", help="Prefix of the bucket to import files (e.g. a directory)")
 
     def handle(self, *args, **options):
