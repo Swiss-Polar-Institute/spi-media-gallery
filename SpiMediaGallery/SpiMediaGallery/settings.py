@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import json
+import pathlib
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -104,20 +106,27 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-MEDIA_BUCKETS = {
-    'photos':
-        {'name': 'photos',
-        'endpoint': 'http://localhost:9000',
-        'access_key': 'minio',
-        'secret_key': 'minio123'
-        },
-    'thumbnails':
-        {'name': 'thumbnails',
-         'endpoint': 'http://localhost:9000',
-         'access_key': 'minio',
-         'secret_key': 'minio123'
+# It's in this place for convenience in the staging environment
+with open(os.path.join(str(pathlib.Path.home()), ".spi_media_gallery.json")) as json_file:
+    secrets = json.load(json_file)
+    """
+    Example file:
+
+    {
+    "photos": {
+        "name": "photos",
+        "endpoint": "http://localhost:9000",
+        "access_key": "minio",
+        "secret_key": "minio123"
+    },
+    "thumbnails": {
+        "name": "thumbnails",
+        "endpoint": "http://localhost:9000",
+        "access_key": "minio",
+        "secret_key": "minio123"
     }
 }
+    """
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
