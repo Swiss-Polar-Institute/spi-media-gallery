@@ -5,7 +5,7 @@ import main.models
 
 
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ('object_storage_key', 'tags_list', 'thumbnail', 'md5')
+    list_display = ('object_storage_key', 'tags_list', 'thumbnail', 'size', 'md5')
     ordering = ['object_storage_key']
     search_fields = ('path', 'tags')
 

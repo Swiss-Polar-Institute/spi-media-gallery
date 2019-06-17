@@ -14,7 +14,7 @@ class Homepage(TemplateView):
         context = super(Homepage, self).get_context_data(**kwargs)
 
         total_photos = Photo.objects.count()
-        total_thumbnails = Photo.objects.filter(thumbnail__isnull=True).count()
+        total_thumbnails = Photo.objects.filter(thumbnail__isnull=False).count()
         tags = Tag.objects.order_by("tag")
 
         context['total_number_photos'] = total_photos

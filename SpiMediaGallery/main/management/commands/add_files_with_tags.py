@@ -6,10 +6,10 @@ from django.core.exceptions import ObjectDoesNotExist
 
 import os
 import tempfile
-import hashlib
 import time
 
 from main import spi_s3_utils
+from main import utils
 
 
 class Command(BaseCommand):
@@ -64,6 +64,8 @@ class TagImporter(object):
             if s3_object.key.lower().endswith(".xmp"):
                 continue
 
+            size_of_media = s3_object.size
+
             xmp_file = s3_object.key + ".xmp"
 
             if xmp_file not in all_keys:
@@ -72,19 +74,13 @@ class TagImporter(object):
                 continue
 
 
-            # Hash of the media file
-            h = hashlib.md5()
-            for chunk in s3_object.get()["Body"].iter_chunks(100*1024*1024):
-                h.update(chunk)
-            md5 = h.hexdigest()
-
             # Copies XMP into a file (libxmp seems to only be able to read
             # from physical files)
             xmp_object = self._photo_bucket.get_object(xmp_file)
 
-            temporary_file = tempfile.NamedTemporaryFile()
+            temporary_file = tempfile.NamedTemporaryFile(suffix=".xmp", delete=False)
             temporary_file.write(xmp_object.get()["Body"].read())
-            temporary_file.seek(0)
+            temporary_file.close()
 
             # Extracts tags
             tags = self._extract_tags(temporary_file.name)
@@ -92,11 +88,12 @@ class TagImporter(object):
             # Inserts tags into the database
             if len(tags) > 0:
                 try:
-                    photo = Photo.objects.get(object_storage_key=temporary_file)
+                    photo = Photo.objects.get(object_storage_key=s3_object.key)
                 except ObjectDoesNotExist:
                     photo = Photo()
-                    photo.key = s3_object.key
-                    photo.md5 = md5
+                    photo.object_storage_key = s3_object.key
+                    photo.md5 = None
+                    photo.size = size_of_media
                     photo.save()
 
                 for tag in tags:
@@ -108,6 +105,8 @@ class TagImporter(object):
                         tag_model.save()
 
                     photo.tags.add(tag_model)
+
+            os.remove(temporary_file.name)
 
     @staticmethod
     def _extract_tags(file_path):

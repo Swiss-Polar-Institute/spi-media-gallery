@@ -131,6 +131,8 @@ with open(path_file_in_home(".spi_media_gallery_buckets.json")) as json_file:
 }
     """
 
+RESIZED_PREFIX = "media-gallery/resized"
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 

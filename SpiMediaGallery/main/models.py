@@ -21,9 +21,17 @@ class Thumbnail(models.Model):
 class Photo(models.Model):
     object_storage_key = models.CharField(max_length=1024)
     tags = models.ManyToManyField(Tag, blank=True)
-    md5 = models.CharField(max_length=32)
-    thumbnail = models.ForeignKey(Thumbnail, null=True, on_delete=models.CASCADE)
+    md5 = models.CharField(null=True, max_length=32)
+    thumbnail = models.ForeignKey(Thumbnail, null=True, on_delete=models.SET_NULL)
+    size = models.IntegerField()
 
     def __str__(self):
         return "{}".format(self.object_storage_key)
 
+
+class Resized(models.Model):
+    height = models.IntegerField()
+    width = models.IntegerField()
+    object_storage_key = models.CharField(max_length=1024)
+    md5 = models.CharField(max_length=32)
+    photo = models.OneToOneField(Photo, on_delete=models.PROTECT)
