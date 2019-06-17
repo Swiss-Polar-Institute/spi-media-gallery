@@ -5,7 +5,7 @@ import main.models
 
 
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ('object_storage_key', 'tags_list', 'thumbnail', 'size', 'md5')
+    list_display = ('object_storage_key', 'md5', 'file_size', 'height', 'width', 'tags_list')
     ordering = ['object_storage_key']
     search_fields = ('path', 'tags')
 
@@ -18,11 +18,11 @@ class TagAdmin(admin.ModelAdmin):
     ordering = ['tag']
 
 
-class ThumbnailAdmin(admin.ModelAdmin):
-    list_display = ('object_storage_key', 'height', 'width', 'md5', )
+class PhotoResizedAdmin(admin.ModelAdmin):
+    list_display = ('object_storage_key', 'md5', 'file_size', 'size_label', 'height', 'width', 'photo')
     ordering = ['object_storage_key']
 
 
 admin.site.register(main.models.Photo, PhotoAdmin)
 admin.site.register(main.models.Tag, TagAdmin)
-admin.site.register(main.models.Thumbnail, ThumbnailAdmin)
+admin.site.register(main.models.PhotoResized, PhotoResizedAdmin)

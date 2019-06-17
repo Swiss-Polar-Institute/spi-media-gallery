@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Photo, Thumbnail
+from main.models import Photo, PhotoResized
 from django.conf import settings
 from PIL import Image
 
@@ -34,7 +34,11 @@ class ThumbnailGenerator(object):
 
     def resize_images(self, resized_width):
         count = 0
-        photos_without_thumbnail = Photo.objects.filter(thumbnail__isnull=True)
+
+        thumbnails = PhotoResized.objects.values_list('photo', flat=True).filter(size_label="T")
+        photos_without_thumbnail = Photo.objects.all().exclude(id__in=thumbnails)
+        # photos_without_thumbnail = Photo.objects.filter(thumbnail__isnull=True)
+
         photos_without_thumbnail_count = len(photos_without_thumbnail)
         start_time = time.time()
 
@@ -65,7 +69,7 @@ class ThumbnailGenerator(object):
             photo_file.write(photo_object.get()["Body"].read())
             photo_file.close()
 
-            assert os.stat(photo_file.name).st_size == photo.size
+            assert os.stat(photo_file.name).st_size == photo.file_size
 
             md5_photo_file = utils.hash_of_fp(photo_file.name)
 
@@ -90,12 +94,14 @@ class ThumbnailGenerator(object):
             os.remove(thumbnail_file.name)
 
             # Update database
-            thumbnail = Thumbnail()
+            thumbnail = PhotoResized()
             thumbnail.object_storage_key = thumbnail_key
             thumbnail.width = thumbnail_width
             thumbnail.height = thumbnail_height
             thumbnail.md5 = md5_resized_file
-            thumbnail.size = size
+            thumbnail.file_size = size
+            thumbnail.size_label = "T"
+            thumbnail.photo = photo
             thumbnail.save()
 
             print("Size:", size)

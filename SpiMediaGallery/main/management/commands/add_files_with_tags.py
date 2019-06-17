@@ -93,7 +93,7 @@ class TagImporter(object):
                     photo = Photo()
                     photo.object_storage_key = s3_object.key
                     photo.md5 = None
-                    photo.size = size_of_media
+                    photo.file_size = size_of_media
                     photo.save()
 
                 for tag in tags:

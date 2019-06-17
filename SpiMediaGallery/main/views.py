@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 from django.http import HttpResponse
 from django.views.generic import TemplateView
-from main.models import Photo, Tag
+from main.models import Photo, PhotoResized, Tag
 
 import boto3
 
@@ -14,7 +14,7 @@ class Homepage(TemplateView):
         context = super(Homepage, self).get_context_data(**kwargs)
 
         total_photos = Photo.objects.count()
-        total_thumbnails = Photo.objects.filter(thumbnail__isnull=False).count()
+        total_thumbnails = PhotoResized.objects.filter(size_label="T").count()
         tags = Tag.objects.order_by("tag")
 
         context['total_number_photos'] = total_photos
@@ -50,13 +50,19 @@ class SearchResult(TemplateView):
 
         photo_result_list = []
         for photo in Photo.objects.filter(tags__id=kwargs["tag_id"]):
-            if photo.thumbnail is None:
-                continue
+            thumbnail = PhotoResized.objects.filter(photo=photo).filter(size_label="T")
 
-            thumbnail_img = r.meta.client.generate_presigned_url('get_object',
-                                                                Params={'Bucket': 'thumbnails',
-                                                                        'Key': photo.thumbnail.object_storage_key,
-                                                                        'ResponseContentType': 'image/jpeg'})
+            if thumbnail is not None:
+                thumbnail_key = thumbnail[0].object_storage_key
+                thumbnail_img = r.meta.client.generate_presigned_url('get_object',
+                                                                    Params={'Bucket': 'thumbnails',
+                                                                            'Key': thumbnail_key,
+                                                                            'ResponseContentType': 'image/jpeg'})
+
+            else:
+                # Images should have a thumbnail
+                # TODO: have a placeholder
+                thumbnail_img = None
 
             photo_result = {}
 
