@@ -1,15 +1,17 @@
-<html>
-<head>
-<title>SPI Image Gallery</title>
-</head>
-<body>
-Welcome to the SPI Image Gallery.
+{% extends 'base.tmpl' %}
+{% block title %}SPI Media Gallery{% endblock %}
+
+{% block contents %}
+
+<H1>Welcome to the SPI Image Gallery</H1>
 <p>
-Total number of photos indexed: {{ total_number_photos }}<br>
-Total number of photos with thumbnail: {{ total_number_thumbnails }}<br>
-Tags:
+</ul>
+<li>Total number of photos indexed: {{ total_number_photos }}<br>
+<li>Total number of photos with thumbnail: {{ total_number_thumbnails }}<br>
+<li> Tags:
 {% for tag in list_of_tags %}
 <a href="search_results/tag/{{tag.id}}">{{tag.tag}}</a>,
 {% endfor %}
+</ul>
 
-</body>
+{% endblock %}
