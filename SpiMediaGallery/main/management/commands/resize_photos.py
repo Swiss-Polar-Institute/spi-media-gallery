@@ -6,11 +6,11 @@ from PIL import Image
 
 import tempfile
 import os
-import time
 
 from main import spi_s3_utils
 from main import utils
 from main.progress_report import ProgressReport
+
 
 class Command(BaseCommand):
     help = 'Updates photo tagging'
@@ -18,29 +18,32 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('bucket_name_photos', type=str, help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
         parser.add_argument('bucket_name_thumbnails', type=str, help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
+        parser.add_argument('size_type', type=str, choices=["T", "S", "M", "L", "O"], help="Type of resizing (thumbnail, small, medium, large, original). Original changes the format to JPEG, potential rotation")
 
     def handle(self, *args, **options):
         bucket_name_photos = options["bucket_name_photos"]
         bucket_name_thumbnails = options["bucket_name_thumbnails"]
+        size_type = options["size_type"]
 
-        thumbnail_generator = ThumbnailGenerator(bucket_name_photos, bucket_name_thumbnails)
+        resizer = Resizer(bucket_name_photos, bucket_name_thumbnails, size_type)
 
-        thumbnail_generator.resize_images(415)
+        resizer.resize_images()
 
 
-class ThumbnailGenerator(object):
-    def __init__(self, bucket_name_photos, bucket_name_thumbnails):
+class Resizer(object):
+    def __init__(self, bucket_name_photos, bucket_name_thumbnails, size_type):
         self._photo_bucket = spi_s3_utils.SpiS3Utils(bucket_name_photos)
         self._thumbnails_bucket = spi_s3_utils.SpiS3Utils(bucket_name_thumbnails)
+        self._size_type = size_type
 
-    def resize_images(self, resized_width):
-        count = 0
-
-        thumbnails = PhotoResized.objects.values_list('photo', flat=True).filter(size_label="T")
+    def resize_images(self):
+        thumbnails = PhotoResized.objects.values_list('photo', flat=True).filter(size_label=self._size_type)
         photos_without_thumbnail = Photo.objects.all().exclude(id__in=thumbnails)
         # photos_without_thumbnail = Photo.objects.filter(thumbnail__isnull=True)
 
         progress_report = ProgressReport(len(photos_without_thumbnail))
+
+        resized_width = settings.IMAGE_LABEL_TO_SIZES[self._size_type][0]
 
         for photo in photos_without_thumbnail:
             progress_report.increment_and_print_if_needed()
@@ -50,8 +53,6 @@ class ThumbnailGenerator(object):
             if photo.object_storage_key is None or photo.object_storage_key == "":
                 continue
 
-            # print("Processing thumbnail {} of {}".format(count, photos_without_thumbnail_count))
-
             photo_file = tempfile.NamedTemporaryFile(delete=False)
             photo_file.write(photo_object.get()["Body"].read())
             photo_file.close()
@@ -60,7 +61,6 @@ class ThumbnailGenerator(object):
 
             md5_photo_file = utils.hash_of_fp(photo_file.name)
 
-
             thumbnail_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
             thumbnail_file.close()
 
@@ -68,7 +68,7 @@ class ThumbnailGenerator(object):
             utils.resize_file(photo_file.name, thumbnail_file.name, resized_width)
 
             # Upload photo to bucket
-            thumbnail_key = os.path.join(settings.RESIZED_PREFIX, md5_photo_file + "-{}.jpg".format(resized_width))
+            thumbnail_key = os.path.join(settings.RESIZED_PREFIX, md5_photo_file + "-{}.jpg".format(self._size_type))
 
             self._thumbnails_bucket.upload_file(thumbnail_file.name, thumbnail_key)
             md5_resized_file = utils.hash_of_fp(thumbnail_file.name)
@@ -81,17 +81,12 @@ class ThumbnailGenerator(object):
             os.remove(thumbnail_file.name)
 
             # Update database
-            thumbnail = PhotoResized()
-            thumbnail.object_storage_key = thumbnail_key
-            thumbnail.width = thumbnail_width
-            thumbnail.height = thumbnail_height
-            thumbnail.md5 = md5_resized_file
-            thumbnail.file_size = size
-            thumbnail.size_label = "T"
-            thumbnail.photo = photo
-            thumbnail.save()
-
-            print("Size:", size)
-
-            photo.thumbnail = thumbnail
-            photo.save()
+            resized_photo = PhotoResized()
+            resized_photo.object_storage_key = thumbnail_key
+            resized_photo.width = thumbnail_width
+            resized_photo.height = thumbnail_height
+            resized_photo.md5 = md5_resized_file
+            resized_photo.file_size = size
+            resized_photo.size_label = self._size_type
+            resized_photo.photo = photo
+            resized_photo.save()

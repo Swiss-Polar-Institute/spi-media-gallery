@@ -133,6 +133,13 @@ with open(path_file_in_home(".spi_media_gallery_buckets.json")) as json_file:
 
 RESIZED_PREFIX = "media-gallery/resized"
 
+IMAGE_LABEL_TO_SIZES = {
+    'T': (415, 415),
+    'S': (640, 640),
+    'M': (1280, 1280),
+    'L': (1920, 1920)
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 

@@ -8,16 +8,6 @@ class Tag(models.Model):
         return "{}".format(self.tag)
 
 
-# class Thumbnail(models.Model):
-#     height = models.IntegerField()
-#     width = models.IntegerField()
-#     object_storage_key = models.CharField(max_length=1024)
-#     md5 = models.CharField(max_length=32)
-#
-#     def __str__(self):
-#         return "{}".format(self.object_storage_key)
-
-
 class Photo(models.Model):
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(null=True, max_length=32)
@@ -32,14 +22,19 @@ class Photo(models.Model):
         return "{}".format(self.object_storage_key)
 
 
-SIZES_OF_PHOTOS = (
-    ('T', 'Thumbnail'),
-    ('S', 'Small'),
-    ('M', 'Medium'),
-    ('L', 'Large')
-)
-
 class PhotoResized(models.Model):
+    THUMBNAIL = "T"
+    SMALL = "S"
+    MEDIUM = "M"
+    LARGE = "L"
+
+    SIZES_OF_PHOTOS = (
+        (THUMBNAIL, 'Thumbnail'),
+        (SMALL, 'Small'),
+        (MEDIUM, 'Medium'),
+        (LARGE, 'Large')
+    )
+
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(max_length=32)
     file_size = models.IntegerField()
@@ -48,4 +43,4 @@ class PhotoResized(models.Model):
 
     height = models.IntegerField()
     width = models.IntegerField()
-    photo = models.OneToOneField(Photo, on_delete=models.PROTECT)
+    photo = models.ForeignKey(Photo, on_delete=models.PROTECT)

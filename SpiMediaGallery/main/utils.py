@@ -22,5 +22,5 @@ def hash_of_fp(file_path):
 
 def resize_file(input_file_path, output_file_path, width):
     with open(os.devnull, 'w') as devnull:
-        subprocess.run(["convert", "-resize", "{}x{}".format(width, width), input_file_path, output_file_path], stdout=devnull,
+        subprocess.run(["convert", "-auto-orient", "-resize", "{}x{}".format(width, width), input_file_path, output_file_path], stdout=devnull,
                                                                                          stderr=devnull)
