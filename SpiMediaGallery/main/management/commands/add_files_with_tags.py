@@ -10,6 +10,7 @@ import time
 
 from main import spi_s3_utils
 from main import utils
+from main.progress_report import ProgressReport
 
 
 class Command(BaseCommand):
@@ -37,29 +38,13 @@ class TagImporter(object):
         all_keys = self._photo_bucket.get_set_of_keys(self._prefix)
 
         non_xmp_without_xmp_associated = 0
-        object_count = 0
+
+        progress_report = ProgressReport(len(all_keys))
 
         print("Total number of files to process:", len(all_keys))
 
-        start_time = time.time()
-
         for s3_object in self._photo_bucket.objects_in_bucket(self._prefix):
-            object_count += 1
-
-            if object_count % 20 == 0:
-                elapsed_time = time.time() - start_time
-                speed = object_count / elapsed_time
-                percentage = (object_count / len(all_keys)) * 100
-
-                print("========== STATS")
-                print("Processing {} of {}. Elapsed time: {:.2f} minutes Percentage: {:.2f}%".format(object_count,
-                                                                                        len(all_keys),
-                                                                                        elapsed_time / 60,
-                                                                                        percentage))
-
-                total_time = (len(all_keys) * elapsed_time) / object_count
-                remaining_time = total_time - elapsed_time
-                print("Photos per minute: {:.2f} Total remaining time: {:.2f} minutes".format(speed, remaining_time / 60))
+            progress_report.increment_and_print_if_needed()
 
             if s3_object.key.lower().endswith(".xmp"):
                 continue

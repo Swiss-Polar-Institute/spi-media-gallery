@@ -10,6 +10,7 @@ import time
 
 from main import spi_s3_utils
 from main import utils
+from main.progress_report import ProgressReport
 
 class Command(BaseCommand):
     help = 'Updates photo tagging'
@@ -39,31 +40,17 @@ class ThumbnailGenerator(object):
         photos_without_thumbnail = Photo.objects.all().exclude(id__in=thumbnails)
         # photos_without_thumbnail = Photo.objects.filter(thumbnail__isnull=True)
 
-        photos_without_thumbnail_count = len(photos_without_thumbnail)
-        start_time = time.time()
+        progress_report = ProgressReport(len(photos_without_thumbnail))
 
         for photo in photos_without_thumbnail:
-            count += 1
+            progress_report.increment_and_print_if_needed()
+
             # Read Photo
             photo_object = self._photo_bucket.get_object(photo.object_storage_key)
             if photo.object_storage_key is None or photo.object_storage_key == "":
                 continue
 
-            print("Processing thumbnail {} of {}".format(count, photos_without_thumbnail_count))
-
-            elapsed_time = time.time() - start_time
-            speed = count / elapsed_time
-            percentage = (count / photos_without_thumbnail_count) * 100
-
-            print("============ STATS")
-            print("Processing {} of {}. Elapsed time: {:.2f} minutes Percentage: {:.2f}%".format(count,
-                                                                                                 photos_without_thumbnail_count,
-                                                                                                 elapsed_time / 60,
-                                                                                                 percentage))
-            total_time = (photos_without_thumbnail_count * elapsed_time) / count
-            remaining_time = total_time - elapsed_time
-            print("Photos per minute: {:.2f} Total remaining time: {:.2f} minutes".format(speed, remaining_time / 60))
-            print("Processing:", photo.object_storage_key)
+            # print("Processing thumbnail {} of {}".format(count, photos_without_thumbnail_count))
 
             photo_file = tempfile.NamedTemporaryFile(delete=False)
             photo_file.write(photo_object.get()["Body"].read())
