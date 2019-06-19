@@ -7,18 +7,14 @@
 Total number of photos with this tag: {{ total_number_photos_tag }}
 
 
+<div class="container">
+    <div class="card-columns">
 {% for photo in photos %}
-    {% if forloop.first %}<div class="row">{% endif %}
-
-    <div class="col-lg-3">
-        <div class="thumbnail">
-            <a href="/display/{{photo.id}}"><img src="{{photo.thumbnail}}" class="img-fluid img-thumbnail"></a>
-        </div>
+                <div class="card p-1">
+                    <a href="/display/{{ photo.id }}"><img class="card-img-top" src="{{ photo.thumbnail }}" alt="Card image top"></a>
+                </div>
+{%endfor %}
     </div>
-
-    {% if forloop.counter|divisibleby:4 %}</div><div class="row">{% endif %}
-
-    {% if forloop.last %}</div>{% endif %}
-{% endfor %}
+</div>
 
 {% endblock %}
