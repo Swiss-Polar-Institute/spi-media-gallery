@@ -48,10 +48,9 @@ class TagImporter(object):
         for s3_object in self._photo_bucket.objects_in_bucket(self._prefix):
             progress_report.increment_and_print_if_needed()
 
-            if s3_object.key.lower().endswith(".xmp"):
-                continue
+            filename, file_extension = os.path.splitext(s3_object.key)
 
-            if s3_object.key.lower() not in valid_extensions:
+            if file_extension.lower() not in valid_extensions:
                 continue
 
             size_of_media = s3_object.size
@@ -62,7 +61,6 @@ class TagImporter(object):
                 # Non XMP file without an XMP associated
                 non_xmp_without_xmp_associated += 1
                 continue
-
 
             # Copies XMP into a file (libxmp seems to only be able to read
             # from physical files)
