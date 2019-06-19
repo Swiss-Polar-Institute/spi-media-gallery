@@ -7,6 +7,7 @@ from main.models import Photo, PhotoResized, Tag
 from main.spi_s3_utils import SpiS3Utils
 import main.utils as utils
 
+
 class Homepage(TemplateView):
     template_name = "homepage.tmpl"
 

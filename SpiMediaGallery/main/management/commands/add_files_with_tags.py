@@ -43,10 +43,15 @@ class TagImporter(object):
 
         print("Total number of files to process:", len(all_keys))
 
+        valid_extensions = {"jpeg", "jpg", "cr2"}
+
         for s3_object in self._photo_bucket.objects_in_bucket(self._prefix):
             progress_report.increment_and_print_if_needed()
 
             if s3_object.key.lower().endswith(".xmp"):
+                continue
+
+            if s3_object.key.lower() not in valid_extensions:
                 continue
 
             size_of_media = s3_object.size

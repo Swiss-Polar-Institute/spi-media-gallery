@@ -1,5 +1,6 @@
 import hashlib
 import os
+import sys
 import subprocess
 
 from main.models import PhotoResized
@@ -38,4 +39,8 @@ def resize_file(input_file_path, output_file_path, width):
 
         command += [input_file_path, output_file_path]
 
-        subprocess.run(command, stdout=devnull, stderr=devnull)
+        try:
+            subprocess.run(command, stdout=devnull, stderr=devnull)
+        except OSError:
+            print("Error in the command:", command)
+            sys.exit(1)
