@@ -15,7 +15,7 @@ class Photo(models.Model):
 
     height = models.IntegerField(null=True)
     width = models.IntegerField(null=True)
-    date_taken = models.DateTimeField(null=True)
+    datetime_taken = models.DateTimeField(null=True)
 
     tags = models.ManyToManyField(Tag, blank=True)
 
