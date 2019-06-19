@@ -35,7 +35,7 @@ def resize_file(input_file_path, output_file_path, width):
     with open(os.devnull, 'w') as devnull:
         command = ["convert", "-auto-orient"]
         if width is not None:
-            command += ["-resize", "{}x{}".foprmat(width, width)]
+            command += ["-resize", "{}x{}".format(width, width)]
 
         command += [input_file_path, output_file_path]
 

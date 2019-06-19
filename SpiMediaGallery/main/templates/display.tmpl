@@ -7,12 +7,10 @@
         <div class="container">
             <h3>{{ media_file }}</h3>
             <div class="row">
-                <div class="col-sm">
-                    <div class="card p-1">
-                        <img src="{{ photo_small_url }}">
-                    </div>
+                <div class="col-md-6">
+                    <img class="img-thumbnail" src="{{ photo_small_url }}">
                 </div>
-                <div class="col-sm">
+                <div class="col-md-6">
                     {% for photo_size in sizes_list %}
                         <a href="{{ photo_size.image_link }}">{{ photo_size.label }}</a> ({{ photo_size.resolution }}, {{ photo_size.size }} KB)<br>
                     {% endfor %}
