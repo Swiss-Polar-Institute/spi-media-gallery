@@ -66,7 +66,7 @@ class Resizer(object):
                 md5_photo_file = utils.hash_of_file_path(photo_file.name)
                 photo.md5 = md5_photo_file
 
-            if photo.width is None or photo.height is None:
+            if photo.width is None or photo.height is None or photo.datetime_taken is None:
                 photo_image = Image.open(photo_file.name)
                 photo.width = photo_image.width
                 photo.height = photo_image.height
