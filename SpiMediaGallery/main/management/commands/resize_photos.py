@@ -77,7 +77,7 @@ class Resizer(object):
 
                 if EXIF_DATE_ID in exif_data:
                     try:
-                        datetime_taken = datetime.strptime(exif_data[EXIF_DATE_ID], "%Y:%m:%d %H:%M:%S")
+                        datetime_taken = datetime.datetime.strptime(exif_data[EXIF_DATE_ID], "%Y:%m:%d %H:%M:%S")
                     except ValueError:
                         datetime_taken = None
 
