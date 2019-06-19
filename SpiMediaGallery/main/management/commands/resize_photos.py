@@ -4,6 +4,7 @@ from main.models import Photo, PhotoResized
 from django.conf import settings
 from PIL import Image
 
+import datetime
 import tempfile
 import os
 
@@ -70,6 +71,18 @@ class Resizer(object):
                 photo.width = photo_image.width
                 photo.height = photo_image.height
 
+                exif_data = photo_image.getexif()
+
+                EXIF_DATE_ID = 36867
+
+                if EXIF_DATE_ID in exif_data:
+                    try:
+                        datetime_taken = datetime.strptime(exif_data[EXIF_DATE_ID], "%Y:%m:%d %H:%M:%S")
+                    except ValueError:
+                        datetime_taken = None
+
+                    photo.datetime_taken = datetime_taken
+
             photo.save()
 
             thumbnail_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
@@ -90,6 +103,7 @@ class Resizer(object):
             thumbnail_height = thumbnail_image.height
 
             os.remove(thumbnail_file.name)
+            os.remove(photo_file.name)
 
             # Update database
             resized_photo = PhotoResized()

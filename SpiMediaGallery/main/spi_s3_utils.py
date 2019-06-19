@@ -37,6 +37,6 @@ class SpiS3Utils(object):
 
     def get_presigned_jpeg_link(self, key):
         return self.resource().meta.client.generate_presigned_url('get_object',
-                                                             Params={'Bucket': 'thumbnails',
+                                                             Params={'Bucket': self._bucket_configuration["name"],
                                                                      'Key': key,
                                                                      'ResponseContentType': 'image/jpeg'})

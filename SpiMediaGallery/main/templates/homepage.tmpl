@@ -8,12 +8,27 @@
         <p>
         <ul>
             <li>Total number of photos indexed: {{ total_number_photos }}<br>
-            <li>Total number of photos with thumbnail: {{ total_number_thumbnails }}<br>
-            <li> Tags:
-            {% for tag in list_of_tags %}
-            <a href="/search/tag/{{tag.id}}">{{tag.tag}}</a>,
-            {% endfor %}
+            <li>Total number of photos with thumbnail: {{ total_number_thumbnails }}
         </ul>
+        <h2>Navigate selecting one tag</h2>
+        {% for tag in list_of_tags %}
+        <a href="/search/tag/{{tag.id}}">{{tag.tag}}</a>,
+        {% endfor %}
+        <h2>Select multiple tags</h2>
+
+        <form action="/search/tags/" method="post">
+            <div>
+                {% for tag in list_of_tags %}
+                    <input type="checkbox" id="{{ tag.id }}" value="{{ tag.id }}" name="tags">
+                    <label for="{{ tag.id }}">{{ tag.tag }}</label><br>
+                    {% csrf_token %}
+                {% endfor %}
+            </div>
+            <div>
+                <input type="submit" value="Send">
+            </div>
+        </form>
+
     </div>
   </body>
 {% endblock %}

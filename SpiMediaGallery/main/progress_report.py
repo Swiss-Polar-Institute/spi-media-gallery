@@ -28,7 +28,7 @@ class ProgressReport:
 
             total_expected_time = (self._total_steps * elapsed_time) / self._current_step
             remaining_time = total_expected_time - elapsed_time
-            print("Steps per minute: {:.2f} Total remaining time: {:.2f} minutes".format(speed, remaining_time / 60))
+            print("Steps per minute: {:.2f} Total remaining time: {:.2f} minutes".format(speed*60, remaining_time / 60))
 
             self._last_printed_report = time.time()
 
