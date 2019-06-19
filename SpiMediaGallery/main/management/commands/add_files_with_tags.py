@@ -50,7 +50,9 @@ class TagImporter(object):
 
             filename, file_extension = os.path.splitext(s3_object.key)
 
-            if ("."+file_extension.lower()) not in valid_extensions:
+            file_extension = file_extension[1:]
+
+            if file_extension.lower() not in valid_extensions:
                 continue
 
             size_of_media = s3_object.size
