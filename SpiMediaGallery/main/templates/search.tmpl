@@ -1,20 +1,20 @@
 {% extends 'base.tmpl' %}
 {% block title %}SPI Media Gallery - Search result{% endblock %}
 
-{% block contents %}
-
-<h1>{{ tag_name }}</h1>
-Total number of photos with this tag: {{ total_number_photos_tag }}
-
-
-<div class="container">
-    <div class="card-columns">
-{% for photo in photos %}
-                <div class="card p-1">
-                    <a href="/display/{{ photo.id }}"><img class="card-img-top" src="{{ photo.thumbnail }}" alt="Card image top"></a>
+{% block body %}
+    <body class="d-flex flex-column h-100">
+        <div class="container theme-showcase" role="main">
+            <h1>{{ tag_name }}</h1>
+            Total number of photos with this tag: {{ total_number_photos_tag }}
+            <div class="container">
+                <div class="card-columns">
+                {% for photo in photos %}
+                    <div class="card p-1">
+                        <a href="/display/{{ photo.id }}"><img class="card-img-top" src="{{ photo.thumbnail }}" alt="Card image top"></a>
+                    </div>
+                {%endfor %}
                 </div>
-{%endfor %}
-    </div>
-</div>
-
+            </div>
+        </div>
+    </body>
 {% endblock %}

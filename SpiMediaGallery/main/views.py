@@ -80,9 +80,12 @@ class Display(TemplateView):
         spi_s3_utils = SpiS3Utils("thumbnails")
 
         photo_resized = PhotoResized.objects.filter(photo__id=kwargs['photo_id']).filter(size_label="S")[0]
-
-
+        photo = Photo.objects.get(id=kwargs['photo_id'])
 
         context['photo_small_url'] = spi_s3_utils.get_presigned_jpeg_link(photo_resized.object_storage_key)
+        context['media_file'] = photo.object_storage_key
+
+
+        context['list_of_tags'] = photo.tags.all()
 
         return context

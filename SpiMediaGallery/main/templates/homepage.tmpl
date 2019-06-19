@@ -1,17 +1,19 @@
 {% extends 'base.tmpl' %}
 {% block title %}SPI Media Gallery{% endblock %}
 
-{% block contents %}
-
-<H1>Welcome to the SPI Image Gallery</H1>
-<p>
-</ul>
-<li>Total number of photos indexed: {{ total_number_photos }}<br>
-<li>Total number of photos with thumbnail: {{ total_number_thumbnails }}<br>
-<li> Tags:
-{% for tag in list_of_tags %}
-<a href="search/tag/{{tag.id}}">{{tag.tag}}</a>,
-{% endfor %}
-</ul>
-
+{% block body %}
+  <body class="d-flex flex-column h-100">
+    <div class="container theme-showcase" role="main">
+        <H1>Welcome to the SPI Image Gallery</H1>
+        <p>
+        <ul>
+            <li>Total number of photos indexed: {{ total_number_photos }}<br>
+            <li>Total number of photos with thumbnail: {{ total_number_thumbnails }}<br>
+            <li> Tags:
+            {% for tag in list_of_tags %}
+            <a href="/search/tag/{{tag.id}}">{{tag.tag}}</a>,
+            {% endfor %}
+        </ul>
+    </div>
+  </body>
 {% endblock %}

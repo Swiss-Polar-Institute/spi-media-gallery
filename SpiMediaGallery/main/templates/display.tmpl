@@ -1,8 +1,28 @@
 {% extends 'base.tmpl' %}
 {% block title %}SPI Media Gallery - Display media{% endblock %}
 
-{% block contents %}
-
-<img src="{{ photo_small_url }}">
-
+{% block body %}
+    <body>
+    <p>
+        <div class="container">
+            <h3>{{ media_file }}</h3>
+            <div class="row">
+                <div class="col-sm">
+                    <div class="card p-1">
+                        <img src="{{ photo_small_url }}">
+                    </div>
+                </div>
+                <div class="col-sm">
+                    View smalls size<br>
+                    View medium size<br>
+                    View large size<br>
+                    View original size<br>
+                    Tags of this image:
+                        {% for tag in list_of_tags %}
+                            <a href="/search/tag/{{tag.id}}">{{tag.tag}}</a>,
+                        {% endfor %}
+                </div>
+            </div>
+        </div>
+    </body>
 {% endblock %}
