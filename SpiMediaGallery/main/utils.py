@@ -2,6 +2,16 @@ import hashlib
 import os
 import subprocess
 
+from main.models import PhotoResized
+
+
+def image_size_label_abbreviation_to_presentation(abbreviation):
+    for size in PhotoResized.SIZES_OF_PHOTOS:
+        if size[0] == abbreviation:
+            return size[1]
+
+    assert False
+
 
 def hash_of_s3_object(s3_object):
     hash_md5 = hashlib.md5()
@@ -10,7 +20,7 @@ def hash_of_s3_object(s3_object):
     return hash_md5.hexdigest()
 
 
-def hash_of_fp(file_path):
+def hash_of_file_path(file_path):
     hash_md5 = hashlib.md5()
 
     with open(file_path, "rb") as fp:
@@ -22,5 +32,10 @@ def hash_of_fp(file_path):
 
 def resize_file(input_file_path, output_file_path, width):
     with open(os.devnull, 'w') as devnull:
-        subprocess.run(["convert", "-auto-orient", "-resize", "{}x{}".format(width, width), input_file_path, output_file_path], stdout=devnull,
-                                                                                         stderr=devnull)
+        command = ["convert", "-auto-orient"]
+        if width is not None:
+            command += ["-resize", "{}x{}".foprmat(width, width)]
+
+        command += [input_file_path, output_file_path]
+
+        subprocess.run(command, stdout=devnull, stderr=devnull)

@@ -27,12 +27,14 @@ class PhotoResized(models.Model):
     SMALL = "S"
     MEDIUM = "M"
     LARGE = "L"
+    ORIGINAL = "O"
 
     SIZES_OF_PHOTOS = (
         (THUMBNAIL, 'Thumbnail'),
         (SMALL, 'Small'),
         (MEDIUM, 'Medium'),
-        (LARGE, 'Large')
+        (LARGE, 'Large'),
+        (ORIGINAL, 'Original')
     )
 
     object_storage_key = models.CharField(max_length=1024)

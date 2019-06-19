@@ -43,7 +43,9 @@ class Resizer(object):
 
         progress_report = ProgressReport(len(photos_without_thumbnail))
 
-        resized_width = settings.IMAGE_LABEL_TO_SIZES[self._size_type][0]
+        resized_width = None
+        if self._size_type != 'O':
+            resized_width = settings.IMAGE_LABEL_TO_SIZES[self._size_type][0]
 
         for photo in photos_without_thumbnail:
             progress_report.increment_and_print_if_needed()
@@ -59,19 +61,28 @@ class Resizer(object):
 
             assert os.stat(photo_file.name).st_size == photo.file_size
 
-            md5_photo_file = utils.hash_of_fp(photo_file.name)
+            if photo.md5 is None:
+                md5_photo_file = utils.hash_of_file_path(photo_file.name)
+                photo.md5 = md5_photo_file
+
+            if photo.width is None or photo.height is None:
+                photo_image = Image.open(photo_file.name)
+                photo.width = photo_image.width
+                photo.height = photo_image.height
+
+            photo.save()
 
             thumbnail_file = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
             thumbnail_file.close()
 
             # Resize photo
             utils.resize_file(photo_file.name, thumbnail_file.name, resized_width)
+            md5_resized_file = utils.hash_of_file_path(thumbnail_file.name)
 
             # Upload photo to bucket
-            thumbnail_key = os.path.join(settings.RESIZED_PREFIX, md5_photo_file + "-{}.jpg".format(self._size_type))
+            thumbnail_key = os.path.join(settings.RESIZED_PREFIX, md5_resized_file + "-{}.jpg".format(self._size_type))
 
             self._thumbnails_bucket.upload_file(thumbnail_file.name, thumbnail_key)
-            md5_resized_file = utils.hash_of_fp(thumbnail_file.name)
             size = os.stat(thumbnail_file.name).st_size
 
             thumbnail_image = Image.open(thumbnail_file.name)

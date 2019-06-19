@@ -4,10 +4,8 @@ from django.http import HttpResponse
 from django.views.generic import TemplateView
 from main.models import Photo, PhotoResized, Tag
 
-import boto3
-
 from main.spi_s3_utils import SpiS3Utils
-
+import main.utils as utils
 
 class Homepage(TemplateView):
     template_name = "homepage.tmpl"
@@ -30,10 +28,7 @@ class Search(TemplateView):
     template_name = "search.tmpl"
 
     def get_context_data(self, **kwargs):
-        r = boto3.resource(service_name="s3",
-                       aws_access_key_id="minio",
-                       aws_secret_access_key="minio123",
-                       endpoint_url="http://localhost:9000")
+        spi_s3_utils = SpiS3Utils("thumbnails")
 
         context = super(Search, self).get_context_data(**kwargs)
 
@@ -48,10 +43,7 @@ class Search(TemplateView):
 
             if len(thumbnail) == 1:
                 thumbnail_key = thumbnail[0].object_storage_key
-                thumbnail_img = r.meta.client.generate_presigned_url('get_object',
-                                                                    Params={'Bucket': 'thumbnails',
-                                                                            'Key': thumbnail_key,
-                                                                            'ResponseContentType': 'image/jpeg'})
+                thumbnail_img = spi_s3_utils.get_presigned_jpeg_link(thumbnail_key)
 
             else:
                 # Images should have a thumbnail
@@ -79,12 +71,34 @@ class Display(TemplateView):
 
         spi_s3_utils = SpiS3Utils("thumbnails")
 
-        photo_resized = PhotoResized.objects.filter(photo__id=kwargs['photo_id']).filter(size_label="S")[0]
+        photo_resized_all = PhotoResized.objects.filter(photo__id=kwargs['photo_id'])
+
+        sizes_presentation = []
+
+        for photo_resized in photo_resized_all:
+            if photo_resized.size_label == "T":
+                continue
+
+            size_information = {}
+
+            size_information['label'] = utils.image_size_label_abbreviation_to_presentation(photo_resized.size_label)
+            size_information['size'] = int(photo_resized.file_size / 1024)
+            size_information['width'] = photo_resized.width
+            size_information['resolution'] = "{}x{}".format(photo_resized.width, photo_resized.height)
+            size_information['image_link'] = spi_s3_utils.get_presigned_jpeg_link(photo_resized.object_storage_key)
+
+            sizes_presentation.append(size_information)
+
+        sizes_presentation = sorted(sizes_presentation, key=lambda k: k['width'])
+
+        photo_resized_small = PhotoResized.objects.filter(photo__id=kwargs['photo_id']).filter(size_label="S")[0]
+
         photo = Photo.objects.get(id=kwargs['photo_id'])
 
-        context['photo_small_url'] = spi_s3_utils.get_presigned_jpeg_link(photo_resized.object_storage_key)
+        context['photo_small_url'] = spi_s3_utils.get_presigned_jpeg_link(photo_resized_small.object_storage_key)
         context['media_file'] = photo.object_storage_key
 
+        context['sizes_list'] = sizes_presentation
 
         context['list_of_tags'] = photo.tags.all()
 
