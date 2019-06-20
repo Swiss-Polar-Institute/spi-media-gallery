@@ -99,7 +99,7 @@ def information_for_tag_ids(tag_ids):
     information["total_number_photos_tag"] = len(query_photos_for_tags)
 
     photo_result_list = []
-    for photo in query_photos_for_tags:
+    for photo in query_photos_for_tags[:200]:
         thumbnail = PhotoResized.objects.filter(photo=photo).filter(size_label="T")
 
         if len(thumbnail) == 1:
@@ -168,10 +168,18 @@ class Display(TemplateView):
 
         context['photo_small_url'] = spi_s3_thumbnails.get_presigned_jpeg_link(photo_resized_small.object_storage_key)
         context['media_file'] = photo.object_storage_key
-        context['original_file'] = spi_s3_photos.get_presigned_jpeg_link(photo.object_storage_key)
+        context['original_file'] = spi_s3_photos.get_presigned_download_link(photo.object_storage_key)
+        context['original_resolution'] = "{}x{}".format(photo.width, photo.height)
+        context['original_file_size'] = photo.file_size
 
         context['sizes_list'] = sizes_presentation
 
-        context['list_of_tags'] = photo.tags.all()
+        list_of_tags = []
+
+        for tag in photo.tags.all():
+            t = {'id': tag.id, 'tag': tag.tag}
+            list_of_tags.append(t)
+
+        context['list_of_tags'] = sorted(list_of_tags, key=lambda k: k['tag'])
 
         return context

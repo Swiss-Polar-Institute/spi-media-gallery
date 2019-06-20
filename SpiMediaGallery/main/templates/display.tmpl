@@ -13,8 +13,9 @@
                     {% for photo_size in sizes_list %}
                         <a href="{{ photo_size.image_link }}">{{ photo_size.label }}</a> ({{ photo_size.resolution }}, {{ photo_size.size }} KB)<br>
                     {% endfor %}
-                    <a href="{{ original_file }}">Original file</a>
-                    <br>
+                    <p>
+                        <a href="{{ original_file }}">Download Original file</a> ({{ original_resolution}}, {{ original_file_size }} KB)</a>
+                    <p>
                     Tags of this image:
                         {% for tag in list_of_tags %}
                             <a href="/search/tag/{{tag.id}}">{{tag.tag}}</a>,

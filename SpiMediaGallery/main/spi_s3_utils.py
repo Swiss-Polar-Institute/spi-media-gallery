@@ -1,6 +1,6 @@
 import boto3
 from django.conf import settings
-
+import os
 
 class SpiS3Utils(object):
     def __init__(self, bucket_name):
@@ -40,3 +40,11 @@ class SpiS3Utils(object):
                                                              Params={'Bucket': self._bucket_configuration["name"],
                                                                      'Key': key,
                                                                      'ResponseContentType': 'image/jpeg'})
+
+    def get_presigned_download_link(self, key):
+        filename = os.path.basename(key)
+        return self.resource().meta.client.generate_presigned_url('get_object',
+                                                             Params={'Bucket': self._bucket_configuration["name"],
+                                                                     'Key': key,
+                                                                     'ResponseContentDisposition': 'attachment; filename={}'.format(filename),
+                                                                     'ResponseContentType' : 'application/image'})
