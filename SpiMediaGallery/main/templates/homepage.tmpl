@@ -13,6 +13,9 @@
             <li>Total number of photos with thumbnail: {{ total_number_thumbnails }}
             <li>Size of photos: {{ size_of_photos }}</li>
         </ul>
+        <h2>Random photo</h2>
+        <a href="/select_random_photo">Display a random photo.</a>
+
         <h2>Navigate selecting one tag</h2>
         {% for tag in list_of_tags %}
         <a href="/search/tag/{{tag.id}}">{{tag.tag}}</a>{% if not forloop.last %}, {% endif %}

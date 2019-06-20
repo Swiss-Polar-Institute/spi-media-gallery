@@ -16,11 +16,13 @@ class PhotoAdmin(admin.ModelAdmin):
 class TagAdmin(admin.ModelAdmin):
     list_display = ('tag', )
     ordering = ['tag']
+    search_fields = ('tag', )
 
 
 class PhotoResizedAdmin(admin.ModelAdmin):
     list_display = ('object_storage_key', 'md5', 'file_size', 'size_label', 'height', 'width', 'photo')
     ordering = ['object_storage_key']
+    search_fields = ('object_storage_key', 'md5', 'photo')
 
 
 admin.site.register(main.models.Photo, PhotoAdmin)
