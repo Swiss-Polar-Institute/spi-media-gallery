@@ -4,10 +4,17 @@
 {% block body_contents %}
     <p>
         <div class="container">
-            {% include "logo.tmpl" %} <h3>{{ media_file }}</h3>
+            {% include "logo.tmpl" %}
+            <p></p>
+            <b>{{ media_file }}</b>
             <div class="row">
                 <div class="col-md-6">
-                    <img class="img-thumbnail" src="{{ photo_small_url }}">
+                    <img class="img-thumbnail" src="{{ photo_small_url }}"><p>
+
+                    <div align="left">
+                        <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                    </div>
+
                 </div>
                 <div class="col-md-6">
                     {% for photo_size in sizes_list %}
