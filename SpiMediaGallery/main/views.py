@@ -83,6 +83,11 @@ def information_for_tag_ids(tag_ids):
     information["tags_list"] = ", ".join(tags_list) # Tag.objects.get(id=kwargs["tag_id"])
     information["total_number_photos_tag"] = len(query_photos_for_tags)
 
+    if len(tag_ids) != 1:
+        information["this_tag"] = "these tags"
+    else:
+        information["this_tag"] = "this tag"
+
     photo_result_list = []
     for photo in query_photos_for_tags[:200]:
         thumbnail = PhotoResized.objects.filter(photo=photo).filter(size_label="T")
@@ -110,8 +115,8 @@ def information_for_tag_ids(tag_ids):
 
 
 class SearchMultipleTags(TemplateView):
-    def post(self, request, *args, **kwargs):
-        list_of_tag_ids = request.POST.getlist('tags')
+    def get(self, request, *args, **kwargs):
+        list_of_tag_ids = request.GET.getlist('tags')
 
         information = information_for_tag_ids(list_of_tag_ids)
 

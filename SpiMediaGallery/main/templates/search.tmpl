@@ -6,7 +6,7 @@
 {% block body_contents %}
         <div class="container theme-showcase" role="main">
             {% include "logo.tmpl" %} <h3>{{ tags_list }}</h3>
-            Total number of photos with this tag: {{ total_number_photos_tag }}
+            Total number of photos with {{ this_tag }}: {{ total_number_photos_tag }}
             <div class="container">
                 <div class="card-columns">
                 {% for photo in photos %}

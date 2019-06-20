@@ -24,7 +24,7 @@
         <p>
         <h2>Select multiple tags</h2>
 
-        <form action="/search/tags/" method="post">
+        <form action="/search/tags/" method="get">
             <table border="0">
                 <tbody>
                     <tr>
@@ -41,7 +41,6 @@
             </table>
             <br>
             <div>
-                {% csrf_token %}
                 <input type="submit" value="Search">
             </div>
         </form>
