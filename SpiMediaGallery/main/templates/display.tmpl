@@ -1,11 +1,10 @@
 {% extends 'base.tmpl' %}
 {% block title %}SPI Media Gallery - Display media{% endblock %}
 
-{% block body %}
-    <body>
+{% block body_contents %}
     <p>
         <div class="container">
-            <h3>{{ media_file }}</h3>
+            {% include "logo.tmpl" %} <h3>{{ media_file }}</h3>
             <div class="row">
                 <div class="col-md-6">
                     <img class="img-thumbnail" src="{{ photo_small_url }}">
@@ -23,5 +22,4 @@
                 </div>
             </div>
         </div>
-    </body>
 {% endblock %}

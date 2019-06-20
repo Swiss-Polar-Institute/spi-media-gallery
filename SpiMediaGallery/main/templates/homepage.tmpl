@@ -1,10 +1,12 @@
 {% extends 'base.tmpl' %}
+{% load static %}
 {% block title %}SPI Media Gallery{% endblock %}
 
-{% block body %}
-  <body class="d-flex flex-column h-100">
+{% block body_attributes %}class="d-flex flex-column h-100"{% endblock %}
+
+{% block body_contents %}
     <div class="container theme-showcase" role="main">
-        <H1>Welcome to the SPI Image Gallery</H1>
+        {% include "logo.tmpl" %} <H1>Welcome to the SPI Image Gallery</H1>
         <p>
         <ul>
             <li>Total number of photos indexed: {{ total_number_photos }}<br>
@@ -14,13 +16,14 @@
         {% for tag in list_of_tags %}
         <a href="/search/tag/{{tag.id}}">{{tag.tag}}</a>,
         {% endfor %}
+        <p>
         <h2>Select multiple tags</h2>
 
         <form action="/search/tags/" method="post">
             <div>
                 {% for tag in list_of_tags %}
                     <input type="checkbox" id="{{ tag.id }}" value="{{ tag.id }}" name="tags">
-                    <label for="{{ tag.id }}">{{ tag.tag }}</label><br>
+                    <label for="{{ tag.id }}">{{ tag.tag }} ({{ tag.count }})</label><br>
                     {% csrf_token %}
                 {% endfor %}
             </div>
@@ -30,5 +33,4 @@
         </form>
 
     </div>
-  </body>
 {% endblock %}

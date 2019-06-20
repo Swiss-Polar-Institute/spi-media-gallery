@@ -18,7 +18,17 @@ class Homepage(TemplateView):
 
         total_photos = Photo.objects.count()
         total_thumbnails = PhotoResized.objects.filter(size_label="T").count()
-        tags = Tag.objects.order_by("tag")
+
+        tags = []
+        for tag in Tag.objects.order_by("tag"):
+            t = {}
+            t['id'] = tag.id
+            t['tag'] = tag.tag
+            t['count'] = Photo.objects.filter(tags__id=tag.id).count()
+
+            tags.append(t)
+
+        # tags = Tag.objects.order_by("tag")
 
         context['total_number_photos'] = total_photos
         context['total_number_thumbnails'] = total_thumbnails
@@ -31,40 +41,47 @@ class Search(TemplateView):
     template_name = "search.tmpl"
 
     def get_context_data(self, **kwargs):
-        spi_s3_utils = SpiS3Utils("thumbnails")
-
         context = super(Search, self).get_context_data(**kwargs)
 
-        query_photos_for_tag = Photo.objects.filter(tags__id=kwargs["tag_id"])
+        information = information_for_tag_ids([kwargs["tag_id"]])
 
-        context["tag_name"] = Tag.objects.get(id=kwargs["tag_id"])
-        context["total_number_photos_tag"] = len(query_photos_for_tag)
-
-        photo_result_list = []
-        for photo in query_photos_for_tag:
-            thumbnail = PhotoResized.objects.filter(photo=photo).filter(size_label="T")
-
-            if len(thumbnail) == 1:
-                thumbnail_key = thumbnail[0].object_storage_key
-                thumbnail_img = spi_s3_utils.get_presigned_jpeg_link(thumbnail_key)
-
-            else:
-                # Images should have a thumbnail
-                # TODO: have a placeholder
-                thumbnail_img = None
-
-            photo_result = {}
-
-            photo_result['thumbnail'] = thumbnail_img
-            photo_result['url'] = photo.object_storage_key
-            photo_result['id'] = photo.id
-
-            photo_result_list.append(photo_result)
-
-        context["photos"] = photo_result_list
+        context.update(information)
 
         return context
-
+        # spi_s3_utils = SpiS3Utils("thumbnails")
+        #
+        # context = super(Search, self).get_context_data(**kwargs)
+        #
+        # query_photos_for_tag = Photo.objects.filter(tags__id=kwargs["tag_id"])
+        #
+        # context["tag_name"] = Tag.objects.get(id=kwargs["tag_id"])
+        # context["total_number_photos_tag"] = len(query_photos_for_tag)
+        #
+        # photo_result_list = []
+        # for photo in query_photos_for_tag:
+        #     thumbnail = PhotoResized.objects.filter(photo=photo).filter(size_label="T")
+        #
+        #     if len(thumbnail) == 1:
+        #         thumbnail_key = thumbnail[0].object_storage_key
+        #         thumbnail_img = spi_s3_utils.get_presigned_jpeg_link(thumbnail_key)
+        #
+        #     else:
+        #         # Images should have a thumbnail
+        #         # TODO: have a placeholder
+        #         thumbnail_img = None
+        #
+        #     photo_result = {}
+        #
+        #     photo_result['thumbnail'] = thumbnail_img
+        #     photo_result['url'] = photo.object_storage_key
+        #     photo_result['id'] = photo.id
+        #
+        #     photo_result_list.append(photo_result)
+        #
+        # context["photos"] = photo_result_list
+        #
+        # return context
+        #
 
 def information_for_tag_ids(tag_ids):
     spi_s3_utils = SpiS3Utils("thumbnails")
@@ -72,11 +89,13 @@ def information_for_tag_ids(tag_ids):
     information = {}
 
     query_photos_for_tags = Photo.objects
+    tags_list = []
 
     for tag_id in tag_ids:
         query_photos_for_tags = query_photos_for_tags.filter(tags__id=int(tag_id))
+        tags_list.append(Tag.objects.get(id=tag_id).tag)
 
-    information["tag_names"] = "TODO" # Tag.objects.get(id=kwargs["tag_id"])
+    information["tags_list"] = ", ".join(tags_list) # Tag.objects.get(id=kwargs["tag_id"])
     information["total_number_photos_tag"] = len(query_photos_for_tags)
 
     photo_result_list = []
@@ -107,7 +126,6 @@ def information_for_tag_ids(tag_ids):
 
 class SearchMultipleTags(TemplateView):
     def post(self, request, *args, **kwargs):
-
         list_of_tag_ids = request.POST.getlist('tags')
 
         information = information_for_tag_ids(list_of_tag_ids)

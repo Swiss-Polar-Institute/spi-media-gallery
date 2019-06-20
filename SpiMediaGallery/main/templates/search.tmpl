@@ -1,10 +1,11 @@
 {% extends 'base.tmpl' %}
 {% block title %}SPI Media Gallery - Search result{% endblock %}
 
-{% block body %}
-    <body class="d-flex flex-column h-100">
+{% block body_attributes %}class="d-flex flex-column h-100"{% endblock %}
+
+{% block body_contents %}
         <div class="container theme-showcase" role="main">
-            <h1>{{ tag_name }}</h1>
+            {% include "logo.tmpl" %} <h3>{{ tags_list }}</h3>
             Total number of photos with this tag: {{ total_number_photos_tag }}
             <div class="container">
                 <div class="card-columns">
@@ -16,5 +17,4 @@
                 </div>
             </div>
         </div>
-    </body>
 {% endblock %}

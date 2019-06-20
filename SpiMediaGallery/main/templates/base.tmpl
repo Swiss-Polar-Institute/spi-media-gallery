@@ -19,5 +19,8 @@
     <title>{% block title %}{% endblock %}</title>
   </head>
 
-  {%block body %}{% endblock %}
+  <body {% block body_attributes %}{% endblock %}>
+    {%block body_contents %}{% endblock %}
+  </body>
+
 </html>
