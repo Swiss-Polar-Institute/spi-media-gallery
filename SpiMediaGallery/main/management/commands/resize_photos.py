@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand, CommandError
 from main.models import Photo, PhotoResized
 from django.conf import settings
 from PIL import Image
+Image.MAX_IMAGE_PIXELS = None
 
 import datetime
 import tempfile
