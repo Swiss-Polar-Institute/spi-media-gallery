@@ -51,40 +51,21 @@ class Search(TemplateView):
         context.update(information)
 
         return context
-        # spi_s3_utils = SpiS3Utils("thumbnails")
-        #
-        # context = super(Search, self).get_context_data(**kwargs)
-        #
-        # query_photos_for_tag = Photo.objects.filter(tags__id=kwargs["tag_id"])
-        #
-        # context["tag_name"] = Tag.objects.get(id=kwargs["tag_id"])
-        # context["total_number_photos_tag"] = len(query_photos_for_tag)
-        #
-        # photo_result_list = []
-        # for photo in query_photos_for_tag:
-        #     thumbnail = PhotoResized.objects.filter(photo=photo).filter(size_label="T")
-        #
-        #     if len(thumbnail) == 1:
-        #         thumbnail_key = thumbnail[0].object_storage_key
-        #         thumbnail_img = spi_s3_utils.get_presigned_jpeg_link(thumbnail_key)
-        #
-        #     else:
-        #         # Images should have a thumbnail
-        #         # TODO: have a placeholder
-        #         thumbnail_img = None
-        #
-        #     photo_result = {}
-        #
-        #     photo_result['thumbnail'] = thumbnail_img
-        #     photo_result['url'] = photo.object_storage_key
-        #     photo_result['id'] = photo.id
-        #
-        #     photo_result_list.append(photo_result)
-        #
-        # context["photos"] = photo_result_list
-        #
-        # return context
-        #
+
+
+
+class Random(TemplateView):
+    template_name = "display.tmpl"
+
+    def get_context_data(self, **kwargs):
+        context = super(Random, self).get_context_data(**kwargs)
+
+        photo = Photo.objects.order_by('?')[0]
+
+        context.update(information_for_photo(photo))
+
+        return context
+
 
 def information_for_tag_ids(tag_ids):
     spi_s3_utils = SpiS3Utils("thumbnails")
@@ -136,55 +117,60 @@ class SearchMultipleTags(TemplateView):
         return render(request, "search.tmpl", information)
 
 
+def information_for_photo(photo):
+    information = {}
+
+    spi_s3_thumbnails = SpiS3Utils("thumbnails")
+    spi_s3_photos = SpiS3Utils("photos")
+
+    photo_resized_all = PhotoResized.objects.filter(photo=photo)
+
+    sizes_presentation = []
+
+    for photo_resized in photo_resized_all:
+        if photo_resized.size_label == "T":
+            continue
+
+        size_information = {}
+
+        size_information['label'] = utils.image_size_label_abbreviation_to_presentation(photo_resized.size_label)
+        size_information['size'] = utils.bytes_to_human_readable(photo_resized.file_size)
+        size_information['width'] = photo_resized.width
+        size_information['resolution'] = "{}x{}".format(photo_resized.width, photo_resized.height)
+        size_information['image_link'] = spi_s3_thumbnails.get_presigned_jpeg_link(photo_resized.object_storage_key)
+
+        sizes_presentation.append(size_information)
+
+        if photo_resized.size_label == "S":
+            information['photo_small_url'] = spi_s3_thumbnails.get_presigned_jpeg_link(photo_resized.object_storage_key)
+
+    information['sizes_list'] = sorted(sizes_presentation, key=lambda k: k['width'])
+
+    information['media_file'] = photo.object_storage_key
+
+    information['original_file'] = spi_s3_photos.get_presigned_download_link(photo.object_storage_key)
+    information['original_resolution'] = "{}x{}".format(photo.width, photo.height)
+    information['original_file_size'] = utils.bytes_to_human_readable(photo.file_size)
+
+    information['date_taken'] = photo.datetime_taken
+
+    list_of_tags = []
+
+    for tag in photo.tags.all():
+        t = {'id': tag.id, 'tag': tag.tag}
+        list_of_tags.append(t)
+
+    information['list_of_tags'] = sorted(list_of_tags, key=lambda k: k['tag'])
+
+    return information
+
+
 class Display(TemplateView):
     template_name = "display.tmpl"
 
     def get_context_data(self, **kwargs):
         context = super(Display, self).get_context_data(**kwargs)
 
-        spi_s3_thumbnails = SpiS3Utils("thumbnails")
-        spi_s3_photos = SpiS3Utils("photos")
-
-        photo_resized_all = PhotoResized.objects.filter(photo__id=kwargs['photo_id'])
-
-        sizes_presentation = []
-
-        for photo_resized in photo_resized_all:
-            if photo_resized.size_label == "T":
-                continue
-
-            size_information = {}
-
-            size_information['label'] = utils.image_size_label_abbreviation_to_presentation(photo_resized.size_label)
-            size_information['size'] = utils.bytes_to_human_readable(photo_resized.file_size)
-            size_information['width'] = photo_resized.width
-            size_information['resolution'] = "{}x{}".format(photo_resized.width, photo_resized.height)
-            size_information['image_link'] = spi_s3_thumbnails.get_presigned_jpeg_link(photo_resized.object_storage_key)
-
-            sizes_presentation.append(size_information)
-
-        sizes_presentation = sorted(sizes_presentation, key=lambda k: k['width'])
-
-        photo_resized_small = PhotoResized.objects.filter(photo__id=kwargs['photo_id']).filter(size_label="S")[0]
-
-        photo = Photo.objects.get(id=kwargs['photo_id'])
-
-        context['photo_small_url'] = spi_s3_thumbnails.get_presigned_jpeg_link(photo_resized_small.object_storage_key)
-        context['media_file'] = photo.object_storage_key
-        context['original_file'] = spi_s3_photos.get_presigned_download_link(photo.object_storage_key)
-        context['original_resolution'] = "{}x{}".format(photo.width, photo.height)
-        context['original_file_size'] = utils.bytes_to_human_readable(photo.file_size)
-
-        context['sizes_list'] = sizes_presentation
-
-        context['date_taken'] = photo.datetime_taken
-
-        list_of_tags = []
-
-        for tag in photo.tags.all():
-            t = {'id': tag.id, 'tag': tag.tag}
-            list_of_tags.append(t)
-
-        context['list_of_tags'] = sorted(list_of_tags, key=lambda k: k['tag'])
+        context.update(information_for_photo(Photo.objects.get(id=kwargs['photo_id'])))
 
         return context
