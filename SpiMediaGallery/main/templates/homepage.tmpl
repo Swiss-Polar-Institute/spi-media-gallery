@@ -17,6 +17,7 @@
         <a href="/select_random_photo">Display a random photo.</a>
 
         <h2>Navigate selecting one tag</h2>
+
         {% for tag in list_of_tags %}
         <a href="/search/tag/{{tag.id}}">{{tag.tag}}</a>{% if not forloop.last %}, {% endif %}
         {% endfor %}
@@ -24,17 +25,26 @@
         <h2>Select multiple tags</h2>
 
         <form action="/search/tags/" method="post">
+            <table border="0">
+                <tbody>
+                    <tr>
+                        <td valign="top">{% for tag in list_of_tags_first_half %}<input type="checkbox" id="{{ tag.id }}" value="{{ tag.id }}" name="tags">
+                                <label for="{{ tag.id }}">{{ tag.tag }} ({{ tag.count }})</label><br>
+                            {% endfor %}
+                        </td>
+                        <td valign="top">{% for tag in list_of_tags_second_half %}<input type="checkbox" id="{{ tag.id }}" value="{{ tag.id }}" name="tags">
+                                <label for="{{ tag.id }}">{{ tag.tag }} ({{ tag.count }})</label><br>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <br>
             <div>
-                {% for tag in list_of_tags %}
-                    <input type="checkbox" id="{{ tag.id }}" value="{{ tag.id }}" name="tags">
-                    <label for="{{ tag.id }}">{{ tag.tag }} ({{ tag.count }})</label><br>
-                    {% csrf_token %}
-                {% endfor %}
-            </div>
-            <div>
+                {% csrf_token %}
                 <input type="submit" value="Search">
             </div>
         </form>
-        <p>
+        <br>
     </div>
 {% endblock %}

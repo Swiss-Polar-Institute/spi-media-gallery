@@ -5,3 +5,8 @@
         column-count: 4;
     }
 }
+
+ th, td {
+    padding: 15px;
+    text-align: left;
+}

@@ -36,6 +36,8 @@ class Homepage(TemplateView):
         context['total_number_thumbnails'] = total_thumbnails
         context['size_of_photos'] = size_of_photos
         context['list_of_tags'] = tags
+        context['list_of_tags_first_half'] = tags[:int(1+len(tags)/2)]
+        context['list_of_tags_second_half'] = tags[int(1+len(tags)/2):]
 
         return context
 
@@ -51,7 +53,6 @@ class Search(TemplateView):
         context.update(information)
 
         return context
-
 
 
 class Random(TemplateView):
