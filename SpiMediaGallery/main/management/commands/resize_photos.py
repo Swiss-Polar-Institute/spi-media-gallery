@@ -39,17 +39,16 @@ class Resizer(object):
         self._size_type = size_type
 
     def resize_images(self):
-        thumbnails = PhotoResized.objects.values_list('photo', flat=True).filter(size_label=self._size_type)
-        photos_without_thumbnail = Photo.objects.all().exclude(id__in=thumbnails)
-        # photos_without_thumbnail = Photo.objects.filter(thumbnail__isnull=True)
+        already_resized = PhotoResized.objects.values_list('photo', flat=True).filter(size_label=self._size_type)
+        photos_to_be_resized = Photo.objects.all().exclude(id__in=already_resized)
 
-        progress_report = ProgressReport(len(photos_without_thumbnail))
+        progress_report = ProgressReport(len(photos_to_be_resized), "Resizing photos to {}".format(self._size_type))
 
         resized_width = None
         if self._size_type != 'O':
             resized_width = settings.IMAGE_LABEL_TO_SIZES[self._size_type][0]
 
-        for photo in photos_without_thumbnail:
+        for photo in photos_to_be_resized:
             progress_report.increment_and_print_if_needed()
 
             # Read Photo

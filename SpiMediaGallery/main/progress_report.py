@@ -2,13 +2,14 @@ import time
 
 
 class ProgressReport:
-    def __init__(self, total_steps, frequency_of_reports=1):
+    def __init__(self, total_steps, extra_information="", frequency_of_reports=1):
         self._frequency_of_reports = frequency_of_reports
         self._total_steps = total_steps
         self._current_step = 0
         self._start_time = time.time()
         self._steps_to_next_print_report = 0
         self._last_printed_report = 0
+        self._extra_information = extra_information
         print("*********** Progress Report - initialized - total_steps:", total_steps)
 
     def increment_step(self):
@@ -20,7 +21,7 @@ class ProgressReport:
             speed = self._current_step / elapsed_time
             percentage_complete = (self._current_step / self._total_steps) * 100
 
-            print("========== STATS")
+            print("========== PROGRESS: {}".format(self._extra_information))
             print("Processing {} of {}. Elapsed time: {:.2f} minutes Percentage: {:.2f}%".format(self._current_step,
                                                                                                  self._total_steps,
                                                                                                  elapsed_time / 60,
