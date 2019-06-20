@@ -7,7 +7,7 @@ import main.models
 class PhotoAdmin(admin.ModelAdmin):
     list_display = ('object_storage_key', 'md5', 'file_size', 'height', 'width', 'datetime_taken', 'tags_list')
     ordering = ['object_storage_key']
-    search_fields = ('path', 'tags')
+    search_fields = ('object_storage_key', 'md5')
 
     def tags_list(self, obj):
         return ",".join([t.tag for t in obj.tags.all()])

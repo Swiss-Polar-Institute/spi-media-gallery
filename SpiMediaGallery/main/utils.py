@@ -44,3 +44,11 @@ def resize_file(input_file_path, output_file_path, width):
         except OSError:
             print("Error in the command:", command)
             sys.exit(1)
+
+
+def bytes_to_human_readable(num):
+    for unit in ['','KB','MB','GB','TB','PB','EB','ZB']:
+        if abs(num) < 1024.0:
+            return "%d %s" % (num, unit)
+        num /= 1024.0
+    return "%d %s" % (num, 'YB')

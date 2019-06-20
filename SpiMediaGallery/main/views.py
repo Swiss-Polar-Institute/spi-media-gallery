@@ -3,11 +3,12 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.generic import TemplateView
 from main.models import Photo, PhotoResized, Tag
-from django.db.models import Q
+from django.db.models import Sum
 
 
 from main.spi_s3_utils import SpiS3Utils
 import main.utils as utils
+
 
 
 class Homepage(TemplateView):
@@ -18,6 +19,7 @@ class Homepage(TemplateView):
 
         total_photos = Photo.objects.count()
         total_thumbnails = PhotoResized.objects.filter(size_label="T").count()
+        size_of_photos = utils.bytes_to_human_readable(Photo.objects.aggregate(Sum('file_size'))['file_size__sum'])
 
         tags = []
         for tag in Tag.objects.order_by("tag"):
@@ -32,6 +34,7 @@ class Homepage(TemplateView):
 
         context['total_number_photos'] = total_photos
         context['total_number_thumbnails'] = total_thumbnails
+        context['size_of_photos'] = size_of_photos
         context['list_of_tags'] = tags
 
         return context
@@ -153,7 +156,7 @@ class Display(TemplateView):
             size_information = {}
 
             size_information['label'] = utils.image_size_label_abbreviation_to_presentation(photo_resized.size_label)
-            size_information['size'] = int(photo_resized.file_size / 1024)
+            size_information['size'] = utils.bytes_to_human_readable(photo_resized.file_size)
             size_information['width'] = photo_resized.width
             size_information['resolution'] = "{}x{}".format(photo_resized.width, photo_resized.height)
             size_information['image_link'] = spi_s3_thumbnails.get_presigned_jpeg_link(photo_resized.object_storage_key)
@@ -170,9 +173,11 @@ class Display(TemplateView):
         context['media_file'] = photo.object_storage_key
         context['original_file'] = spi_s3_photos.get_presigned_download_link(photo.object_storage_key)
         context['original_resolution'] = "{}x{}".format(photo.width, photo.height)
-        context['original_file_size'] = photo.file_size
+        context['original_file_size'] = utils.bytes_to_human_readable(photo.file_size)
 
         context['sizes_list'] = sizes_presentation
+
+        context['date_taken'] = photo.datetime_taken
 
         list_of_tags = []
 
