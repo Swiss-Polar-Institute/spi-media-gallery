@@ -39,7 +39,7 @@ class TagImporter(object):
 
         non_xmp_without_xmp_associated = 0
 
-        progress_report = ProgressReport(len(all_keys))
+        progress_report = ProgressReport(len(all_keys), extra_information="Adding files with tags")
 
         print("Total number of files to process:", len(all_keys))
 

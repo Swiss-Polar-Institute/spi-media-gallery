@@ -42,7 +42,7 @@ class Resizer(object):
         already_resized = PhotoResized.objects.values_list('photo', flat=True).filter(size_label=self._size_type)
         photos_to_be_resized = Photo.objects.all().exclude(id__in=already_resized)
 
-        progress_report = ProgressReport(len(photos_to_be_resized), "Resizing photos to {}".format(self._size_type))
+        progress_report = ProgressReport(len(photos_to_be_resized), extra_information="Resizing photos to {}".format(self._size_type))
 
         resized_width = None
         if self._size_type != 'O':

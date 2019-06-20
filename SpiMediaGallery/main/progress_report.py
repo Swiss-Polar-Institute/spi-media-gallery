@@ -20,16 +20,17 @@ class ProgressReport:
             elapsed_time = time.time() - self._start_time
             speed = self._current_step / elapsed_time
             percentage_complete = (self._current_step / self._total_steps) * 100
-
-            print("========== PROGRESS: {}".format(self._extra_information))
-            print("Processing {} of {}. Elapsed time: {:.2f} minutes Percentage: {:.2f}%".format(self._current_step,
-                                                                                                 self._total_steps,
-                                                                                                 elapsed_time / 60,
-                                                                                                 percentage_complete))
-
             total_expected_time = (self._total_steps * elapsed_time) / self._current_step
             remaining_time = total_expected_time - elapsed_time
-            print("Steps per minute: {:.2f} Total remaining time: {:.2f} minutes".format(speed*60, remaining_time / 60))
+
+            print("========== PROGRESS: {}".format(self._extra_information))
+            print("Processing {} of {}. Elapsed time: {:.2f} minutes. Remaining time: {:.2f} minutes.".format(self._current_step,
+                                                                                                 self._total_steps,
+                                                                                                 elapsed_time / 60,
+                                                                                                 remaining_time / 60))
+
+            print("Steps per minute: {:.2f} Percentage: {:.2f}%".format(speed*60, percentage_complete))
+            print()
 
             self._last_printed_report = time.time()
 
