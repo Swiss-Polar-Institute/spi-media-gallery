@@ -1,0 +1,80 @@
+ORDER BY DISTANCE
+=================
+from django.contrib.gis.db.models.functions import Distance
+from geopy.distance import geodesic
+from django.contrib.gis.geos import Point
+
+from main.models import Photo
+
+p1=Point(20.0, -41.0, srid=4326)
+
+# Find closer point to p1
+p2=Photo.objects.filter(position__isnull=False).annotate(distance=Distance('position', p1)).order_by('distance')[0].position.coords
+distance_to_closer=geodesic(p1, p2).kilometers
+distance_to_closer
+
+
+RETURN POINTS CLOSER THAN DISTANCE
+==================================
+***** It works on Mysql
+https://www.thebookofjoel.com/blog/mysql-fast-radius-search-django
+(not ideal, should work for our use case for now, it does a rectangle instead of radius)
+
+def meters_to_degrees(meters):
+    return meters / 40000000.0 * 360.0
+
+from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
+
+from main.models import Photo
+
+center_point = Point(22, -40, srid=4326)
+buffered = center_point.buffer(meters_to_degrees(100000))
+
+photos = Photo.objects.filter(position__within=buffered)
+photos
+
+
+***** It doesn't work on Mysql
+
+# from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.measure import Distance  
+from django.contrib.gis.geos import Point
+
+
+from main.models import Photo
+
+distance = Distance(m=10000)
+center_point = Point(22, -40, srid=4326)
+
+# Any of this should work using Postgis
+photos = Photo.objects.filter(position__distance_lte=(center_point, distance))
+photos = Photo.objects.filter(position__dwithin=(center_point, distance))
+
+
+---------------------------------------------------------
+from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.measure import D
+from django.contrib.gis.geos import Point
+
+
+center_point = Point(22, -40, srid=4326)
+distance = D(m=10000)
+
+Photo.objects.filter(position__distance_lte=(center_point, distance))
+
+RETURN POINTS IN A BOUNDING BOX
+===============================
+from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Polygon
+
+from main.models import Photo
+
+
+ne_point=Point(18, -39, srid=4326)
+sw_point=Point(23, -42, srid=4326)
+
+geom = Polygon.from_bbox((sw_point[0], sw_point[1], ne_point[1], ne_point[0]))
+
+photos = Photo.objects.filter(position__contained=geom)
+photos

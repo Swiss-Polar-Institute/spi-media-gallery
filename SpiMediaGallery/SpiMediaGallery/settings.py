@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'main'
 ]
 
@@ -81,7 +82,7 @@ def path_file_in_home(file_name):
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.contrib.gis.db.backends.mysql',
         'OPTIONS': {
             'read_default_file': path_file_in_home(".spi_media_gallery_mysql.cnf"),
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",

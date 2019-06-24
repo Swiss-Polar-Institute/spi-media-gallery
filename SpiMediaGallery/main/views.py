@@ -42,19 +42,6 @@ class Homepage(TemplateView):
         return context
 
 
-class Search(TemplateView):
-    template_name = "search.tmpl"
-
-    def get_context_data(self, **kwargs):
-        context = super(Search, self).get_context_data(**kwargs)
-
-        information = information_for_tag_ids([kwargs["tag_id"]])
-
-        context.update(information)
-
-        return context
-
-
 class Random(TemplateView):
     template_name = "display.tmpl"
 
