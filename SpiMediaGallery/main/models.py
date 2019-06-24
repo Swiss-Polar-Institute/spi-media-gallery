@@ -13,7 +13,7 @@ class Photo(models.Model):
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(null=True, blank=True, max_length=32)
     file_size = models.IntegerField()
-    position = models.PointField(null=True, blank=True)
+    location = models.PointField(null=True, blank=True)
 
     height = models.IntegerField(null=True, blank=True)
     width = models.IntegerField(null=True, blank=True)
@@ -22,10 +22,10 @@ class Photo(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
 
     def latitude(self):
-        return self.position.y
+        return self.location.y
 
     def longitude(self):
-        return self.position.x
+        return self.location.x
 
     def __str__(self):
         return "{}".format(self.object_storage_key)
