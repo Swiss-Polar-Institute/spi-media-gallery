@@ -1,10 +1,11 @@
 from django.contrib import admin
 from main.forms import LocationEntryCoordinates
+from django.contrib.gis.admin.options import OSMGeoAdmin
 
 import main.models
 
 
-class PhotoAdmin(admin.ModelAdmin):
+class PhotoAdmin(OSMGeoAdmin):
     list_display = ('object_storage_key', 'md5', 'file_size', 'height', 'width', 'datetime_taken', 'location', 'tags_list')
     ordering = ['object_storage_key']
     search_fields = ('object_storage_key', 'md5')

@@ -30,7 +30,8 @@ class LocationEntryCoordinates(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        self.initial['longitude'], self.initial['latitude'] = position.tuple
+        if position is not None:
+            self.initial['longitude'], self.initial['latitude'] = position.tuple
 
     def clean(self):
         # If latitude or longitude fields (not the map) have been changed uses it. Else uses the map.
