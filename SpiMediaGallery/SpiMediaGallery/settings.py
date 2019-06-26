@@ -160,3 +160,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+try:
+    from extra_settings import *
+    print("Imported extra_settings.py")
+except ImportError:
+    pass
