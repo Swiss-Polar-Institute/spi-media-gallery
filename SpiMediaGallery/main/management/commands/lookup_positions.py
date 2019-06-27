@@ -40,5 +40,8 @@ class MediaLocationLookup(object):
 
             location = datetime_to_position.lookup_datetime_datetime(datetime_taken)
 
-            photo.location = Point(location[1], location[0])
-            photo.save()
+            if location is None:
+                print("No location for this date time")
+            else:
+                photo.location = Point(location[1], location[0])
+                photo.save()
