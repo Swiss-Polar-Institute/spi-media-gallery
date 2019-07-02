@@ -2,6 +2,22 @@
 from django.contrib.gis.db import models
 
 
+class Photographer(models.Model):
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return "{} {}".format(self.first_name, self.last_name)
+
+
+class License(models.Model):
+    name = models.CharField(max_length=255)
+    public_text = models.TextField()
+
+    def __str__(self):
+        return self.name
+
+
 class Tag(models.Model):
     tag = models.CharField(max_length=256)
 
@@ -18,6 +34,10 @@ class Photo(models.Model):
     height = models.IntegerField(null=True, blank=True)
     width = models.IntegerField(null=True, blank=True)
     datetime_taken = models.DateTimeField(null=True, blank=True)
+
+    public = models.BooleanField(default=False)
+    photographer = models.ForeignKey(Photographer, null=True, on_delete=models.PROTECT)
+    license = models.ForeignKey(License, null=True, on_delete=models.PROTECT)
 
     tags = models.ManyToManyField(Tag, blank=True)
 
