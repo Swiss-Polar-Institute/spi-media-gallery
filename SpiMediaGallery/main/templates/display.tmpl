@@ -9,8 +9,13 @@
             <b>{{ file_id }}</b>
             <div class="row">
                 <div class="col-md-6">
-                    <img class="img-thumbnail" src="{{ photo_small_url }}"><p>
-
+                    <img class="img-thumbnail" src="{{ photo_small_url }}"><br>
+                    <small>
+                        <b>Copyright:</b> {{ copyright }}<br>
+                        <b>Photographer:</b> {{ photographer }}<br>
+                        <b>License:</b> <br>
+                        {{ license | safe }}<p>
+                    </small>
                     <div align="left">
                         <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                     </div>
