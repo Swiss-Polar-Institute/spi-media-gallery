@@ -5,10 +5,10 @@ from django.views.generic import TemplateView
 from main.models import Photo, PhotoResized, Tag
 from django.db.models import Sum
 
+import os
 
 from main.spi_s3_utils import SpiS3Utils
 import main.utils as utils
-
 
 
 class Homepage(TemplateView):
@@ -81,7 +81,8 @@ def information_for_tag_ids(tag_ids):
 
         if len(thumbnail) == 1:
             thumbnail_key = thumbnail[0].object_storage_key
-            thumbnail_img = spi_s3_utils.get_presigned_jpeg_link(thumbnail_key)
+            filename = "SPI-{}.jpg".format(photo.id)
+            thumbnail_img = spi_s3_utils.get_presigned_jpeg_link(thumbnail_key, filename)
 
         else:
             # Images should have a thumbnail
@@ -130,7 +131,8 @@ def information_for_photo(photo):
         size_information['size'] = utils.bytes_to_human_readable(photo_resized.file_size)
         size_information['width'] = photo_resized.width
         size_information['resolution'] = "{}x{}".format(photo_resized.width, photo_resized.height)
-        size_information['image_link'] = spi_s3_thumbnails.get_presigned_jpeg_link(photo_resized.object_storage_key)
+        filename = "SPI-{}-{}.jpg".format(photo.id, photo_resized.size_label)
+        size_information['image_link'] = spi_s3_thumbnails.get_presigned_jpeg_link(photo_resized.object_storage_key, filename)
 
         sizes_presentation.append(size_information)
 
@@ -139,9 +141,10 @@ def information_for_photo(photo):
 
     information['sizes_list'] = sorted(sizes_presentation, key=lambda k: k['width'])
 
-    information['media_file'] = photo.object_storage_key
+    _, file_extension = os.path.splitext(photo.object_storage_key)
+    information['file_id'] = "SPI-{}.{}".format(photo.id, file_extension.replace(".", ""))
 
-    information['original_file'] = spi_s3_photos.get_presigned_download_link(photo.object_storage_key)
+    information['original_file'] = spi_s3_photos.get_presigned_download_link(photo.object_storage_key, "SPI-{}.jpg".format(photo.id))
     information['original_resolution'] = "{}x{}".format(photo.width, photo.height)
     information['original_file_size'] = utils.bytes_to_human_readable(photo.file_size)
 

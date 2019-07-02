@@ -35,14 +35,21 @@ class SpiS3Utils(object):
     def upload_file(self, file_path, key):
         self.bucket().meta.client.upload_file(file_path, self._bucket_configuration["name"], key)
 
-    def get_presigned_jpeg_link(self, key):
-        return self.resource().meta.client.generate_presigned_url('get_object',
-                                                             Params={'Bucket': self._bucket_configuration["name"],
-                                                                     'Key': key,
-                                                                     'ResponseContentType': 'image/jpeg'})
+    def get_presigned_jpeg_link(self, key, filename=None):
+        params = {'Bucket': self._bucket_configuration["name"],
+                            'Key': key,
+                            'ResponseContentType': 'image/jpeg'}
 
-    def get_presigned_download_link(self, key):
-        filename = os.path.basename(key)
+        if filename is not None:
+            params['ResponseContentDisposition'] = "inline; filename={}".format(filename)
+
+        return self.resource().meta.client.generate_presigned_url('get_object',
+                                                             Params=params)
+
+    def get_presigned_download_link(self, key, filename=None):
+        if filename is None:
+            filename = os.path.basename(key)
+
         return self.resource().meta.client.generate_presigned_url('get_object',
                                                              Params={'Bucket': self._bucket_configuration["name"],
                                                                      'Key': key,

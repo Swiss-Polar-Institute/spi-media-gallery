@@ -25,7 +25,6 @@ class MediaLocationLookup(object):
     def __init__(self):
         pass
 
-
     def lookup(self):
         photos_to_be_lookedup = Photo.objects.filter(location=None).exclude(datetime_taken__isnull=True)
 
