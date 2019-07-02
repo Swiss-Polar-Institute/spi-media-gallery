@@ -7,6 +7,19 @@
             {% include "logo.tmpl" %}
             <p></p>
             Photo ID not found: {{ photo_id_not_found }}
+
+            Try a different one:
+            <h2>Search using Photo ID</h2>
+            <form action="/search/id/" method="POST">
+                {% csrf_token %}
+
+                <table>
+                    {{ form_search_photo_id }}
+                </table>
+                <input type="submit" value="Search">
+            </form>
+
+        Or go to the <a href="/">homepage</a>.
         </div>
     </p>
 {% endblock %}

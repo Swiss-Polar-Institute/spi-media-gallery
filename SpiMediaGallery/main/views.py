@@ -125,6 +125,8 @@ class SearchPhotoId(TemplateView):
         except ObjectDoesNotExist:
             template_information = {}
             template_information['photo_id_not_found'] = photo_id
+            template_information['form_search_photo_id'] = PhotoIdForm
+
             return render(request, "error_photo_id_not_found.tmpl", template_information)
 
         return redirect("/display/{}".format(photo.id))
