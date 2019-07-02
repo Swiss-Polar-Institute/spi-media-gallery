@@ -162,9 +162,10 @@ def information_for_photo(photo):
     information['sizes_list'] = sorted(sizes_presentation, key=lambda k: k['width'])
 
     _, file_extension = os.path.splitext(photo.object_storage_key)
-    information['file_id'] = "SPI-{}.{}".format(photo.id, file_extension.replace(".", ""))
+    file_extension = file_extension.replace(".", "")
+    information['file_id'] = "SPI-{}.{}".format(photo.id, file_extension)
 
-    information['original_file'] = spi_s3_photos.get_presigned_download_link(photo.object_storage_key, "SPI-{}.jpg".format(photo.id))
+    information['original_file'] = spi_s3_photos.get_presigned_download_link(photo.object_storage_key, "SPI-{}.{}".format(photo.id, file_extension))
     information['original_resolution'] = "{}x{}".format(photo.width, photo.height)
     information['original_file_size'] = utils.bytes_to_human_readable(photo.file_size)
 
