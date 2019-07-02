@@ -1,0 +1,12 @@
+{% extends 'base.tmpl' %}
+{% block title %}SPI Media Gallery - Photo ID not found{% endblock %}
+
+{% block body_contents %}
+    <p>
+        <div class="container">
+            {% include "logo.tmpl" %}
+            <p></p>
+            Photo ID not found: {{ photo_id_not_found }}
+        </div>
+    </p>
+{% endblock %}

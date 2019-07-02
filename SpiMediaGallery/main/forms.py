@@ -7,7 +7,12 @@ from main.models import Photo
 from django.contrib.gis.geos import Point
 
 
+class PhotoIdForm(forms.Form):
+    photo_id = forms.CharField(label="Photo ID", max_length=255, help_text="Example: SPI-000.cr2")
+
+
 class LocationEntryCoordinates(forms.ModelForm):
+    # This is used in the admin
     latitude = forms.FloatField(
         min_value=-90,
         max_value=90,

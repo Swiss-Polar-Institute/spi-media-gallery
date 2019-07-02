@@ -13,8 +13,10 @@
             <li>Total number of photos with thumbnail: {{ total_number_thumbnails }}
             <li>Size of photos: {{ size_of_photos }}</li>
         </ul>
+        <p>
         <h2>Random photo</h2>
         <a href="/select_random_photo">Display a random photo.</a>
+        <p>
 
         <h2>Navigate selecting one tag</h2>
 
@@ -43,6 +45,16 @@
             <div>
                 <input type="submit" value="Search">
             </div>
+        </form>
+        <p>
+        <h2>Search using Photo ID</h2>
+        <form action="/search/id/" method="POST">
+            {% csrf_token %}
+
+            <table>
+                {{ form_search_photo_id }}
+            </table>
+            <input type="submit" value="Search">
         </form>
         <br>
     </div>

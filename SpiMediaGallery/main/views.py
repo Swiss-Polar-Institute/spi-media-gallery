@@ -4,8 +4,12 @@ from django.http import HttpResponse
 from django.views.generic import TemplateView
 from main.models import Photo, PhotoResized, Tag
 from django.db.models import Sum
+from main.forms import PhotoIdForm
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import redirect
 
 import os
+import re
 
 from main.spi_s3_utils import SpiS3Utils
 import main.utils as utils
@@ -38,6 +42,7 @@ class Homepage(TemplateView):
         context['list_of_tags'] = tags
         context['list_of_tags_first_half'] = tags[:int(1+len(tags)/2)]
         context['list_of_tags_second_half'] = tags[int(1+len(tags)/2):]
+        context['form_search_photo_id'] = PhotoIdForm
 
         return context
 
@@ -45,14 +50,10 @@ class Homepage(TemplateView):
 class Random(TemplateView):
     template_name = "display.tmpl"
 
-    def get_context_data(self, **kwargs):
-        context = super(Random, self).get_context_data(**kwargs)
-
+    def get(self, request, *args, **kwargs):
         photo = Photo.objects.order_by('?')[0]
 
-        context.update(information_for_photo(photo))
-
-        return context
+        return redirect("/display/{}".format(photo.id))
 
 
 def information_for_tag_ids(tag_ids):
@@ -110,6 +111,23 @@ class SearchMultipleTags(TemplateView):
 
         return render(request, "search.tmpl", information)
 
+
+class SearchPhotoId(TemplateView):
+    def post(self, request, *args, **kwargs):
+        photo_id = request.POST["photo_id"]
+
+        photo_id = photo_id.split(".")[0]
+
+        photo_id = int(re.findall("\d+", photo_id)[0])
+
+        try:
+            photo = Photo.objects.get(id=photo_id)
+        except ObjectDoesNotExist:
+            template_information = {}
+            template_information['photo_id_not_found'] = photo_id
+            return render(request, "error_photo_id_not_found.tmpl", template_information)
+
+        return redirect("/display/{}".format(photo.id))
 
 def information_for_photo(photo):
     information = {}
