@@ -158,9 +158,9 @@ def information_for_photo(photo):
 
     information['list_of_tags'] = sorted(list_of_tags, key=lambda k: k['tag'])
 
-    information['license'] = '<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.'
-    information['copyright'] = "EPFL"
-    information['photographer'] = "Noé Sardet"
+    information['license'] = photo.license.public_text
+    information['copyright'] = photo.copyright.public_text
+    information['photographer'] = "{} {}".format(photo.photographer.first_name, photo.photographer.last_name)
 
     return information
 

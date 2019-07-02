@@ -18,6 +18,14 @@ class License(models.Model):
         return self.name
 
 
+class Copyright(models.Model):
+    holder = models.CharField(max_length=255)
+    public_text = models.TextField(help_text="Text displayed to the user for the copyright holder")
+
+    def __str__(self):
+        return self.holder
+
+
 class Tag(models.Model):
     tag = models.CharField(max_length=256)
 

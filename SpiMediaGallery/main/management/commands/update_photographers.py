@@ -38,7 +38,6 @@ class PhotographerUpdater(object):
             photo.photographer = photographer
             photo.save()
 
-
     @staticmethod
     def _get_photographer(string):
         first_name, last_name = string.split("_")
