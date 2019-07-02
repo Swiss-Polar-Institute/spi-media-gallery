@@ -29,6 +29,12 @@ class LicenseAdmin(admin.ModelAdmin):
     search_fields = ('name', )
 
 
+class CopyrightAdmin(admin.ModelAdmin):
+    list_display = ('holder', 'public_text', )
+    ordering = ('holder', )
+    search_fields = ('holder', 'public_text', )
+
+
 class TagAdmin(admin.ModelAdmin):
     list_display = ('tag', )
     ordering = ('tag', )
@@ -46,3 +52,4 @@ admin.site.register(main.models.Tag, TagAdmin)
 admin.site.register(main.models.PhotoResized, PhotoResizedAdmin)
 admin.site.register(main.models.Photographer, PhotographerAdmin)
 admin.site.register(main.models.License, LicenseAdmin)
+admin.site.register(main.models.Copyright, CopyrightAdmin)

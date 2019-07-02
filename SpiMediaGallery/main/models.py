@@ -46,6 +46,7 @@ class Photo(models.Model):
     public = models.BooleanField(default=False)
     photographer = models.ForeignKey(Photographer, null=True, on_delete=models.PROTECT)
     license = models.ForeignKey(License, null=True, on_delete=models.PROTECT)
+    copyright = models.ForeignKey(Copyright, null=True, on_delete=models.PROTECT)
 
     tags = models.ManyToManyField(Tag, blank=True)
 

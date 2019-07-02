@@ -159,7 +159,12 @@ def information_for_photo(photo):
     information['list_of_tags'] = sorted(list_of_tags, key=lambda k: k['tag'])
 
     information['license'] = photo.license.public_text
-    information['copyright'] = photo.copyright.public_text
+
+    if photo.copyright is not None:
+        information['copyright'] = photo.copyright.public_text
+    else:
+        information['copyright'] = "Unknown"
+
     information['photographer'] = "{} {}".format(photo.photographer.first_name, photo.photographer.last_name)
 
     return information
