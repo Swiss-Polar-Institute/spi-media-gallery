@@ -1,12 +1,24 @@
 from django.shortcuts import render
 
 from django.http import HttpResponse
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 from main.models import Photo, PhotoResized, Tag
 from django.db.models import Sum
 from main.forms import PhotoIdForm
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
+from django.http import JsonResponse
+from django.conf import settings
+
+from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Polygon
+
+from django.core.serializers import serialize
+
+# from djeo
+# from djgeojson.views import GeoJSONLayerView
+
+import json
 
 import os
 import re
@@ -56,28 +68,11 @@ class Random(TemplateView):
         return redirect("/display/{}".format(photo.id))
 
 
-def information_for_tag_ids(tag_ids):
+def information_for_photo_queryset(photo_queryset):
     spi_s3_utils = SpiS3Utils("thumbnails")
 
-    information = {}
-
-    query_photos_for_tags = Photo.objects
-    tags_list = []
-
-    for tag_id in tag_ids:
-        query_photos_for_tags = query_photos_for_tags.filter(tags__id=int(tag_id))
-        tags_list.append(Tag.objects.get(id=tag_id).tag)
-
-    information["tags_list"] = ", ".join(tags_list) # Tag.objects.get(id=kwargs["tag_id"])
-    information["total_number_photos_tag"] = len(query_photos_for_tags)
-
-    if len(tag_ids) != 1:
-        information["this_tag"] = "these tags"
-    else:
-        information["this_tag"] = "this tag"
-
     photo_result_list = []
-    for photo in query_photos_for_tags[:200]:
+    for photo in photo_queryset[:200]:
         thumbnail = PhotoResized.objects.filter(photo=photo).filter(size_label="T")
 
         if len(thumbnail) == 1:
@@ -98,7 +93,28 @@ def information_for_tag_ids(tag_ids):
 
         photo_result_list.append(photo_result)
 
-    information["photos"] = photo_result_list
+    return photo_result_list
+
+
+def information_for_tag_ids(tag_ids):
+    information = {}
+
+    query_photos_for_tags = Photo.objects
+    tags_list = []
+
+    for tag_id in tag_ids:
+        query_photos_for_tags = query_photos_for_tags.filter(tags__id=int(tag_id))
+        tags_list.append(Tag.objects.get(id=tag_id).tag)
+
+    information["tags_list"] = ", ".join(tags_list) # Tag.objects.get(id=kwargs["tag_id"])
+    information["total_number_photos_tag"] = len(query_photos_for_tags)
+
+    if len(tag_ids) != 1:
+        information["this_tag"] = "these tags"
+    else:
+        information["this_tag"] = "this tag"
+
+    information["photos"] = information_for_photo_queryset(query_photos_for_tags)
 
     return information
 
@@ -130,6 +146,29 @@ class SearchPhotoId(TemplateView):
             return render(request, "error_photo_id_not_found.tmpl", template_information)
 
         return redirect("/display/{}".format(photo.id))
+
+class SearchBox(TemplateView):
+    def get(self, request, *args, **kwargs):
+        north = float(request.GET["north"])
+        south = float(request.GET["south"])
+        east = float(request.GET["east"])
+        west = float(request.GET["west"])
+
+        information = {}
+
+        # ne_point = Point(east, north, srid=4326)
+        # sw_point = Point(west, south, srid=4326)
+
+        geom = Polygon.from_bbox((east, south, west, north))
+
+        query_photos_for_tags = Photo.objects.filter(location__contained=geom)
+
+        information["total_number_photos_tag"] = len(query_photos_for_tags)
+
+        information["photos"] = information_for_photo_queryset(query_photos_for_tags)
+
+        return render(request, "search.tmpl", information)
+
 
 def information_for_photo(photo):
     information = {}
@@ -200,3 +239,23 @@ class Display(TemplateView):
         context.update(information_for_photo(Photo.objects.get(id=kwargs['photo_id'])))
 
         return context
+
+
+class Map(TemplateView):
+    template_name = "map.tmpl"
+
+    def get_context_data(self, **kwargs):
+        context = super(TemplateView, self).get_context_data(**kwargs)
+
+        return context
+
+
+class PhotosGeojson(View):
+    def get(self, request):
+        serialized = serialize('geojson', Photo.objects.all(), geometry_field="location", fields=('pk', ))
+        return JsonResponse(json.loads(serialized))
+
+class TrackGeojson(View):
+    def get(self, request_):
+        track = open(settings.TRACK_MAP_FILEPATH, "r")
+        return JsonResponse(json.load(track))

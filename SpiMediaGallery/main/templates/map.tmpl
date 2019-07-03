@@ -1,0 +1,73 @@
+{% extends 'base.tmpl' %}
+{% load leaflet_tags %}
+{% block title %}SPI Media Gallery - Map{% endblock %}
+
+{% block extra_head %}
+    {% leaflet_js %}
+    {% leaflet_css %}
+
+    <script type="text/javascript">
+      var photosUrl = "/map/photos.geojson";
+      var trackUrl = "/map/track.geojson";
+
+      window.addEventListener("map:init", function (event) {
+        var map = event.detail.map;
+        myMap = event.detail.map;
+
+        fetch(trackUrl)
+          .then(function(resp) {
+            return resp.json();
+          })
+          .then(function(data) {
+            L.geoJson(data, {
+             style: {
+               color: '#ff0000',
+               weight: 1,
+               opacity: 1
+             }
+           }).addTo(map);
+         });
+
+
+        fetch(photosUrl)
+          .then(function(resp) {
+            return resp.json();
+          })
+          .then(function(data) {
+            L.geoJson(data, {
+              onEachFeature: function onEachFeature(feature, layer) {
+                var props = feature.properties;
+                var content = "id:" + props.pk;
+                layer.bindPopup(content);
+            }}).addTo(map);
+          });
+      });
+
+      function searchPhotos() {
+        var bounds = myMap.getBounds();
+
+        var north = bounds.getNorth();
+        var west = bounds.getWest();
+        var south = bounds.getSouth();
+        var east = bounds.getEast();
+
+        var link="/search/box/?north=" + north + "&" + "west=" + west + "&south=" + south + "&east=" +east;
+        window.location.href = link;
+      }
+    </script>
+
+    <style>
+        html, body, #photo_map {
+            height: 90%;
+            width: 100%;
+        }
+    </style>
+
+{% endblock %}
+
+{% block body_contents %}
+    {% include "logo.tmpl" %}
+    {% leaflet_map "photo_map" %}
+    <br>
+    <input id="search" type="button" value="Search" onclick="searchPhotos();" />
+{% endblock %}
