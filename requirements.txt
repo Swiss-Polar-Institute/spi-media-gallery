@@ -5,6 +5,7 @@ certifi==2019.3.9
 chardet==3.0.4
 decorator==4.4.0
 Django==2.2.2
+django-leaflet==0.24.0
 docutils==0.14
 geographiclib==1.49
 geopy==1.20.0
