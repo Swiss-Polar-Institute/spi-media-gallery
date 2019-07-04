@@ -106,13 +106,19 @@ def information_for_tag_ids(tag_ids):
         query_photos_for_tags = query_photos_for_tags.filter(tags__id=int(tag_id))
         tags_list.append(Tag.objects.get(id=tag_id).tag)
 
-    information["tags_list"] = ", ".join(tags_list) # Tag.objects.get(id=kwargs["tag_id"])
-    information["total_number_photos_tag"] = len(query_photos_for_tags)
+    tags_list = ", ".join(tags_list) # Tag.objects.get(id=kwargs["tag_id"])
+
+    if len(query_photos_for_tags) != 1:
+        photos_string = "Photos"
+    else:
+        photos_string = "Photo"
 
     if len(tag_ids) != 1:
-        information["this_tag"] = "these tags"
+        information["search_explanation"] = "{} {} with these tags: {}".format(len(query_photos_for_tags), photos_string, tags_list)
     else:
-        information["this_tag"] = "this tag"
+        information["search_explanation"] = "{} {} with this tag: {}".format(len(query_photos_for_tags), photos_string, tags_list)
+
+    information["total_number_photos"] = len(query_photos_for_tags)
 
     information["photos"] = information_for_photo_queryset(query_photos_for_tags)
 
@@ -156,16 +162,21 @@ class SearchBox(TemplateView):
 
         information = {}
 
-        # ne_point = Point(east, north, srid=4326)
-        # sw_point = Point(west, south, srid=4326)
-
         geom = Polygon.from_bbox((east, south, west, north))
 
-        query_photos_for_tags = Photo.objects.filter(location__contained=geom)
+        query_photos_in_geom = Photo.objects.filter(location__contained=geom)
 
-        information["total_number_photos_tag"] = len(query_photos_for_tags)
+        if len(query_photos_in_geom) != 1:
+            photos_string = "Photos"
+        else:
+            photos_string = "Photo"
 
-        information["photos"] = information_for_photo_queryset(query_photos_for_tags)
+        information["search_explanation"] = "{} {} taken in area {:.2f} {:.2f} {:.2f} {:.2f}".format(len(query_photos_in_geom),
+                                                                                                    photos_string,
+                                                                                                  north, east,
+                                                                                                  south, west)
+
+        information["photos"] = information_for_photo_queryset(query_photos_in_geom)
 
         return render(request, "search.tmpl", information)
 
@@ -254,6 +265,7 @@ class PhotosGeojson(View):
     def get(self, request):
         serialized = serialize('geojson', Photo.objects.all(), geometry_field="location", fields=('pk', ))
         return JsonResponse(json.loads(serialized))
+
 
 class TrackGeojson(View):
     def get(self, request_):
