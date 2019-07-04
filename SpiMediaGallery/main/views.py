@@ -168,9 +168,9 @@ class SearchBox(TemplateView):
         query_photos_in_geom = Photo.objects.filter(location__contained=geom)
 
         if len(query_photos_in_geom) != 1:
-            photos_string = "Photos"
+            photos_string = "photos"
         else:
-            photos_string = "Photo"
+            photos_string = "photo"
 
         information["search_explanation"] = "{} {} taken in area {:.2f} {:.2f} {:.2f} {:.2f}".format(len(query_photos_in_geom),
                                                                                                     photos_string,
@@ -188,8 +188,6 @@ def meters_to_degrees(meters):
 
 class SearchNear(TemplateView):
     def get(self, request, *args, **kwargs):
-        context = super(SearchNear, self).get_context_data(**kwargs)
-
         latitude = float(request.GET["latitude"])
         longitude = float(request.GET["longitude"])
         km = float(request.GET["km"])
@@ -200,12 +198,13 @@ class SearchNear(TemplateView):
         query_photos_nearby = Photo.objects.filter(location__within=buffered)
 
         if len(query_photos_nearby) != 1:
-            photos_string = "Photos"
+            photos_string = "photos"
         else:
-            photos_string = "Photo"
+            photos_string = "photo"
 
         information = {}
-        information["search_explanation"] = "Nearby photos from..."
+        information["search_explanation"] = "{} {} in a radius of {} Km from latitude: {:.2f} longitude: {:.2f}".format(len(query_photos_nearby),
+                                                                                                                        photos_string, km, latitude, longitude)
 
         information["photos"] = information_for_photo_queryset(query_photos_nearby)
 
