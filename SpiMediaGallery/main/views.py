@@ -243,7 +243,10 @@ def information_for_photo(photo):
     else:
         information['copyright'] = "Unknown"
 
-    information['photographer'] = "{} {}".format(photo.photographer.first_name, photo.photographer.last_name)
+    if photo.photographer is not None:
+        information['photographer'] = "{} {}".format(photo.photographer.first_name, photo.photographer.last_name)
+    else:
+        information['photographer'] = "Unknown"
 
     return information
 
