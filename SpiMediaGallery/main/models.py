@@ -63,7 +63,7 @@ class Photo(models.Model):
         return self.location.x
 
     def __str__(self):
-        return "{}".format(self.object_storage_key)
+        return "{}".format(self.pk)
 
 
 class PhotoResized(models.Model):

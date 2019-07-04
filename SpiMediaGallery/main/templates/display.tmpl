@@ -44,6 +44,11 @@
                     Date taken: {{ date_taken }}
                     {% endif %}
                     <p>
+                    {% if photo_latitude %}
+                    Latitude: {{ photo_latitude|floatformat:3 }} Longitude: {{ photo_longitude|floatformat:3 }}<br>
+                    <a href="/search/near?latitude={{ photo_latitude }}&longitude={{ photo_longitude }}&km=10">Nearby (10 km) photos</a>
+                    {% endif %}
+                    <p>
                     Go to a <a href="/select_random_photo/">random photo</a>
 
                     {% leaflet_map "photo_map" %}

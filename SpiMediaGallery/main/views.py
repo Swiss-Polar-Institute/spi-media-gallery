@@ -10,8 +10,8 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.conf import settings
 
-from django.contrib.gis.geos import Point
-from django.contrib.gis.geos import Polygon
+from django.contrib.gis.geos import Point, Polygon
+from django.contrib.gis.db.models.functions import Distance
 
 from django.core.serializers import serialize
 
@@ -178,6 +178,36 @@ class SearchBox(TemplateView):
                                                                                                   south, west)
 
         information["photos"] = information_for_photo_queryset(query_photos_in_geom)
+
+        return render(request, "search.tmpl", information)
+
+
+def meters_to_degrees(meters):
+    return meters / 40000000.0 * 360.0
+
+
+class SearchNear(TemplateView):
+    def get(self, request, *args, **kwargs):
+        context = super(SearchNear, self).get_context_data(**kwargs)
+
+        latitude = float(request.GET["latitude"])
+        longitude = float(request.GET["longitude"])
+        km = float(request.GET["km"])
+
+        center_point = Point(longitude, latitude, srid=4326)
+        buffered = center_point.buffer(meters_to_degrees(km*1000))
+
+        query_photos_nearby = Photo.objects.filter(location__within=buffered)
+
+        if len(query_photos_nearby) != 1:
+            photos_string = "Photos"
+        else:
+            photos_string = "Photo"
+
+        information = {}
+        information["search_explanation"] = "Nearby photos from..."
+
+        information["photos"] = information_for_photo_queryset(query_photos_nearby)
 
         return render(request, "search.tmpl", information)
 
