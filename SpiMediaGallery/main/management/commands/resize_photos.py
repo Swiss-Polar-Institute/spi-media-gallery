@@ -98,7 +98,12 @@ class Resizer(object):
             self._thumbnails_bucket.upload_file(thumbnail_file.name, thumbnail_key)
             size = os.stat(thumbnail_file.name).st_size
 
-            thumbnail_image = Image.open(thumbnail_file.name)
+            try:
+                thumbnail_image = Image.open(thumbnail_file.name)
+            except OSError:
+                # For example, some images named jpeg can't be processed
+                continue
+
             thumbnail_width = thumbnail_image.width
             thumbnail_height = thumbnail_image.height
 
