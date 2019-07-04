@@ -102,6 +102,8 @@ class Resizer(object):
                 thumbnail_image = Image.open(thumbnail_file.name)
             except OSError:
                 # For example, some images named jpeg can't be processed
+                os.remove(thumbnail_file.name)
+                os.remove(photo_file.name)
                 continue
 
             thumbnail_width = thumbnail_image.width
