@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 import sqlite3
-from django.contrib.gis.geos import LineString
+from django.contrib.gis.geos import LineString, MultiLineString, Point
 
 from django.conf import settings
 
@@ -30,14 +30,29 @@ class Sqlite3toGeojson(object):
     def generate(self):
         self._cursor.execute("SELECT latitude, longitude FROM gps WHERE date_time LIKE '%:00:00%'")
 
+        multi_line_string = MultiLineString()
+
+        previous_point = None
         locations = []
 
         for row in self._cursor:
-            locations.append((float(row[1]), float(row[0])))
+            current_point = Point(float(row[1]), float(row[0]))
 
-        track = LineString(locations)
+            if previous_point is not None:
+                distance = current_point.distance(previous_point)
+
+                if distance > 10:   # units: degrees
+                    if len(locations) > 1:
+                        multi_line_string.append(LineString(locations))
+                    locations = []
+
+            locations.append((float(row[1]), float(row[0])))
+            previous_point = current_point
+
+        if len(locations) > 1:
+            multi_line_string.append(LineString(locations))
 
         with open(self._output_filepath, "w") as f:
-            f.write(track.geojson)
+            f.write(multi_line_string.geojson)
 
         print("Result saved in {}".format(self._output_filepath))
