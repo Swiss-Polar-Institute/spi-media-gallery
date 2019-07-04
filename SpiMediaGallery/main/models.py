@@ -51,9 +51,15 @@ class Photo(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
 
     def latitude(self):
+        if self.location is None:
+            return None
+
         return self.location.y
 
     def longitude(self):
+        if self.location is None:
+            return None
+
         return self.location.x
 
     def __str__(self):

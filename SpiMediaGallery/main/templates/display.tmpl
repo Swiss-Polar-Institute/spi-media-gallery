@@ -1,5 +1,11 @@
 {% extends 'base.tmpl' %}
+{% load leaflet_tags %}
 {% block title %}SPI Media Gallery - Display media{% endblock %}
+
+{% block extra_head %}
+    {% leaflet_js %}
+    {% leaflet_css %}
+{% endblock %}
 
 {% block body_contents %}
     <p>
@@ -39,6 +45,15 @@
                     {% endif %}
                     <p>
                     Go to a <a href="/select_random_photo/">random photo</a>
+
+                    {% leaflet_map "photo_map" %}
+                    <script language="javascript">
+                          window.addEventListener("map:init", function (event) {
+                            var map = event.detail.map;
+
+                            var marker = L.marker([{{ photo_latitude }}, {{ photo_longitude }}]).addTo(map);
+                          });
+                    </script>
                 </div>
             </div>
         </div>

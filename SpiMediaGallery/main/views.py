@@ -153,6 +153,7 @@ class SearchPhotoId(TemplateView):
 
         return redirect("/display/{}".format(photo.id))
 
+
 class SearchBox(TemplateView):
     def get(self, request, *args, **kwargs):
         north = float(request.GET["north"])
@@ -221,6 +222,9 @@ def information_for_photo(photo):
 
     information['date_taken'] = photo.datetime_taken
 
+    information['photo_latitude'] = photo.latitude()
+    information['photo_longitude'] = photo.longitude()
+
     list_of_tags = []
 
     for tag in photo.tags.all():
@@ -229,7 +233,10 @@ def information_for_photo(photo):
 
     information['list_of_tags'] = sorted(list_of_tags, key=lambda k: k['tag'])
 
-    information['license'] = photo.license.public_text
+    if photo.license is not None:
+        information['license'] = photo.license.public_text
+    else:
+        information['license'] = "Unknown"
 
     if photo.copyright is not None:
         information['copyright'] = photo.copyright.public_text
