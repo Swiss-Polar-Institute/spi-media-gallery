@@ -19,7 +19,6 @@ parso==0.4.0
 pexpect==4.7.0
 pickleshare==0.7.5
 Pillow==6.0.0
-pkg-resources==0.0.0
 prompt-toolkit==2.0.9
 psycopg2==2.8.3
 ptyprocess==0.6.0
@@ -33,4 +32,5 @@ six==1.12.0
 sqlparse==0.3.0
 traitlets==4.3.2
 urllib3==1.25.3
+virtualenv==16.6.1
 wcwidth==0.1.7
