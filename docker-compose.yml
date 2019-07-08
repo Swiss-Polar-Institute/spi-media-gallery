@@ -1,0 +1,16 @@
+version: '3.5'
+
+services:
+  spi-media-gallery:
+    image: spi-media-gallery-docker:0.0.1
+    secrets:
+      - spi_media_gallery_mysql.conf
+      - spi_media_gallery_buckets.json
+    ports:
+      - 8000:8000
+
+secrets:
+  spi_media_gallery_buckets.json:
+    file: ${SPI_MEDIA_GALLERY_MYSQL_CONF_PATH}
+  spi_media_gallery_mysql.conf:
+    file: ${SPI_MEDIA_GALLERY_BUCKETS_JSON_PATH}
