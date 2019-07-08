@@ -172,7 +172,7 @@ STATIC_URL = '/static/'
 TRACK_MAP_FILEPATH = '/tmp/test.geojson'
 
 try:
-    from extra_settings import *
-    print("Imported extra_settings.py")
+    from local_settings import *
+    print("Imported local_settings.py")
 except ImportError:
     pass
