@@ -76,8 +76,8 @@ WSGI_APPLICATION = 'SpiMediaGallery.wsgi.application'
 
 
 def secrets_file(file_name):
-    """ First try $HOME/file_name, else tries /run/secrets/file_name, else returns None"""
-    file_path_in_home_directory = os.path.join(str(pathlib.Path.home()), file_name)
+    """ First try $HOME/.file_name, else tries /run/secrets/file_name, else returns None"""
+    file_path_in_home_directory = os.path.join(str(pathlib.Path.home()), "." + file_name)
     if os.path.exists(file_path_in_home_directory):
         return file_path_in_home_directory
 
@@ -94,7 +94,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.mysql',
         'OPTIONS': {
-            'read_default_file': secrets_file(".spi_media_gallery_mysql.cnf"),
+            'read_default_file': secrets_file("spi_media_gallery_mysql.cnf"),
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
         },
@@ -121,7 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # It's in this place for convenience in the staging environment
-with open(secrets_file(".spi_media_gallery_buckets.json")) as json_file:
+with open(secrets_file("spi_media_gallery_buckets.json")) as json_file:
     BUCKETS_CONFIGURATION = json.load(json_file)
     """
     Example file:
