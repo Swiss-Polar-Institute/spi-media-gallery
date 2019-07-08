@@ -10,5 +10,4 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
 	postgresql-common libpq-dev \
 	gdal-bin
 RUN pip3 install -r requirements.txt
-ADD SpiMediaGallery /code
 CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
