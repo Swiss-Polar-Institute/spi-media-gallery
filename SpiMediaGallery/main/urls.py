@@ -1,6 +1,6 @@
 from django.urls import path
-from main.views import Homepage, SearchMultipleTags, SearchPhotoId, SearchBox, SearchNear, Display, Random, Map, PhotosGeojson, TrackGeojson
-from main.models import Photo
+from main.views import Homepage, SearchMultipleTags, SearchPhotoId, SearchBox, SearchNear, Display, Random, Map,\
+    PhotosGeojson, TrackGeojson, GetPhoto
 
 from . import views
 
@@ -14,5 +14,6 @@ urlpatterns = [
     path('select_random_photo/', Random.as_view()),
     path('map/photos.geojson', PhotosGeojson.as_view()),
     path('map/', Map.as_view()),
-    path('map/track.geojson', TrackGeojson.as_view())
+    path('map/track.geojson', TrackGeojson.as_view()),
+    path('get/photo/<str:md5>', GetPhoto.as_view())
 ]

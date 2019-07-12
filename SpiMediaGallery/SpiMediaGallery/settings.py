@@ -85,7 +85,7 @@ def secrets_file(file_name):
     if os.path.exists(file_path_in_run_secrets):
         return file_path_in_run_secrets
 
-    return None
+    raise "Configuration for {} doesn't exist".format(file_name)
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -170,6 +170,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 TRACK_MAP_FILEPATH = '/tmp/test.geojson'
+
+
+PROXY_TO_OBJECT_STORAGE = False
 
 try:
     from local_settings import *

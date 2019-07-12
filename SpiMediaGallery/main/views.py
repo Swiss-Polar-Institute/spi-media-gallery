@@ -22,6 +22,8 @@ import json
 
 import os
 import re
+import requests
+import urllib
 
 from main.spi_s3_utils import SpiS3Utils
 import main.utils as utils
@@ -75,10 +77,10 @@ def information_for_photo_queryset(photo_queryset):
     for photo in photo_queryset[:200]:
         thumbnail = PhotoResized.objects.filter(photo=photo).filter(size_label="T")
 
+        filename = "SPI-{}.jpg".format(photo.id)
+
         if len(thumbnail) == 1:
-            thumbnail_key = thumbnail[0].object_storage_key
-            filename = "SPI-{}.jpg".format(photo.id)
-            thumbnail_img = spi_s3_utils.get_presigned_jpeg_link(thumbnail_key, filename)
+            thumbnail_img = link_for_photo(thumbnail[0], "inline", "image/jpeg", filename)
 
         else:
             # Images should have a thumbnail
@@ -211,11 +213,23 @@ class SearchNear(TemplateView):
         return render(request, "search.tmpl", information)
 
 
+def link_for_photo(photo, content_disposition, content_type, filename):
+    if settings.PROXY_TO_OBJECT_STORAGE:
+        d = {"content_type": content_type,
+             "content_disposition_type": content_disposition,
+             "filename": filename,
+             "bucket": photo.bucket_name()
+        }
+
+        return "/get/photo/{}?{}".format(photo.md5, urllib.parse.urlencode(d))
+    else:
+        bucket = SpiS3Utils(photo.bucket_name())
+
+        return bucket.get_presigned_link(photo.object_storage_key, content_type, content_disposition, filename)
+
+
 def information_for_photo(photo):
     information = {}
-
-    spi_s3_thumbnails = SpiS3Utils("thumbnails")
-    spi_s3_photos = SpiS3Utils("photos")
 
     photo_resized_all = PhotoResized.objects.filter(photo=photo)
 
@@ -232,12 +246,13 @@ def information_for_photo(photo):
         size_information['width'] = photo_resized.width
         size_information['resolution'] = "{}x{}".format(photo_resized.width, photo_resized.height)
         filename = "SPI-{}-{}.jpg".format(photo.id, photo_resized.size_label)
-        size_information['image_link'] = spi_s3_thumbnails.get_presigned_jpeg_link(photo_resized.object_storage_key, filename)
+
+        size_information['image_link'] = link_for_photo(photo_resized, "inline", "image/jpeg", filename)
 
         sizes_presentation.append(size_information)
 
         if photo_resized.size_label == "S":
-            information['photo_small_url'] = spi_s3_thumbnails.get_presigned_jpeg_link(photo_resized.object_storage_key)
+            information['photo_small_url'] = link_for_photo(photo_resized, "inline", "image/jpeg", filename)
 
     information['sizes_list'] = sorted(sizes_presentation, key=lambda k: k['width'])
 
@@ -245,7 +260,7 @@ def information_for_photo(photo):
     file_extension = file_extension.replace(".", "")
     information['file_id'] = "SPI-{}.{}".format(photo.id, file_extension)
 
-    information['original_file'] = spi_s3_photos.get_presigned_download_link(photo.object_storage_key, "SPI-{}.{}".format(photo.id, file_extension))
+    information['original_file'] = link_for_photo(photo, "attachment", "application/image", "SPI-{}.{}".format(photo.id, file_extension))
     information['original_resolution'] = "{}x{}".format(photo.width, photo.height)
     information['original_file_size'] = utils.bytes_to_human_readable(photo.file_size)
 
@@ -310,3 +325,38 @@ class TrackGeojson(View):
     def get(self, request_):
         track = open(settings.TRACK_MAP_FILEPATH, "r")
         return JsonResponse(json.load(track))
+
+
+#     path('get/photo_resized/<str:md5>', GetPhoto.as_view())
+class GetPhoto(View):
+    def get(self, request, *args, **kwargs):
+        bucket_name = request.GET['bucket']
+
+        if bucket_name == "photos":
+            photo = Photo.objects.get(md5=kwargs['md5'])
+        elif bucket_name == "thumbnails":
+            photo = PhotoResized.objects.get(md5=kwargs['md5'])
+        else:
+            assert False
+
+        filename = request.GET['filename']
+        content_type = request.GET['content_type']
+        content_disposition_type = request.GET['content_disposition_type']
+
+        spi_s3 = SpiS3Utils(bucket_name)
+
+        url = spi_s3.get_presigned_link(photo.object_storage_key, content_disposition_type, content_type, filename)
+
+        r = requests.get(url=url, stream=True)
+        r.raise_for_status()
+
+        response = HttpResponse(r.raw, content_type=content_type)
+        response["Content-Disposition"] = "{}; filename={}".format(content_disposition_type, filename)
+        return response
+
+
+# class GetDownloadFromBucket(View):
+#     spi_s3_utils = SpiS3Utils("")
+#
+#     def get(self, rquest, *args, **kwargs):
+#         return None

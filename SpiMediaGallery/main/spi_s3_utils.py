@@ -2,6 +2,7 @@ import boto3
 from django.conf import settings
 import os
 
+
 class SpiS3Utils(object):
     def __init__(self, bucket_name):
         if bucket_name not in settings.BUCKETS_CONFIGURATION:
@@ -35,13 +36,13 @@ class SpiS3Utils(object):
     def upload_file(self, file_path, key):
         self.bucket().meta.client.upload_file(file_path, self._bucket_configuration["name"], key)
 
-    def get_presigned_jpeg_link(self, key, filename=None):
+    def get_presigned_link(self, key, response_content_type, response_content_disposition, filename):
         params = {'Bucket': self._bucket_configuration["name"],
                             'Key': key,
-                            'ResponseContentType': 'image/jpeg'}
+                            'ResponseContentType': response_content_type}
 
         if filename is not None:
-            params['ResponseContentDisposition'] = "inline; filename={}".format(filename)
+            params['ResponseContentDisposition'] = "{}; filename={}".format(response_content_disposition, filename)
 
         return self.resource().meta.client.generate_presigned_url('get_object',
                                                              Params=params)
@@ -55,3 +56,4 @@ class SpiS3Utils(object):
                                                                      'Key': key,
                                                                      'ResponseContentDisposition': 'attachment; filename={}'.format(filename),
                                                                      'ResponseContentType' : 'application/image'})
+

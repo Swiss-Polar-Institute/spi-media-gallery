@@ -62,6 +62,10 @@ class Photo(models.Model):
 
         return self.location.x
 
+    @staticmethod
+    def bucket_name():
+        return "photos"
+
     def __str__(self):
         return "{}".format(self.pk)
 
@@ -90,3 +94,7 @@ class PhotoResized(models.Model):
     height = models.IntegerField()
     width = models.IntegerField()
     photo = models.ForeignKey(Photo, on_delete=models.PROTECT)
+
+    @staticmethod
+    def bucket_name():
+        return "thumbnails"
