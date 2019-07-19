@@ -76,7 +76,7 @@ WSGI_APPLICATION = 'SpiMediaGallery.wsgi.application'
 
 
 def secrets_file(file_name):
-    """ First try $HOME/.file_name, else tries /run/secrets/file_name, else returns None"""
+    """ First try $HOME/.file_name, else tries /run/secrets/file_name, else raises an exception"""
     file_path_in_home_directory = os.path.join(str(pathlib.Path.home()), "." + file_name)
     if os.path.exists(file_path_in_home_directory):
         return file_path_in_home_directory
