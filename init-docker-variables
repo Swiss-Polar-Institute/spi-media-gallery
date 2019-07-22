@@ -1,4 +1,0 @@
-# File to be sourced
-
-export SPI_MEDIA_GALLERY_MYSQL_CONF_PATH=~/.spi_media_gallery_mysql.conf
-export SPI_MEDIA_GALLERY_BUCKETS_JSON_PATH=~/.spi_media_gallery_buckets.json
