@@ -5,10 +5,10 @@ from django.contrib.gis.admin.options import OSMGeoAdmin
 import main.models
 
 
-class PhotoAdmin(OSMGeoAdmin):
+class MediaAdmin(OSMGeoAdmin):
     list_display = ('object_storage_key', 'md5', 'file_size', 'height', 'width', 'datetime_taken', 'location',
-                    'public', 'photographer', 'license', 'tags_list', )
-    ordering = ('object_storage_key', 'datetime_taken', 'photographer', 'license', 'public', )
+                    'public', 'photographer', 'license', 'media_type', 'duration', 'tags_list', )
+    ordering = ('object_storage_key', 'datetime_taken', 'photographer', 'license', 'media_type', 'duration', 'public', )
     search_fields = ('object_storage_key', 'md5', )
 
     form = LocationEntryCoordinates
@@ -41,15 +41,15 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('tag', )
 
 
-class PhotoResizedAdmin(admin.ModelAdmin):
-    list_display = ('object_storage_key', 'md5', 'file_size', 'size_label', 'height', 'width', 'photo', )
+class MediaResizedAdmin(admin.ModelAdmin):
+    list_display = ('object_storage_key', 'md5', 'file_size', 'size_label', 'height', 'width', 'media', )
     ordering = ('object_storage_key', )
-    search_fields = ('object_storage_key', 'md5', 'photo', )
+    search_fields = ('object_storage_key', 'md5', )
 
 
-admin.site.register(main.models.Photo, PhotoAdmin)
+admin.site.register(main.models.Media, MediaAdmin)
 admin.site.register(main.models.Tag, TagAdmin)
-admin.site.register(main.models.PhotoResized, PhotoResizedAdmin)
+admin.site.register(main.models.MediaResized, MediaResizedAdmin)
 admin.site.register(main.models.Photographer, PhotographerAdmin)
 admin.site.register(main.models.License, LicenseAdmin)
 admin.site.register(main.models.Copyright, CopyrightAdmin)

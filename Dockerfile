@@ -7,9 +7,11 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
 	gcc-6 gcc \
 	libmariadbclient-dev \
 	postgresql-common libpq-dev \
-	gdal-bin && \
-    pip3 install -r /code/requirements.txt && \
-    apt-get purge -y gcc-6 gcc \
+	gdal-bin \
+	imagemagick mencoder
+RUN apt-get install ffmpeg
+RUN pip3 install -r /code/requirements.txt
+RUN apt-get purge -y gcc-6 gcc \
 	libmariadbclient-dev libpq-dev libpython3.5-dev && \
     apt-get autoremove -y && \
     apt-get clean

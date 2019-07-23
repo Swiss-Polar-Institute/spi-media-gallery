@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Photo, PhotoResized
+from main.models import Media, MediaResized
 from django.conf import settings
 
 from main import spi_s3_utils
@@ -26,7 +26,7 @@ class MediaLocationLookup(object):
         pass
 
     def lookup(self):
-        photos_to_be_lookedup = Photo.objects.filter(location=None).exclude(datetime_taken__isnull=True)
+        photos_to_be_lookedup = Media.objects.filter(location=None).exclude(datetime_taken__isnull=True)
 
         progress_report = ProgressReport(len(photos_to_be_lookedup), extra_information="Adding location information to photos")
 

@@ -15,8 +15,18 @@
             <b>{{ file_id }}</b>
             <div class="row">
                 <div class="col-md-6">
-                    <img class="img-thumbnail" src="{{ photo_small_url }}"><br>
+
+                    {% if photo_small_url %}
+                        <img class="img-thumbnail" src="{{ photo_small_url }}"><br>
+                    {% endif %}
+
+                    {% if video_small_url %}
+                        <video width="400" controls>
+                            <source src="{{ video_small_url }}" type="video/webm">
+                        </video>
+                    {% endif %}
                     <small>
+                        <br>
                         <b>Copyright:</b> {{ copyright }}<br>
                         <b>Photographer:</b> {{ photographer }}<br>
                         <b>License:</b> <br>

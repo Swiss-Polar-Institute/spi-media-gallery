@@ -2,12 +2,13 @@ import hashlib
 import os
 import sys
 import subprocess
+import tempfile
 
-from main.models import PhotoResized
+from main.models import MediaResized
 
 
 def image_size_label_abbreviation_to_presentation(abbreviation):
-    for size in PhotoResized.SIZES_OF_PHOTOS:
+    for size in MediaResized.SIZES_OF_PHOTOS:
         if size[0] == abbreviation:
             return size[1]
 
@@ -31,13 +32,16 @@ def hash_of_file_path(file_path):
     return hash_md5.hexdigest()
 
 
-def resize_file(input_file_path, output_file_path, width):
+def resize_photo(input_file_path, width):
+    output_file_path = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
+    output_file_path.close()
+
     with open(os.devnull, 'w') as devnull:
         command = ["convert", "-auto-orient"]
         if width is not None:
             command += ["-resize", "{}x{}".format(width, width)]
 
-        command += [input_file_path, output_file_path]
+        command += [input_file_path, output_file_path.name]
 
         try:
             subprocess.run(command, stdout=devnull, stderr=devnull)
@@ -45,6 +49,29 @@ def resize_file(input_file_path, output_file_path, width):
             print("Error in the command:", command)
             sys.exit(1)
 
+    return output_file_path.name
+
+def resize_video(input_file_path, width):
+    output_file_path = tempfile.NamedTemporaryFile(suffix=".webm", delete=False)
+    output_file_path.close()
+
+    with open(os.devnull, "w") as devnull:
+        # ffmpeg -y -i C0004.MP4 -vcodec vp8 -crf 27 -preset veryfast -c:a libvorbis -s 320x480 resized-320.webm
+        size = "{}:-1".format(width)
+
+        command = ["ffmpeg", "-y", "-i", input_file_path,
+                   "-threads", "5",
+                   "-vcodec", "vp8", "-crf", "27", "-preset", "veryfast", "-c:a", "libvorbis",
+                   "-vf", "scale={}".format(size),
+                   output_file_path.name]
+
+        try:
+            subprocess.run(command, stdout=devnull, stderr=devnull)
+        except OSError:
+            print("Error in the command:", command)
+            sys.exit(1)
+
+    return output_file_path.name
 
 def bytes_to_human_readable(num):
     for unit in ['','KB','MB','GB','TB','PB','EB','ZB']:

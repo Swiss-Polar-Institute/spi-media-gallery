@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Photo, Tag
+from main.models import Media, Tag
 from libxmp.utils import file_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -31,11 +31,11 @@ class Command(BaseCommand):
 
 class TagImporter(object):
     def __init__(self, bucket_name, prefix):
-        self._photo_bucket = spi_s3_utils.SpiS3Utils(bucket_name)
+        self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name)
         self._prefix = prefix
 
     def import_tags(self):
-        all_keys = self._photo_bucket.get_set_of_keys(self._prefix)
+        all_keys = self._media_bucket.get_set_of_keys(self._prefix)
 
         non_xmp_without_xmp_associated = 0
 
@@ -43,60 +43,73 @@ class TagImporter(object):
 
         print("Total number of files to process:", len(all_keys))
 
-        valid_extensions = {"jpeg", "jpg", "cr2"}
+        photo_extensions = {"jpeg", "jpg", "cr2"}
+        video_extensions = {"mp4", "mpeg", "mov", "avi"}
 
-        for s3_object in self._photo_bucket.objects_in_bucket(self._prefix):
+        valid_extensions = photo_extensions | video_extensions
+
+        for s3_object in self._media_bucket.objects_in_bucket(self._prefix):
             progress_report.increment_and_print_if_needed()
 
             filename, file_extension = os.path.splitext(s3_object.key)
 
-            file_extension = file_extension[1:]
+            file_extension = file_extension[1:].lower()
 
-            if file_extension.lower() not in valid_extensions:
+            if file_extension not in valid_extensions:
                 continue
 
             size_of_media = s3_object.size
 
             xmp_file = s3_object.key + ".xmp"
 
-            if xmp_file not in all_keys:
+            tags = []
+            temporary_tags_file = None
+
+            if xmp_file in all_keys:
+                # Copies XMP into a file (libxmp seems to only be able to read
+                # from physical files)
+                xmp_object = self._media_bucket.get_object(xmp_file)
+
+                temporary_tags_file = tempfile.NamedTemporaryFile(suffix=".xmp", delete=False)
+                temporary_tags_file.write(xmp_object.get()["Body"].read())
+                temporary_tags_file.close()
+
+                # Extracts tags
+                tags = self._extract_tags(temporary_tags_file.name)
+
+            else:
                 # Non XMP file without an XMP associated
                 non_xmp_without_xmp_associated += 1
-                continue
 
-            # Copies XMP into a file (libxmp seems to only be able to read
-            # from physical files)
-            xmp_object = self._photo_bucket.get_object(xmp_file)
+            try:
+                media = Media.objects.get(object_storage_key=s3_object.key)
+            except ObjectDoesNotExist:
+                media = Media()
+                media.object_storage_key = s3_object.key
+                media.md5 = None
+                media.file_size = size_of_media
 
-            temporary_file = tempfile.NamedTemporaryFile(suffix=".xmp", delete=False)
-            temporary_file.write(xmp_object.get()["Body"].read())
-            temporary_file.close()
+                if file_extension in photo_extensions:
+                    media.media_type = Media.PHOTO
+                elif file_extension in video_extensions:
+                    media.media_type = Media.VIDEO
+                else:
+                    assert False
 
-            # Extracts tags
-            tags = self._extract_tags(temporary_file.name)
+                media.save()
 
-            # Inserts tags into the database
-            if len(tags) > 0:
+            for tag in tags:
                 try:
-                    photo = Photo.objects.get(object_storage_key=s3_object.key)
+                    tag_model = Tag.objects.get(tag=tag)
                 except ObjectDoesNotExist:
-                    photo = Photo()
-                    photo.object_storage_key = s3_object.key
-                    photo.md5 = None
-                    photo.file_size = size_of_media
-                    photo.save()
+                    tag_model = Tag()
+                    tag_model.tag = tag
+                    tag_model.save()
 
-                for tag in tags:
-                    try:
-                        tag_model = Tag.objects.get(tag=tag)
-                    except ObjectDoesNotExist:
-                        tag_model = Tag()
-                        tag_model.tag = tag
-                        tag_model.save()
+                media.tags.add(tag_model)
 
-                    photo.tags.add(tag_model)
-
-            os.remove(temporary_file.name)
+            if temporary_tags_file is not None:
+                os.remove(temporary_tags_file.name)
 
     @staticmethod
     def _extract_tags(file_path):

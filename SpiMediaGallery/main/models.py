@@ -33,7 +33,15 @@ class Tag(models.Model):
         return "{}".format(self.tag)
 
 
-class Photo(models.Model):
+class Media(models.Model):
+    PHOTO = 'P'
+    VIDEO = 'V'
+
+    MEDIA_TYPES = (
+        (PHOTO, "Photo"),
+        (VIDEO, "Video")
+    )
+
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(null=True, blank=True, max_length=32)
     file_size = models.IntegerField()
@@ -49,6 +57,10 @@ class Photo(models.Model):
     copyright = models.ForeignKey(Copyright, null=True, on_delete=models.PROTECT)
 
     tags = models.ManyToManyField(Tag, blank=True)
+
+    media_type = models.CharField(max_length=1, choices=MEDIA_TYPES)
+
+    duration = models.IntegerField(null=True, blank=True)
 
     def latitude(self):
         if self.location is None:
@@ -70,7 +82,7 @@ class Photo(models.Model):
         return "{}".format(self.pk)
 
 
-class PhotoResized(models.Model):
+class MediaResized(models.Model):
     THUMBNAIL = "T"
     SMALL = "S"
     MEDIUM = "M"
@@ -93,7 +105,7 @@ class PhotoResized(models.Model):
 
     height = models.IntegerField()
     width = models.IntegerField()
-    photo = models.ForeignKey(Photo, on_delete=models.PROTECT)
+    media = models.ForeignKey(Media, on_delete=models.PROTECT)
 
     @staticmethod
     def bucket_name():

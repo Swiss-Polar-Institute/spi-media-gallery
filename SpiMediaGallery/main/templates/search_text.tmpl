@@ -1,0 +1,19 @@
+{% extends 'base.tmpl' %}
+{% block title %}SPI Media Gallery - Search result text{% endblock %}
+
+{% block body_attributes %}class="d-flex flex-column h-100"{% endblock %}
+
+{% block body_contents %}
+        <div class="container theme-showcase" role="main">
+            {% include "logo.tmpl" %} <h3>{{ tags_list }}</h3>
+            {{ search_explanation }}
+            <div class="container">
+                <ul>
+                {% for medium in media %}
+                    <li>{{ medium.key }}: <a href="{{ medium.low_resolution }}">Low resolution</a> | <a href="{{ medium.original }}">Download Original</a></li>
+                {% endfor %}
+                </ul>
+
+            </div>
+        </div>
+{% endblock %}
