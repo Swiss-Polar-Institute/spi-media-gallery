@@ -10,6 +10,7 @@ docutils==0.14
 geographiclib==1.49
 geopy==1.20.0
 gunicorn==19.9.0
+humanize==0.5.1
 idna==2.8
 ipython==7.5.0
 ipython-genutils==0.2.0
@@ -24,6 +25,7 @@ prompt-toolkit==2.0.9
 psycopg2==2.8.3
 ptyprocess==0.6.0
 Pygments==2.4.2
+pymediainfo==4.0
 python-dateutil==2.8.0
 python-xmp-toolkit==2.0.1
 pytz==2019.1

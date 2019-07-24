@@ -4,11 +4,11 @@ import sys
 import subprocess
 import tempfile
 
-from main.models import MediaResized
+from main.models import MediumResized
 
 
 def image_size_label_abbreviation_to_presentation(abbreviation):
-    for size in MediaResized.SIZES_OF_PHOTOS:
+    for size in MediumResized.SIZES_OF_PHOTOS:
         if size[0] == abbreviation:
             return size[1]
 
@@ -75,6 +75,9 @@ def resize_video(input_file_path, width):
 
 
 def bytes_to_human_readable(num):
+    if num is None:
+        return "Unknown"
+
     for unit in ['','KB','MB','GB','TB','PB','EB','ZB']:
         if abs(num) < 1024.0:
             return "%d %s" % (num, unit)

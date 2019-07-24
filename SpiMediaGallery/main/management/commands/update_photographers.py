@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Media, Photographer
+from main.models import Medium, Photographer
 from django.conf import settings
 
 from main.progress_report import ProgressReport
@@ -20,7 +20,7 @@ class PhotographerUpdater(object):
         pass
 
     def update(self):
-        photos_without_photographer = Media.objects.filter(photographer__isnull=True)
+        photos_without_photographer = Medium.objects.filter(photographer__isnull=True)
 
         progress_report = ProgressReport(len(photos_without_photographer), extra_information="Updating photographer of photos")
 

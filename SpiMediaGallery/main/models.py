@@ -33,11 +33,11 @@ class Tag(models.Model):
         return "{}".format(self.tag)
 
 
-class Media(models.Model):
+class Medium(models.Model):
     PHOTO = 'P'
     VIDEO = 'V'
 
-    MEDIA_TYPES = (
+    MEDIUM_TYPES = (
         (PHOTO, "Photo"),
         (VIDEO, "Video")
     )
@@ -58,7 +58,7 @@ class Media(models.Model):
 
     tags = models.ManyToManyField(Tag, blank=True)
 
-    media_type = models.CharField(max_length=1, choices=MEDIA_TYPES)
+    medium_type = models.CharField(max_length=1, choices=MEDIUM_TYPES)
 
     duration = models.IntegerField(null=True, blank=True)
 
@@ -82,7 +82,7 @@ class Media(models.Model):
         return "{}".format(self.pk)
 
 
-class MediaResized(models.Model):
+class MediumResized(models.Model):
     THUMBNAIL = "T"
     SMALL = "S"
     MEDIUM = "M"
@@ -105,7 +105,7 @@ class MediaResized(models.Model):
 
     height = models.IntegerField()
     width = models.IntegerField()
-    media = models.ForeignKey(Media, on_delete=models.PROTECT)
+    medium = models.ForeignKey(Medium, on_delete=models.PROTECT)
 
     @staticmethod
     def bucket_name():

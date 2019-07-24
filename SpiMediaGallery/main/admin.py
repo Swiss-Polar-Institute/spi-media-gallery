@@ -6,10 +6,10 @@ import main.models
 import main.utils
 
 
-class MediaAdmin(OSMGeoAdmin):
+class MediumAdmin(OSMGeoAdmin):
     list_display = ('object_storage_key', 'md5', 'file_size', 'height', 'width', 'datetime_taken', 'location',
-                    'public', 'photographer', 'license', 'media_type', 'duration_mmss', 'tags_list', )
-    ordering = ('object_storage_key', 'datetime_taken', 'photographer', 'license', 'media_type', 'duration', 'public', )
+                    'public', 'photographer', 'license', 'medium_type', 'duration_mmss', 'tags_list', )
+    ordering = ('object_storage_key', 'datetime_taken', 'photographer', 'license', 'medium_type', 'duration', 'public', )
     search_fields = ('object_storage_key', 'md5', )
 
     form = LocationEntryCoordinates
@@ -45,15 +45,15 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('tag', )
 
 
-class MediaResizedAdmin(admin.ModelAdmin):
+class MediumResizedAdmin(admin.ModelAdmin):
     list_display = ('object_storage_key', 'md5', 'file_size', 'size_label', 'height', 'width', 'media', )
     ordering = ('object_storage_key', )
     search_fields = ('object_storage_key', 'md5', )
 
 
-admin.site.register(main.models.Media, MediaAdmin)
+admin.site.register(main.models.Medium, MediumAdmin)
 admin.site.register(main.models.Tag, TagAdmin)
-admin.site.register(main.models.MediaResized, MediaResizedAdmin)
+admin.site.register(main.models.MediumResized, MediumResizedAdmin)
 admin.site.register(main.models.Photographer, PhotographerAdmin)
 admin.site.register(main.models.License, LicenseAdmin)
 admin.site.register(main.models.Copyright, CopyrightAdmin)

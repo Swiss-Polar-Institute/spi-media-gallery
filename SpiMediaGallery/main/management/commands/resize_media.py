@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Media, MediaResized
+from main.models import Medium, MediumResized
 from django.conf import settings
 from PIL import Image
+import sys
 Image.MAX_IMAGE_PIXELS = None
 
 import datetime
@@ -51,11 +52,11 @@ def get_information_from_video(video_file):
 
 
 class Resizer(object):
-    def __init__(self, bucket_name_media, bucket_name_thumbnails, size_type, media_type):
+    def __init__(self, bucket_name_media, bucket_name_thumbnails, size_type, medium_type):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name_media)
         self._thumbnails_bucket = spi_s3_utils.SpiS3Utils(bucket_name_thumbnails)
         self._size_type = size_type
-        self._media_type = media_type
+        self._medium_type = medium_type
 
     @staticmethod
     def update_information_from_photo(photo, photo_file):
@@ -91,61 +92,65 @@ class Resizer(object):
             video.save()
 
     def resize_media(self):
-        already_resized = MediaResized.objects.values_list('media', flat=True).filter(size_label=self._size_type).filter(media__media_type=self._media_type)
-        media_to_be_resized = Media.objects.filter(media_type=self._media_type).exclude(id__in=already_resized)
+        already_resized = MediumResized.objects.values_list('medium', flat=True).filter(size_label=self._size_type).filter(medium__medium_type=self._medium_type)
+        media_to_be_resized = Medium.objects.filter(medium_type=self._medium_type).exclude(id__in=already_resized)
 
-        if self._size_type == Media.PHOTO:
+        if len(media_to_be_resized) == 0:
+            print("Nothing to be resized? Aborting")
+            sys.exit(1)
+
+        if self._size_type == Medium.PHOTO:
             total_steps = len(media_to_be_resized)
         else:
             total_steps = media_to_be_resized.aggregate(Sum('file_size'))['file_size__sum']
 
-        progress_report = ProgressReport(total_steps, extra_information="Resizing media to {}".format(self._size_type))
+        progress_report = ProgressReport(total_steps, extra_information="Resizing medium to {}".format(self._size_type))
 
         resized_width = None
         if self._size_type != 'O':
             resized_width = settings.IMAGE_LABEL_TO_SIZES[self._size_type][0]
 
-        for media in media_to_be_resized:
-            if self._size_type == Media.PHOTO:
+        for medium in media_to_be_resized:
+            if self._size_type == Medium.PHOTO:
                 progress_report.increment_and_print_if_needed()
             else:
-                progress_report.increment_steps(media.file_size)
+                progress_report.increment_steps_and_print_if_needed(medium.file_size)
 
             # Read Media file
-            media_object = self._media_bucket.get_object(media.object_storage_key)
-            if media.object_storage_key is None or media.object_storage_key == "":
+            media_object = self._media_bucket.get_object(medium.object_storage_key)
+            if medium.object_storage_key is None or medium.object_storage_key == "":
                 continue
 
             media_file = tempfile.NamedTemporaryFile(delete=False)
             media_file.write(media_object.get()["Body"].read())
             media_file.close()
 
-            assert os.stat(media_file.name).st_size == media.file_size
+            assert os.stat(media_file.name).st_size == medium.file_size
 
-            if media.md5 is None:
+            if medium.md5 is None:
                 md5_media_file = utils.hash_of_file_path(media_file.name)
-                media.md5 = md5_media_file
+                medium.md5 = md5_media_file
 
-            resized_media = MediaResized()
+            resized_medium = MediumResized()
 
-            if media.media_type == Media.PHOTO:
-                self.update_information_from_photo(media, media_file.name)
+            if medium.medium_type == Medium.PHOTO:
+                self.update_information_from_photo(medium, media_file.name)
 
                 thumbnail_file_name = utils.resize_photo(media_file.name, resized_width)
 
                 resized_image_information = Image.open(thumbnail_file_name.name)
-                resized_media.width = resized_image_information.width
-                resized_media.height = resized_image_information.height
+                resized_medium.width = resized_image_information.width
+                resized_medium.height = resized_image_information.height
 
-            elif media.media_type == Media.VIDEO:
-                self.update_information_from_video(media, media_file.name)
+            elif medium.medium_type == Medium.VIDEO:
+                self.update_information_from_video(medium, media_file.name)
 
                 thumbnail_file_name = utils.resize_video(media_file.name, resized_width)
 
                 information = get_information_from_video(thumbnail_file_name)
 
-                resized_media.width = information['width']
-                resized_media.height = information['height']
+                resized_medium.width = information['width']
+                resized_medium.height = information['height']
 
             else:
                 assert False
@@ -154,10 +159,10 @@ class Resizer(object):
             _, resized_file_extension = os.path.splitext(thumbnail_file_name)
             resized_file_extension = resized_file_extension[1:].lower()
 
-            # Upload media to bucket
+            # Upload medium to bucket
             thumbnail_key = os.path.join(settings.RESIZED_PREFIX, md5_resized_file + "-{}.{}".format(self._size_type, resized_file_extension))
 
-            resized_media.object_storage_key = thumbnail_key
+            resized_medium.object_storage_key = thumbnail_key
 
             self._thumbnails_bucket.upload_file(thumbnail_file_name, thumbnail_key)
             size = os.stat(thumbnail_file_name).st_size
@@ -166,8 +171,8 @@ class Resizer(object):
             os.remove(media_file.name)
 
             # Update database
-            resized_media.md5 = md5_resized_file
-            resized_media.file_size = size
-            resized_media.size_label = self._size_type
-            resized_media.media = media
-            resized_media.save()
+            resized_medium.md5 = md5_resized_file
+            resized_medium.file_size = size
+            resized_medium.size_label = self._size_type
+            resized_medium.medium = medium
+            resized_medium.save()

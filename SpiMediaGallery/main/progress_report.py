@@ -10,7 +10,7 @@ class ProgressReport:
         self._steps_to_next_print_report = 0
         self._last_printed_report = 0
         self._extra_information = extra_information
-        print("*********** Progress Report - initialized - total_steps:", total_steps)
+        print("*********** Progress Report - initialized - total_steps:", self.steps_to_human_readable(total_steps))
 
     def increment_step(self):
         self._current_step += 1
@@ -35,20 +35,40 @@ class ProgressReport:
             remaining_time = total_expected_time - elapsed_time
 
             print("========== PROGRESS: {}".format(self._extra_information))
-            print("Processing {} of {}. Elapsed time: {:.2f} minutes. Remaining time: {:.2f} minutes.".format(self._current_step,
-                                                                                                 self._total_steps,
-                                                                                                 elapsed_time / 60,
-                                                                                                 remaining_time / 60))
+            print("Processing {} of {}. Elapsed time: {}. Remaining time: {}.".format(self._current_step,
+                                                                                      self._total_steps,
+                                                                                      self.seconds_to_human_readable(elapsed_time),
+                                                                                      self.seconds_to_human_readable(remaining_time)))
 
             speed_per_minute = speed*60
-            if speed_per_minute > 1024*1024:
-                speed_per_minute = "{:.2f} M".format(speed_per_minute)
-            else:
-                speed_per_minute = "{:.2f}".format(speed_per_minute)
 
-            print("Steps per minute: {} Percentage: {:.2f}%".format(speed_per_minute, percentage_complete))
+            print("Steps per minute: {} Percentage: {:.2f}%".format(self.steps_to_human_readable(speed_per_minute), percentage_complete))
             print()
 
             self._last_printed_report = time.time()
 
             return remaining_time
+
+    @staticmethod
+    def steps_to_human_readable(steps):
+        if steps > 1024*1024:
+            return "{:.2f} M".format(steps / 1024 / 1024)
+        else:
+            return "{:.2f}".format(steps)
+
+    @staticmethod
+    def seconds_to_human_readable(seconds):
+        minutes = seconds / 60
+
+        if minutes < 1:
+            return "{:.2f} secs".format(seconds)
+
+        hours = minutes / 60
+        if hours < 1:
+            return "{:.2f} mins".format(minutes)
+
+        days = hours / 24
+        if days == 0:
+            return "{:.2f} hours".format(hours)
+
+        return "{:.2f}".format(days)
