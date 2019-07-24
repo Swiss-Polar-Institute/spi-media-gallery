@@ -8,12 +8,29 @@
             {% include "logo.tmpl" %} <h3>{{ tags_list }}</h3>
             {{ search_explanation }}
             <div class="container">
-                <ul>
-                {% for medium in media %}
-                    <li>{{ medium.key }}: <a href="{{ medium.low_resolution }}">Low resolution</a> | <a href="{{ medium.original }}">Download Original</a></li>
-                {% endfor %}
-                </ul>
-
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Duration</th>
+                            <th>Low</th>
+                            <th>Original</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for medium in media %}
+                            <tr>
+                                <td><a href="/display/{{ medium.id }}">{{ medium.id }}</a></td>
+                                <td>{{ medium.key }} </td>
+                                <td>{{ medium.duration }} </td>
+                                <td><a href="{{ medium.low_resolution }}">Play ({{ medium.low_resolution_file_size }})</a></td>
+                                <td><a href="{{ medium.original }}">Download ({{ medium.original_file_size }})</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <p></p>
             </div>
         </div>
 {% endblock %}

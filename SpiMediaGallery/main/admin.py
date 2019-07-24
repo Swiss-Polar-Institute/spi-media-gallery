@@ -3,11 +3,12 @@ from main.forms import LocationEntryCoordinates
 from django.contrib.gis.admin.options import OSMGeoAdmin
 
 import main.models
+import main.utils
 
 
 class MediaAdmin(OSMGeoAdmin):
     list_display = ('object_storage_key', 'md5', 'file_size', 'height', 'width', 'datetime_taken', 'location',
-                    'public', 'photographer', 'license', 'media_type', 'duration', 'tags_list', )
+                    'public', 'photographer', 'license', 'media_type', 'duration_mmss', 'tags_list', )
     ordering = ('object_storage_key', 'datetime_taken', 'photographer', 'license', 'media_type', 'duration', 'public', )
     search_fields = ('object_storage_key', 'md5', )
 
@@ -15,6 +16,9 @@ class MediaAdmin(OSMGeoAdmin):
 
     def tags_list(self, obj):
         return ",".join([t.tag for t in obj.tags.all()])
+
+    def duration_mmss(self, obj):
+        return main.utils.seconds_to_minutes_seconds(obj.duration)
 
 
 class PhotographerAdmin(admin.ModelAdmin):

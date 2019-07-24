@@ -35,6 +35,20 @@ class Command(BaseCommand):
         resizer.resize_media()
 
 
+def get_information_from_video(video_file):
+    information = {}
+
+    video_information = MediaInfo.parse(video_file)
+
+    for track in video_information.tracks:
+        if track.track_type == "Video":
+            information['width'] = track.width
+            information['height'] = track.height
+            information['duration'] = track.duration / 1000
+
+    return information
+
+
 class Resizer(object):
     def __init__(self, bucket_name_media, bucket_name_thumbnails, size_type, media_type):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name_media)
@@ -45,7 +59,7 @@ class Resizer(object):
     @staticmethod
     def update_information_from_photo(photo, photo_file):
         if photo.width is None or photo.height is None or photo.datetime_taken is None:
-            media_photo = Image.open(photo_file.name)
+            media_photo = Image.open(photo_file)
             photo.width = media_photo.width
             photo.height = media_photo.height
 
@@ -61,12 +75,19 @@ class Resizer(object):
 
                 photo.datetime_taken = datetime_taken
 
-        photo.save()
+            photo.save()
+
 
     @staticmethod
     def update_information_from_video(video, video_file):
-        # TODO read information from Video file
-        pass
+        if video.width is None or video.height is None or video.duration is None:
+            information = get_information_from_video(video_file)
+
+            video.width = information['width']
+            video.height = information['height']
+            video.duration = information['duration']
+
+            video.save()
 
     def resize_media(self):
         already_resized = MediaResized.objects.values_list('media', flat=True).filter(size_label=self._size_type).filter(media__media_type=self._media_type)
@@ -99,7 +120,7 @@ class Resizer(object):
             resized_media = MediaResized()
 
             if media.media_type == Media.PHOTO:
-                self.update_information_from_photo(media, media_file)
+                self.update_information_from_photo(media, media_file.name)
 
                 thumbnail_file_name = utils.resize_photo(media_file.name, resized_width)
 
@@ -107,18 +128,15 @@ class Resizer(object):
                 resized_media.width = resized_image_information.width
                 resized_media.height = resized_image_information.height
 
-
             elif media.media_type == Media.VIDEO:
-                self.update_information_from_video(media, media_file)
+                self.update_information_from_video(media, media_file.name)
 
                 thumbnail_file_name = utils.resize_video(media_file.name, resized_width)
 
-                thumbnail_video_information = MediaInfo.parse(media_file.name)
+                information = get_information_from_video(thumbnail_file_name)
 
-                for track in thumbnail_video_information.tracks:
-                    if track.track_type == "Video":
-                        resized_media.width = track.width
-                        resized_media.height = track.height
+                resized_media.width = information['width']
+                resized_media.height = information['height']
 
             else:
                 assert False

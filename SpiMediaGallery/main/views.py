@@ -78,7 +78,7 @@ def information_for_photo_queryset(photo_queryset):
         filename = "SPI-{}.jpg".format(photo.id)
 
         if len(thumbnail) == 1:
-            thumbnail_img = link_for_media(thumbnail[0], "inline", "image/jpeg", filename)
+            thumbnail_img = link_for_media(thumbnail[0], "inline", filename)
 
         else:
             # Images should have a thumbnail
@@ -211,6 +211,7 @@ class SearchNear(TemplateView):
         return render(request, "search.tmpl", information)
 
 
+
 class SearchVideos(TemplateView):
     def get(self, request, *args, **kwargs):
         information = {}
@@ -227,26 +228,53 @@ class SearchVideos(TemplateView):
 
             low_resolution = low_resolution_qs[0]
 
-            media.append({'key': video.object_storage_key,
-                          'low_resolution': link_for_media(low_resolution, "inline", "video/webm", "test.ogv"),
-                          'original': link_for_media(video, "attachment", "video/webm", "test.ogv")})
+            media.append({'id': video.pk,
+                          'key': video.object_storage_key,
+                          'duration': utils.seconds_to_minutes_seconds(video.duration),
+                          'low_resolution': link_for_media(low_resolution, "inline", filename_for_resized_media(video.pk, "S", "webm")),
+                          'low_resolution_file_size': utils.bytes_to_human_readable(low_resolution.file_size),
+                          'original': link_for_media(video, "attachment", filename_for_original_media(video)),
+                          'original_file_size': utils.bytes_to_human_readable(video.file_size)})
 
         information['media'] = media
         return render(request, "search_text.tmpl", information)
 
-def link_for_media(photo, content_disposition, content_type, filename):
+
+def link_for_media(medium, content_disposition, filename):
+    if type(medium) == MediaResized:
+        medium_for_content_type = medium.media
+    else:
+        medium_for_content_type = medium
+
+    if medium_for_content_type.media_type == Media.PHOTO:
+        content_type = "image/jpeg"
+    elif medium_for_content_type.media_type == Media.VIDEO:
+        content_type = "video/webm"
+
     if settings.PROXY_TO_OBJECT_STORAGE:
         d = {"content_type": content_type,
              "content_disposition_type": content_disposition,
              "filename": filename,
-             "bucket": photo.bucket_name()
+             "bucket": medium.bucket_name()
         }
 
-        return "/get/photo/{}?{}".format(photo.md5, urllib.parse.urlencode(d))
+        return "/get/photo/{}?{}".format(medium.md5, urllib.parse.urlencode(d))
     else:
-        bucket = SpiS3Utils(photo.bucket_name())
+        bucket = SpiS3Utils(medium.bucket_name())
 
-        return bucket.get_presigned_link(photo.object_storage_key, content_type, content_disposition, filename)
+        return bucket.get_presigned_link(medium.object_storage_key, content_type, content_disposition, filename)
+
+
+def filename_for_resized_media(media_id, photo_resize_label, extension):
+    return "SPI-{}-{}.{}".format(media_id, photo_resize_label, extension)
+
+
+def filename_for_original_media(media):
+    _, extension = os.path.splitext(media.object_storage_key)
+
+    extension = extension[1:]
+
+    return "SPI-{}.{}".format(media.pk, extension)
 
 
 def information_for_media(media):
@@ -274,17 +302,17 @@ def information_for_media(media):
         else:
             assert False
 
-        filename = "SPI-{}-{}.{}".format(media.id, photo_resized.size_label, extension)
+        filename = filename_for_resized_media(media.id, photo_resized.size_label, extension)
 
-        size_information['image_link'] = link_for_media(photo_resized, "inline", "image/jpeg", filename)
+        size_information['image_link'] = link_for_media(photo_resized, "inline", filename)
 
         sizes_presentation.append(size_information)
 
         if photo_resized.size_label == "S":
             if media.media_type == Media.PHOTO:
-                information['photo_small_url'] = link_for_media(photo_resized, "inline", "image/jpeg", filename)
+                information['photo_small_url'] = link_for_media(photo_resized, "inline", filename)
             elif media.media_type == Media.VIDEO:
-                information['video_small_url'] = link_for_media(photo_resized, "inline", "video/webm", filename)
+                information['video_small_url'] = link_for_media(photo_resized, "inline", filename)
             else:
                 assert False
 
@@ -294,7 +322,7 @@ def information_for_media(media):
     file_extension = file_extension.replace(".", "")
     information['file_id'] = "SPI-{}.{}".format(media.id, file_extension)
 
-    information['original_file'] = link_for_media(media, "attachment", "application/image", "SPI-{}.{}".format(media.id, file_extension))
+    information['original_file'] = link_for_media(media, "attachment", "SPI-{}.{}".format(media.id, file_extension))
     information['original_resolution'] = "{}x{}".format(media.width, media.height)
     information['original_file_size'] = utils.bytes_to_human_readable(media.file_size)
 

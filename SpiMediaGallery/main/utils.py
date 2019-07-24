@@ -73,9 +73,17 @@ def resize_video(input_file_path, width):
 
     return output_file_path.name
 
+
 def bytes_to_human_readable(num):
     for unit in ['','KB','MB','GB','TB','PB','EB','ZB']:
         if abs(num) < 1024.0:
             return "%d %s" % (num, unit)
         num /= 1024.0
     return "%d %s" % (num, 'YB')
+
+
+def seconds_to_minutes_seconds(seconds):
+    if seconds is None:
+        return "Unknown"
+
+    return " {} min {} sec".format(seconds // 60, seconds % 60)
