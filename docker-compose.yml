@@ -1,4 +1,4 @@
-version: '3.5'
+version: '3.6'
 
 services:
   spi-media-gallery:
@@ -9,6 +9,8 @@ services:
     volumes:
       - ./SpiMediaGallery:/code/SpiMediaGallery
       - static_volume:/code/SpiMediaGallery/staticfiles
+      - type: tmpfs
+        target: /tmp
     expose:
       - "8000"
 
