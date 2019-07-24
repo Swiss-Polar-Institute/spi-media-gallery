@@ -142,7 +142,7 @@ class SearchMultipleTags(TemplateView):
 
         information = information_for_tag_ids(list_of_tag_ids)
 
-        paginator = Paginator(information["photos_qs"], 8)
+        paginator = Paginator(information["photos_qs"], 200)
 
         page = request.GET.get("page")
 
