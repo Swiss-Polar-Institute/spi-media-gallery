@@ -222,6 +222,35 @@ class SearchNear(TemplateView):
         return render(request, "search.tmpl", information)
 
 
+class MediumForPagination(Medium):
+    def link_for_low_resolution(self):
+        return link_for_medium(self._medium_resized("S"), "inline", filename_for_resized_medium(self.pk, "S", "webm"))
+
+    def link_for_original(self):
+        return link_for_medium(self, "attachment", filename_for_original_medium(self))
+
+    def file_size_for_original(self):
+        return utils.bytes_to_human_readable(self.file_size)
+
+    def _medium_resized(self, label):
+        qs = MediumResized.objects.filter(medium=self).filter(size_label=label)
+        assert len(qs) < 2
+
+        if len(qs) == 1:
+            return qs[0]
+        else:
+            return None
+
+    def file_size_for_low_resolution(self):
+        return utils.bytes_to_human_readable(self._medium_resized("S").file_size)
+
+    def duration_in_minutes_seconds(self):
+        return utils.seconds_to_minutes_seconds(self.duration)
+
+    class Meta:
+        proxy = True
+
+
 class SearchVideos(TemplateView):
     def get(self, request, *args, **kwargs):
         information = {}
@@ -230,21 +259,15 @@ class SearchVideos(TemplateView):
 
         media = []
 
-        for video in Medium.objects.filter(medium_type=Medium.VIDEO):
-            low_resolution_qs = MediumResized.objects.filter(size_label=MediumResized.SMALL).filter(medium=video)
-
-            if len(low_resolution_qs) != 1:
-                continue
-
-            low_resolution = low_resolution_qs[0]
-
+        for video in MediumForPagination.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key"):
             media.append({'id': video.pk,
                           'key': video.object_storage_key,
-                          'duration': utils.seconds_to_minutes_seconds(video.duration),
-                          'low_resolution': link_for_medium(low_resolution, "inline", filename_for_resized_medium(video.pk, "S", "webm")),
-                          'low_resolution_file_size': utils.bytes_to_human_readable(low_resolution.file_size),
-                          'original': link_for_medium(video, "attachment", filename_for_original_medium(video)),
-                          'original_file_size': utils.bytes_to_human_readable(video.file_size)})
+                          'duration': video.duration_in_minutes_seconds(),
+                          'low_resolution': video.link_for_low_resolution(),
+                          'low_resolution_file_size': video.file_size_for_low_resolution(),
+                          'original': video.link_for_original(),
+                          'original_file_size': video.file_size_for_original()
+                          })
 
         information['media'] = media
         return render(request, "search_text.tmpl", information)
