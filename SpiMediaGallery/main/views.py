@@ -18,6 +18,8 @@ from django.core.serializers import serialize
 # from djeo
 # from djgeojson.views import GeoJSONLayerView
 
+from django.core.paginator import Paginator
+
 import json
 
 import os
@@ -257,19 +259,28 @@ class SearchVideos(TemplateView):
 
         information["search_explanation"] = "Videos"
 
-        media = []
+        videos_qs = MediumForPagination.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key")
 
-        for video in MediumForPagination.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key"):
-            media.append({'id': video.pk,
-                          'key': video.object_storage_key,
-                          'duration': video.duration_in_minutes_seconds(),
-                          'low_resolution': video.link_for_low_resolution(),
-                          'low_resolution_file_size': video.file_size_for_low_resolution(),
-                          'original': video.link_for_original(),
-                          'original_file_size': video.file_size_for_original()
-                          })
+        paginator = Paginator(videos_qs, 5)
 
-        information['media'] = media
+        page = request.GET.get('page')
+
+        videos = paginator.get_page(page)
+
+        #
+        #
+        # for video in MediumForPagination.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key"):
+        #     media.append({'id': video.pk,
+        #                   'key': video.object_storage_key,
+        #                   'duration': video.duration_in_minutes_seconds(),
+        #                   'low_resolution': video.link_for_low_resolution(),
+        #                   'low_resolution_file_size': video.file_size_for_low_resolution(),
+        #                   'original': video.link_for_original(),
+        #                   'original_file_size': video.file_size_for_original()
+        #                   })
+
+        information['media'] = videos
+
         return render(request, "search_text.tmpl", information)
 
 

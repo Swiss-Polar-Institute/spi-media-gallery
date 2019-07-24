@@ -22,15 +22,35 @@
                         {% for medium in media %}
                             <tr>
                                 <td><a href="/display/{{ medium.id }}">{{ medium.id }}</a></td>
-                                <td>{{ medium.key }} </td>
-                                <td>{{ medium.duration }} </td>
-                                <td><a href="{{ medium.low_resolution }}">Play ({{ medium.low_resolution_file_size }})</a></td>
-                                <td><a href="{{ medium.original }}">Download ({{ medium.original_file_size }})</a></td>
+                                <td>{{ medium.object_storage_key }} </td>
+                                <td>{{ medium.duration_in_minutes_seconds }} </td>
+                                <td><a href="{{ medium.link_for_low_resolution }}">Play ({{ medium.file_size_for_low_resolution }})</a></td>
+                                <td><a href="{{ medium.link_for_low_original }}">Download ({{ medium.file_size_for_original }})</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
                 <p></p>
             </div>
+
+
+    <div class="pagination">
+    <span class="step-links">
+        {% if media.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ media.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ media.number }} of {{ media.paginator.num_pages }}.
+        </span>
+
+        {% if media.has_next %}
+            <a href="?page={{ media.next_page_number }}">next</a>
+            <a href="?page={{ media.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
         </div>
 {% endblock %}
