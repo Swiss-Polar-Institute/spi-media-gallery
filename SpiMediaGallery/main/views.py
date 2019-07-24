@@ -35,9 +35,14 @@ class Homepage(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(Homepage, self).get_context_data(**kwargs)
 
-        total_photos = Media.objects.count()
-        total_thumbnails = MediaResized.objects.filter(size_label="T").count()
-        size_of_photos = utils.bytes_to_human_readable(Media.objects.aggregate(Sum('file_size'))['file_size__sum'])
+        total_photos = Media.objects.filter(media_type=Media.PHOTO).count()
+        total_videos = Media.objects.filter(media_type=Media.VIDEO).count()
+
+        total_photo_thumbnails = MediaResized.objects.filter(size_label="T").filter(media__media_type=Media.PHOTO).count()
+        total_video_thumbnails = MediaResized.objects.filter(size_label="S").filter(media__media_type=Media.VIDEO).count()
+
+        size_of_photos = utils.bytes_to_human_readable(Media.objects.filter(media_type=Media.PHOTO).aggregate(Sum('file_size'))['file_size__sum'])
+        size_of_videos = utils.bytes_to_human_readable(Media.objects.filter(media_type=Media.VIDEO).aggregate(Sum('file_size'))['file_size__sum'])
 
         tags = []
         for tag in Tag.objects.order_by("tag"):
@@ -48,14 +53,20 @@ class Homepage(TemplateView):
 
             tags.append(t)
 
-        # tags = Tag.objects.order_by("tag")
-
         context['total_number_photos'] = total_photos
-        context['total_number_thumbnails'] = total_thumbnails
+        context['total_number_videos'] = total_videos
+
+        context['total_number_photo_thumbnails'] = total_photo_thumbnails
+        context['total_number_video_thumbnails'] = total_video_thumbnails
+
         context['size_of_photos'] = size_of_photos
+        context['size_of_videos'] = size_of_videos
+
         context['list_of_tags'] = tags
+
         context['list_of_tags_first_half'] = tags[:int(1+len(tags)/2)]
         context['list_of_tags_second_half'] = tags[int(1+len(tags)/2):]
+
         context['form_search_photo_id'] = PhotoIdForm
 
         return context
@@ -209,7 +220,6 @@ class SearchNear(TemplateView):
         information["photos"] = information_for_photo_queryset(query_photos_nearby)
 
         return render(request, "search.tmpl", information)
-
 
 
 class SearchVideos(TemplateView):

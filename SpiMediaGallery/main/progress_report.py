@@ -15,6 +15,17 @@ class ProgressReport:
     def increment_step(self):
         self._current_step += 1
 
+    def increment_and_print_if_needed(self):
+        self.increment_step()
+        self.print_report_if_needed()
+
+    def increment_steps(self, steps):
+        self._current_step += steps
+
+    def increment_steps_and_print_if_needed(self, steps):
+        self.increment_steps(steps)
+        self.print_report_if_needed()
+
     def print_report_if_needed(self):
         if (time.time() - self._last_printed_report) > self._frequency_of_reports:
             elapsed_time = time.time() - self._start_time
@@ -29,13 +40,15 @@ class ProgressReport:
                                                                                                  elapsed_time / 60,
                                                                                                  remaining_time / 60))
 
-            print("Steps per minute: {:.2f} Percentage: {:.2f}%".format(speed*60, percentage_complete))
+            speed_per_minute = speed*60
+            if speed_per_minute > 1024*1024:
+                speed_per_minute = "{:.2f} M".format(speed_per_minute)
+            else:
+                speed_per_minute = "{:.2f}".format(speed_per_minute)
+
+            print("Steps per minute: {} Percentage: {:.2f}%".format(speed_per_minute, percentage_complete))
             print()
 
             self._last_printed_report = time.time()
 
             return remaining_time
-
-    def increment_and_print_if_needed(self):
-        self.increment_step()
-        self.print_report_if_needed()

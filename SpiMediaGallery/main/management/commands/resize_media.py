@@ -9,6 +9,7 @@ import datetime
 import tempfile
 import os
 from pymediainfo import MediaInfo
+from django.db.models import Sum
 
 from main import spi_s3_utils
 from main import utils
@@ -93,14 +94,22 @@ class Resizer(object):
         already_resized = MediaResized.objects.values_list('media', flat=True).filter(size_label=self._size_type).filter(media__media_type=self._media_type)
         media_to_be_resized = Media.objects.filter(media_type=self._media_type).exclude(id__in=already_resized)
 
-        progress_report = ProgressReport(len(media_to_be_resized), extra_information="Resizing media to {}".format(self._size_type))
+        if self._size_type == Media.PHOTO:
+            total_steps = len(media_to_be_resized)
+        else:
+            total_steps = media_to_be_resized.aggregate(Sum('file_size'))['file_size__sum']
+
+        progress_report = ProgressReport(total_steps, extra_information="Resizing media to {}".format(self._size_type))
 
         resized_width = None
         if self._size_type != 'O':
             resized_width = settings.IMAGE_LABEL_TO_SIZES[self._size_type][0]
 
         for media in media_to_be_resized:
-            progress_report.increment_and_print_if_needed()
+            if self._size_type == Media.PHOTO:
+                progress_report.increment_and_print_if_needed()
+            else:
+                progress_report.increment_steps(media.file_size)
 
             # Read Media file
             media_object = self._media_bucket.get_object(media.object_storage_key)
