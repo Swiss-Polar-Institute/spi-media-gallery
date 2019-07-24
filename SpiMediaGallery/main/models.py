@@ -79,6 +79,9 @@ class Medium(models.Model):
     def bucket_name():
         return "photos"
 
+    class Meta:
+        verbose_name_plural = "Media"
+
     def __str__(self):
         return "{}".format(self.pk)
 
@@ -112,3 +115,6 @@ class MediumResized(models.Model):
     @staticmethod
     def bucket_name():
         return "thumbnails"
+
+    class Meta:
+        verbose_name_plural = "MediaResized"
