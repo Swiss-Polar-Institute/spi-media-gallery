@@ -6,7 +6,7 @@
 {% block body_contents %}
         <div class="container theme-showcase" role="main">
             {% include "logo.tmpl" %} <h3>{{ tags_list }}</h3>
-            {{ search_explanation }}
+            {{ search_explanation }} (Total: {{ media.paginator.count }})
             <div class="container">
                 <table border="1">
                     <thead>
