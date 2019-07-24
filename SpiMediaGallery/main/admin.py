@@ -46,7 +46,7 @@ class TagAdmin(admin.ModelAdmin):
 
 
 class MediumResizedAdmin(admin.ModelAdmin):
-    list_display = ('object_storage_key', 'md5', 'file_size', 'size_label', 'height', 'width', 'media', )
+    list_display = ('object_storage_key', 'md5', 'file_size', 'size_label', 'height', 'width', 'medium', )
     ordering = ('object_storage_key', )
     search_fields = ('object_storage_key', 'md5', )
 

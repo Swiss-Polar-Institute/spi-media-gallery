@@ -9,12 +9,15 @@
             {{ search_explanation }}
             <div class="container">
                 <div class="card-columns">
-                {% for photo in photos %}
+                {% for medium in media %}
                     <div class="card p-1">
-                        <a href="/display/{{ photo.id }}"><img class="card-img-top" src="{{ photo.thumbnail }}" alt=""></a>
+                        <a href="/display/{{ medium.id }}"><img class="card-img-top" src="{{ medium.link_for_thumbnail_resolution }}" alt=""></a>
                     </div>
                 {%endfor %}
                 </div>
             </div>
+
+            {% include "pagination.tmpl" %}
+
         </div>
 {% endblock %}

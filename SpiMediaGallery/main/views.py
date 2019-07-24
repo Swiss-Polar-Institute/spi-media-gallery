@@ -112,7 +112,7 @@ def information_for_photo_queryset(photo_queryset):
 def information_for_tag_ids(tag_ids):
     information = {}
 
-    query_photos_for_tags = Medium.objects
+    query_photos_for_tags = MediumForPagination.objects.filter(medium_type=Medium.PHOTO).order_by("datetime_taken")
     tags_list = []
 
     for tag_id in tag_ids:
@@ -131,9 +131,7 @@ def information_for_tag_ids(tag_ids):
     else:
         information["search_explanation"] = "{} {} with this tag: {}".format(len(query_photos_for_tags), photos_string, tags_list)
 
-    information["total_number_photos"] = len(query_photos_for_tags)
-
-    information["photos"] = information_for_photo_queryset(query_photos_for_tags)
+    information["photos_qs"] = query_photos_for_tags
 
     return information
 
@@ -143,6 +141,14 @@ class SearchMultipleTags(TemplateView):
         list_of_tag_ids = request.GET.getlist('tags')
 
         information = information_for_tag_ids(list_of_tag_ids)
+
+        paginator = Paginator(information["photos_qs"], 8)
+
+        page = request.GET.get("page")
+
+        photos = paginator.get_page(page)
+
+        information["media"] = photos
 
         return render(request, "search.tmpl", information)
 
@@ -225,15 +231,6 @@ class SearchNear(TemplateView):
 
 
 class MediumForPagination(Medium):
-    def link_for_low_resolution(self):
-        return link_for_medium(self._medium_resized("S"), "inline", filename_for_resized_medium(self.pk, "S", "webm"))
-
-    def link_for_original(self):
-        return link_for_medium(self, "attachment", filename_for_original_medium(self))
-
-    def file_size_for_original(self):
-        return utils.bytes_to_human_readable(self.file_size)
-
     def _medium_resized(self, label):
         qs = MediumResized.objects.filter(medium=self).filter(size_label=label)
         assert len(qs) < 2
@@ -242,6 +239,18 @@ class MediumForPagination(Medium):
             return qs[0]
         else:
             return None
+
+    def link_for_low_resolution(self):
+        return link_for_medium(self._medium_resized("S"), "inline", filename_for_resized_medium(self.pk, "S", "webm"))
+
+    def link_for_thumbnail_resolution(self):
+        return link_for_medium(self._medium_resized("T"), "inline", filename_for_resized_medium(self.pk, "T", "jpg"))
+
+    def link_for_original(self):
+        return link_for_medium(self, "attachment", filename_for_original_medium(self))
+
+    def file_size_for_original(self):
+        return utils.bytes_to_human_readable(self.file_size)
 
     def file_size_for_low_resolution(self):
         return utils.bytes_to_human_readable(self._medium_resized("S").file_size)
