@@ -39,15 +39,25 @@
         {% if media.has_previous %}
             <a href="?page=1">&laquo; first</a>
             <a href="?page={{ media.previous_page_number }}">previous</a>
+        {% else %}
+            <span class="text-muted">
+                &laquo; first
+                previous
+            </span>
         {% endif %}
 
         <span class="current">
-            Page {{ media.number }} of {{ media.paginator.num_pages }}.
+            Page {{ media.number }} of {{ media.paginator.num_pages }}
         </span>
 
         {% if media.has_next %}
             <a href="?page={{ media.next_page_number }}">next</a>
             <a href="?page={{ media.paginator.num_pages }}">last &raquo;</a>
+        {% else %}
+            <span class="text-muted">
+                next
+                last &raquo;
+            </span>
         {% endif %}
     </span>
 </div>

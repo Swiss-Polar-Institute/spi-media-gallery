@@ -267,18 +267,6 @@ class SearchVideos(TemplateView):
 
         videos = paginator.get_page(page)
 
-        #
-        #
-        # for video in MediumForPagination.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key"):
-        #     media.append({'id': video.pk,
-        #                   'key': video.object_storage_key,
-        #                   'duration': video.duration_in_minutes_seconds(),
-        #                   'low_resolution': video.link_for_low_resolution(),
-        #                   'low_resolution_file_size': video.file_size_for_low_resolution(),
-        #                   'original': video.link_for_original(),
-        #                   'original_file_size': video.file_size_for_original()
-        #                   })
-
         information['media'] = videos
 
         return render(request, "search_text.tmpl", information)
