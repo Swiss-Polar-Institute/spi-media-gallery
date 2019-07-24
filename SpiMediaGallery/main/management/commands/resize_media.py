@@ -175,4 +175,5 @@ class Resizer(object):
             resized_medium.file_size = size
             resized_medium.size_label = self._size_type
             resized_medium.medium = medium
+            resized_medium.datetime_resized = datetime.datetime.now()
             resized_medium.save()

@@ -8,8 +8,8 @@ import main.utils
 
 class MediumAdmin(OSMGeoAdmin):
     list_display = ('object_storage_key', 'md5', 'file_size', 'height', 'width', 'datetime_taken', 'location',
-                    'public', 'photographer', 'license', 'medium_type', 'duration_mmss', 'tags_list', )
-    ordering = ('object_storage_key', 'datetime_taken', 'photographer', 'license', 'medium_type', 'duration', 'public', )
+                    'public', 'photographer', 'license', 'medium_type', 'duration_mmss', 'tags_list', 'datetime_imported' )
+    ordering = ('object_storage_key', 'file_size', 'datetime_taken', 'photographer', 'license', 'medium_type', 'duration', 'public', 'datetime_imported' )
     search_fields = ('object_storage_key', 'md5', )
 
     form = LocationEntryCoordinates
@@ -46,8 +46,8 @@ class TagAdmin(admin.ModelAdmin):
 
 
 class MediumResizedAdmin(admin.ModelAdmin):
-    list_display = ('object_storage_key', 'md5', 'file_size', 'size_label', 'height', 'width', 'medium', )
-    ordering = ('object_storage_key', )
+    list_display = ('object_storage_key', 'md5', 'file_size', 'size_label', 'height', 'width', 'medium', 'datetime_resized')
+    ordering = ('object_storage_key', 'file_size', 'size_label', 'height', 'width', 'medium', 'datetime_resized')
     search_fields = ('object_storage_key', 'md5', )
 
 

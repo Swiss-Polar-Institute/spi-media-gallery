@@ -50,6 +50,7 @@ class Medium(models.Model):
     height = models.IntegerField(null=True, blank=True)
     width = models.IntegerField(null=True, blank=True)
     datetime_taken = models.DateTimeField(null=True, blank=True)
+    datetime_imported = models.DateTimeField()
 
     public = models.BooleanField(default=False)
     photographer = models.ForeignKey(Photographer, null=True, on_delete=models.PROTECT)
@@ -100,6 +101,7 @@ class MediumResized(models.Model):
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(max_length=32)
     file_size = models.IntegerField()
+    datetime_resized = models.DateTimeField()
 
     size_label = models.CharField(max_length=1, choices=SIZES_OF_PHOTOS)
 

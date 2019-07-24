@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 import os
 import tempfile
+import datetime
 import time
 
 from main import spi_s3_utils
@@ -96,6 +97,7 @@ class TagImporter(object):
                 else:
                     assert False
 
+                media.datetime_imported = datetime.datetime.now()
                 media.save()
 
             for tag in tags:
