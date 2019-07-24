@@ -44,7 +44,7 @@ class Medium(models.Model):
 
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(null=True, blank=True, max_length=32)
-    file_size = models.IntegerField()
+    file_size = models.BigIntegerField()
     location = models.PointField(null=True, blank=True)
 
     height = models.IntegerField(null=True, blank=True)
@@ -103,7 +103,7 @@ class MediumResized(models.Model):
 
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(max_length=32)
-    file_size = models.IntegerField()
+    file_size = models.BigIntegerField()
     datetime_resized = models.DateTimeField()
 
     size_label = models.CharField(max_length=1, choices=SIZES_OF_PHOTOS)

@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
 	libmariadb3 mariadb-client \
 	postgresql-common libpq-dev \
 	gdal-bin \
-	imagemagick ffmpeg
+	imagemagick ffmpeg \
+	libexempi8
 RUN pip3 install -r /code/requirements.txt
 RUN apt-get purge -y gcc-7 gcc \
 	libmariadbclient-dev libmariadb-dev-compat libpq-dev libpython3.7-dev && \
