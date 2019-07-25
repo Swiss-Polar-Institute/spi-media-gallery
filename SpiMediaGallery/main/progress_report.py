@@ -14,7 +14,7 @@ class ProgressReport:
         self._last_printed_report = 0
         self._extra_information = extra_information
         self._steps_are_bytes = steps_are_bytes
-        print("*********** Progress Report - initialized - total_steps:", self.steps_to_human_readable(total_steps))
+        print("*********** Progress Report - initialized - total_steps:", self._steps_to_human_readable(total_steps))
 
     def increment_step(self):
         self._current_step += 1
@@ -39,28 +39,28 @@ class ProgressReport:
             remaining_time = total_expected_time - elapsed_time
 
             print("========== PROGRESS: {}".format(self._extra_information))
-            print("Processing {} of {}. Elapsed time: {}. Remaining time: {}.".format(self._current_step,
-                                                                                      self._total_steps,
-                                                                                      self.seconds_to_human_readable(elapsed_time),
-                                                                                      self.seconds_to_human_readable(remaining_time)))
+            print("Processing {} of {}. Elapsed time: {}. Remaining time: {}.".format(self._steps_to_human_readable(self._current_step),
+                                                                                      self._steps_to_human_readable(self._total_steps),
+                                                                                      self._seconds_to_human_readable(elapsed_time),
+                                                                                      self._seconds_to_human_readable(remaining_time)))
 
             speed_per_minute = speed*60
 
-            print("Speed minute: {} Percentage: {:.2f}%".format(self.steps_to_human_readable(speed_per_minute), percentage_complete))
+            print("Speed minute: {} Percentage: {:.2f}%".format(self._steps_to_human_readable(speed_per_minute), percentage_complete))
             print()
 
             self._last_printed_report = time.time()
 
             return remaining_time
 
-    def steps_to_human_readable(self, steps):
+    def _steps_to_human_readable(self, steps):
         if self._steps_are_bytes:
             return "{}/s".format(bytes_to_human_readable(steps))
         else:
             return "{:.2f} steps".format(steps)
 
     @staticmethod
-    def seconds_to_human_readable(seconds):
+    def _seconds_to_human_readable(seconds):
         minutes = seconds / 60
 
         if minutes < 1:
