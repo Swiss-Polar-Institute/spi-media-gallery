@@ -176,6 +176,8 @@ TRACK_MAP_FILEPATH = '/tmp/test.geojson'
 
 PROXY_TO_OBJECT_STORAGE = False
 
+SITE_ADMINISTRATOR = "Carles Pina"
+
 try:
     from local_settings import *
     print("Imported local_settings.py")

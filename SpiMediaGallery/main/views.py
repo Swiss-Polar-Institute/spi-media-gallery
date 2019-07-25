@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.views.generic import TemplateView, View
 from main.models import Medium, MediumResized, Tag
 from django.db.models import Sum
-from main.forms import PhotoIdForm
+from main.forms import MediumIdForm
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 from django.http import JsonResponse
@@ -69,18 +69,10 @@ class Homepage(TemplateView):
         context['list_of_tags_first_half'] = tags[:int(1+len(tags)/2)]
         context['list_of_tags_second_half'] = tags[int(1+len(tags)/2):]
 
-        context['form_search_photo_id'] = PhotoIdForm
+        context['form_search_medium_id'] = MediumIdForm
 
         return context
 
-
-class Random(TemplateView):
-    template_name = "display.tmpl"
-
-    def get(self, request, *args, **kwargs):
-        photo = Medium.objects.order_by('?')[0]
-
-        return redirect("/display/{}".format(photo.id))
 
 
 def information_for_photo_queryset(photo_queryset):
@@ -153,22 +145,48 @@ class SearchMultipleTags(TemplateView):
         return render(request, "search.tmpl", information)
 
 
-class SearchPhotoId(TemplateView):
+class RandomPhoto(TemplateView):
+    def get(self, request, *args, **kwargs):
+        random_photos = Medium.objects.filter(medium_type=Medium.PHOTO).order_by('?')
+
+        if len(random_photos) == 0:
+            information = {"error_message": "No photos available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
+            return render(request, "error.tmpl", information)
+
+        random_photo = random_photos[0]
+
+        return redirect("/display/{}".format(random_photo.id))
+
+
+class RandomVideo(TemplateView):
+    def get(self, request, *args, **kwargs):
+        random_videos = Medium.objects.filter(medium_type=Medium.VIDEO).order_by('?')
+
+        if len(random_videos) == 0:
+            information = {"error_message": "No videos available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
+            return render(request, "error.tmpl", information)
+
+        random_video = random_videos[0]
+
+        return redirect("/display/{}".format(random_video.id))
+
+
+class SearchMediumId(TemplateView):
     def post(self, request, *args, **kwargs):
-        photo_id = request.POST["photo_id"]
+        medium_id = request.POST["medium_id"]
 
-        photo_id = photo_id.split(".")[0]
+        medium_id = medium_id.split(".")[0]
 
-        photo_id = int(re.findall("\d+", photo_id)[0])
+        medium_id = int(re.findall("\d+", medium_id)[0])
 
         try:
-            photo = Medium.objects.get(id=photo_id)
+            photo = Medium.objects.get(id=medium_id)
         except ObjectDoesNotExist:
             template_information = {}
-            template_information['photo_id_not_found'] = photo_id
-            template_information['form_search_photo_id'] = PhotoIdForm
+            template_information['medium_id_not_found'] = medium_id
+            template_information['form_search_medium_id'] = MediumIdForm
 
-            return render(request, "error_photo_id_not_found.tmpl", template_information)
+            return render(request, "error_medium_id_not_found.tmpl", template_information)
 
         return redirect("/display/{}".format(photo.id))
 

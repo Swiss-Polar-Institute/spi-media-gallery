@@ -1,20 +1,20 @@
 {% extends 'base.tmpl' %}
-{% block title %}SPI Media Gallery - Photo ID not found{% endblock %}
+{% block title %}SPI Media Gallery - Medium ID not found{% endblock %}
 
 {% block body_contents %}
     <p>
         <div class="container">
             {% include "logo.tmpl" %}
             <p></p>
-            Photo ID not found: {{ photo_id_not_found }}
+            Photo ID not found: {{ medium_id_not_found }}
 
             Try a different one:
-            <h2>Search using Photo ID</h2>
+            <h2>Search using Medium ID</h2>
             <form action="/search/id/" method="POST">
                 {% csrf_token %}
 
                 <table>
-                    {{ form_search_photo_id }}
+                    {{ form_search_medium_id }}
                 </table>
                 <input type="submit" value="Search">
             </form>

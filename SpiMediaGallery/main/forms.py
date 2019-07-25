@@ -7,8 +7,8 @@ from main.models import Medium
 from django.contrib.gis.geos import Point
 
 
-class PhotoIdForm(forms.Form):
-    photo_id = forms.CharField(label="Photo ID", max_length=255, help_text="Example: SPI-010.jpg, 10, SPI-010.crw")
+class MediumIdForm(forms.Form):
+    medium_id = forms.CharField(label="Photo ID", max_length=255, help_text="Example: SPI-010.jpg, 10, SPI-010.crw")
 
 
 class LocationEntryCoordinates(forms.ModelForm):

@@ -20,7 +20,11 @@
             <li>Size of videos: {{ size_of_videos }}</li>
         </ul>
         <h2>Random photo</h2>
-        <a href="/select_random_photo">Display a random photo.</a>
+        <a href="/display/random/photo">Display a random photo.</a>
+        <p>
+
+        <h2>Random video</h2>
+        <a href="/display/random/video">Display a random video.</a>
         <p>
 
         <h2>Navigate selecting one tag</h2>
@@ -57,7 +61,7 @@
             {% csrf_token %}
 
             <table>
-                {{ form_search_photo_id }}
+                {{ form_search_medium_id }}
             </table>
             <input type="submit" value="Search">
         </form>
