@@ -24,8 +24,13 @@
                                 <td><a href="/display/{{ medium.id }}">{{ medium.id }}</a></td>
                                 <td>{{ medium.object_storage_key }} </td>
                                 <td>{{ medium.duration_in_minutes_seconds }} </td>
-                                <td><a href="{{ medium.link_for_low_resolution }}">Play ({{ medium.file_size_for_low_resolution }})</a></td>
-                                <td><a href="{{ medium.link_for_low_original }}">Download ({{ medium.file_size_for_original }})</a></td>
+
+                                {% if medium.link_for_low_resolution %}
+                                    <td><a href="{{ medium.link_for_low_resolution }}">Play ({{ medium.file_size_for_low_resolution }})</a></td>
+                                {% else %}
+                                    <td>Not available</td>
+                                {% endif %}
+                                <td><a href="{{ medium.link_for_original }}">Download ({{ medium.file_size_for_original }})</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>

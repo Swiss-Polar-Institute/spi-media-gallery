@@ -263,7 +263,11 @@ class MediumForPagination(Medium):
             return None
 
     def link_for_low_resolution(self):
-        return link_for_medium(self._medium_resized("S"), "inline", filename_for_resized_medium(self.pk, "S", "webm"))
+        resized = self._medium_resized("S")
+        if resized is None:
+            return None
+
+        return link_for_medium(resized, "inline", filename_for_resized_medium(self.pk, "S", "webm"))
 
     def link_for_thumbnail_resolution(self):
         return link_for_medium(self._medium_resized("T"), "inline", filename_for_resized_medium(self.pk, "T", "jpg"))
@@ -275,7 +279,12 @@ class MediumForPagination(Medium):
         return utils.bytes_to_human_readable(self.file_size)
 
     def file_size_for_low_resolution(self):
-        return utils.bytes_to_human_readable(self._medium_resized("S").file_size)
+        resized = self._medium_resized("S")
+
+        if resized is None:
+            return None
+
+        return utils.bytes_to_human_readable(resized.file_size)
 
     def duration_in_minutes_seconds(self):
         return utils.seconds_to_minutes_seconds(self.duration)
@@ -292,7 +301,7 @@ class SearchVideos(TemplateView):
 
         videos_qs = MediumForPagination.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key")
 
-        paginator = Paginator(videos_qs, 5)
+        paginator = Paginator(videos_qs, 100)
 
         page = request.GET.get('page')
 
@@ -300,7 +309,7 @@ class SearchVideos(TemplateView):
 
         information['media'] = videos
 
-        return render(request, "search_text.tmpl", information)
+        return render(request, "search_videos.tmpl", information)
 
 
 def link_for_medium(medium, content_disposition, filename):
