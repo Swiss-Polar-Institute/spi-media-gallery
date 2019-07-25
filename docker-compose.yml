@@ -9,8 +9,7 @@ services:
     volumes:
       - ./SpiMediaGallery:/code/SpiMediaGallery
       - static_volume:/code/SpiMediaGallery/staticfiles
-      - type: tmpfs
-        target: /tmp
+      - tmp-for-spi-media-gallery:/tmp
     expose:
       - "8000"
 
@@ -29,6 +28,7 @@ services:
 
 volumes:
   static_volume: {}
+  tmp-for-spi-media-gallery:
 
 secrets:
   spi_media_gallery_buckets.json:
