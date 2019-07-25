@@ -71,7 +71,7 @@ class ProgressReport:
             return "{:.2f} mins".format(minutes)
 
         days = hours / 24
-        if days == 0:
+        if days < 1:
             return "{:.2f} hours".format(hours)
 
         return "{:.2f} days".format(days)
