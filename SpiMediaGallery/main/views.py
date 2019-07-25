@@ -46,6 +46,8 @@ class Homepage(TemplateView):
         size_of_photos = utils.bytes_to_human_readable(Medium.objects.filter(medium_type=Medium.PHOTO).aggregate(Sum('file_size'))['file_size__sum'])
         size_of_videos = utils.bytes_to_human_readable(Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('file_size'))['file_size__sum'])
 
+        duration_of_videos = utils.seconds_to_human_readable(Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('duration'))['duration__sum'])
+
         tags = []
         for tag in Tag.objects.order_by("tag"):
             t = {}
@@ -63,6 +65,8 @@ class Homepage(TemplateView):
 
         context['size_of_photos'] = size_of_photos
         context['size_of_videos'] = size_of_videos
+
+        context['duration_videos'] = duration_of_videos
 
         context['list_of_tags'] = tags
 

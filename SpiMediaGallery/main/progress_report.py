@@ -1,8 +1,11 @@
 import time
 
+# If possible avoid imports from this project because this progress_report could be moved
+# to an independent module
+
 
 class ProgressReport:
-    def __init__(self, total_steps, extra_information="", frequency_of_reports=1):
+    def __init__(self, total_steps, extra_information="", frequency_of_reports=1, steps_are_bytes=False):
         self._frequency_of_reports = frequency_of_reports
         self._total_steps = total_steps
         self._current_step = 0
@@ -10,6 +13,7 @@ class ProgressReport:
         self._steps_to_next_print_report = 0
         self._last_printed_report = 0
         self._extra_information = extra_information
+        self._steps_are_bytes = steps_are_bytes
         print("*********** Progress Report - initialized - total_steps:", self.steps_to_human_readable(total_steps))
 
     def increment_step(self):
@@ -42,19 +46,18 @@ class ProgressReport:
 
             speed_per_minute = speed*60
 
-            print("Steps per minute: {} Percentage: {:.2f}%".format(self.steps_to_human_readable(speed_per_minute), percentage_complete))
+            print("Speed minute: {} Percentage: {:.2f}%".format(self.steps_to_human_readable(speed_per_minute), percentage_complete))
             print()
 
             self._last_printed_report = time.time()
 
             return remaining_time
 
-    @staticmethod
-    def steps_to_human_readable(steps):
-        if steps > 1024*1024:
-            return "{:.2f} M".format(steps / 1024 / 1024)
+    def steps_to_human_readable(self, steps):
+        if self._steps_are_bytes:
+            return "{}/s".format(bytes_to_human_readable(steps))
         else:
-            return "{:.2f}".format(steps)
+            return "{:.2f} steps".format(steps)
 
     @staticmethod
     def seconds_to_human_readable(seconds):
@@ -71,4 +74,15 @@ class ProgressReport:
         if days == 0:
             return "{:.2f} hours".format(hours)
 
-        return "{:.2f}".format(days)
+        return "{:.2f} days".format(days)
+
+
+def bytes_to_human_readable(num):
+    if num is None:
+        return "Unknown"
+
+    for unit in ['','KB','MB','GB','TB','PB','EB','ZB']:
+        if abs(num) < 1024.0:
+            return "{:.2f} {}".format(num, unit)
+        num /= 1024.0
+    return "%d %s" % (num, 'YB')

@@ -4,6 +4,8 @@ from main.models import Medium, MediumResized
 from django.conf import settings
 from PIL import Image
 import sys
+from django.utils import timezone
+
 Image.MAX_IMAGE_PIXELS = None
 
 import datetime
@@ -16,6 +18,8 @@ from main import spi_s3_utils
 from main import utils
 from main.progress_report import ProgressReport
 
+import time
+from main import utils
 
 class Command(BaseCommand):
     help = 'Updates photo tagging'
@@ -94,17 +98,19 @@ class Resizer(object):
     def resize_media(self):
         already_resized = MediumResized.objects.values_list('medium', flat=True).filter(size_label=self._size_type).filter(medium__medium_type=self._medium_type)
         media_to_be_resized = Medium.objects.filter(medium_type=self._medium_type).exclude(id__in=already_resized)
+        verbose = self._medium_type == Medium.VIDEO
 
         if len(media_to_be_resized) == 0:
             print("Nothing to be resized? Aborting")
             sys.exit(1)
 
-        if self._size_type == Medium.PHOTO:
+        if self._medium_type == Medium.PHOTO:
             total_steps = len(media_to_be_resized)
         else:
             total_steps = media_to_be_resized.aggregate(Sum('file_size'))['file_size__sum']
 
-        progress_report = ProgressReport(total_steps, extra_information="Resizing medium to {}".format(self._size_type))
+        progress_report = ProgressReport(total_steps, extra_information="Resizing medium to {}".format(self._size_type),
+                                         steps_are_bytes=self._medium_type == Medium.VIDEO)
 
         resized_width = None
         if self._size_type != 'O':
@@ -122,10 +128,20 @@ class Resizer(object):
                 continue
 
             media_file = tempfile.NamedTemporaryFile(delete=False)
+            start_download = time.time()
             media_file.write(media_object.get()["Body"].read())
+            download_time = time.time() - start_download
             media_file.close()
 
+
             assert os.stat(media_file.name).st_size == medium.file_size
+
+            if verbose:
+                speed = (medium.file_size / 1024 / 1024) / download_time        # MB/s
+                print("Download Stats: Total size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(utils.bytes_to_human_readable(medium.file_size),
+                                                                                          utils.seconds_to_human_readable(download_time),
+                                                                                          speed,
+                                                                                          medium.object_storage_key))
 
             if medium.md5 is None:
                 md5_media_file = utils.hash_of_file_path(media_file.name)
@@ -145,9 +161,17 @@ class Resizer(object):
             elif medium.medium_type == Medium.VIDEO:
                 self.update_information_from_video(medium, media_file.name)
 
+                start_time = time.time()
                 thumbnail_file_name = utils.resize_video(media_file.name, resized_width)
+                duration_convert = time.time() - start_time
 
                 information = get_information_from_video(thumbnail_file_name)
+
+                speed = information['duration'] / duration_convert
+
+                print("Conversion took: {} Speed: {:.2f}x".format(utils.seconds_to_human_readable(duration_convert),
+                                                             speed))
+
 
                 resized_medium.width = information['width']
                 resized_medium.height = information['height']
@@ -175,5 +199,5 @@ class Resizer(object):
             resized_medium.file_size = size
             resized_medium.size_label = self._size_type
             resized_medium.medium = medium
-            resized_medium.datetime_resized = datetime.datetime.now()
+            resized_medium.datetime_resized = datetime.datetime.now(tz=timezone.utc)
             resized_medium.save()

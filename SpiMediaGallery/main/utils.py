@@ -80,7 +80,7 @@ def bytes_to_human_readable(num):
 
     for unit in ['','KB','MB','GB','TB','PB','EB','ZB']:
         if abs(num) < 1024.0:
-            return "%d %s" % (num, unit)
+            return "{:.2f} {}".format(num, unit)
         num /= 1024.0
     return "%d %s" % (num, 'YB')
 
@@ -90,3 +90,23 @@ def seconds_to_minutes_seconds(seconds):
         return "Unknown"
 
     return " {} min {} sec".format(seconds // 60, seconds % 60)
+
+
+def seconds_to_human_readable(seconds):
+    if seconds is None:
+        return "Unknown"
+
+    minutes = seconds / 60
+
+    if minutes < 1:
+        return "{:.2f} secs".format(seconds)
+
+    hours = minutes / 60
+    if hours < 1:
+        return "{:.2f} mins".format(minutes)
+
+    days = hours / 24
+    if days == 0:
+        return "{:.2f} hours".format(hours)
+
+    return "{:.2f} days".format(days)
