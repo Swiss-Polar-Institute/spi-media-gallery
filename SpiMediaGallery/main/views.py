@@ -435,7 +435,7 @@ class Display(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(Display, self).get_context_data(**kwargs)
 
-        context.update(information_for_medium(Medium.objects.get(id=kwargs['photo_id'])))
+        context.update(information_for_medium(Medium.objects.get(id=kwargs['media_id'])))
 
         return context
 
