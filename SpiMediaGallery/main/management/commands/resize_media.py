@@ -46,7 +46,7 @@ def get_information_from_video(video_file):
         if track.track_type == "Video":
             information['width'] = track.width
             information['height'] = track.height
-            information['duration'] = track.duration / 1000
+            information['duration'] = int(track.duration) / 1000
 
     return information
 
