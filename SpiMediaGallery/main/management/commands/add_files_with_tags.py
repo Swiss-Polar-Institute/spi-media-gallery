@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand, CommandError
 from main.models import Medium, Tag
 from libxmp.utils import file_to_dict
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 
 import os
 import tempfile
@@ -97,7 +98,7 @@ class TagImporter(object):
                 else:
                     assert False
 
-                media.datetime_imported = datetime.datetime.now()
+                media.datetime_imported = datetime.datetime.now(tz=timezone.utc)
                 media.save()
 
             for tag in tags:
