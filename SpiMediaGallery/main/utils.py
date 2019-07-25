@@ -60,7 +60,7 @@ def resize_video(input_file_path, width):
         size = "{}:-1".format(width)
 
         command = ["ffmpeg", "-y", "-i", input_file_path,
-                   "-threads", "5",
+                   "-threads", "0",
                    "-vcodec", "vp8", "-crf", "27", "-preset", "veryfast", "-c:a", "libvorbis",
                    "-vf", "scale={}".format(size),
                    output_file_path.name]
