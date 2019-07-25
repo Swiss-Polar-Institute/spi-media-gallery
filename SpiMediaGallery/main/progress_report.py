@@ -78,7 +78,7 @@ class ProgressReport:
 
 
     @staticmethod
-    def bytes_to_human_readable(num):
+    def _bytes_to_human_readable(num):
         if num is None:
             return "Unknown"
 

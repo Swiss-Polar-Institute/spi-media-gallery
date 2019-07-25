@@ -123,16 +123,11 @@ class Resizer(object):
                 progress_report.increment_steps_and_print_if_needed(medium.file_size)
 
             # Read Media file
-            media_object = self._media_bucket.get_object(medium.object_storage_key)
-            if medium.object_storage_key is None or medium.object_storage_key == "":
-                continue
-
             media_file = tempfile.NamedTemporaryFile(delete=False)
-            start_download = time.time()
-            media_file.write(media_object.get()["Body"].read())
-            download_time = time.time() - start_download
             media_file.close()
-
+            start_download = time.time()
+            self._media_bucket.bucket().download_file(medium.object_storage_key, media_file.name)
+            download_time = time.time() - start_download
 
             assert os.stat(media_file.name).st_size == medium.file_size
 

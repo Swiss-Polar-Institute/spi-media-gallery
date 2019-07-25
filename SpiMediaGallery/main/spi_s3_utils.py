@@ -34,7 +34,10 @@ class SpiS3Utils(object):
         return self.resource().Object(self._bucket_configuration["name"], key)
 
     def upload_file(self, file_path, key):
-        self.bucket().meta.client.upload_file(file_path, self._bucket_configuration["name"], key)
+        self.bucket().upload_file(file_path, key)
+
+    def download_file(self, key, file_path):
+        self.bucket().download_file(key, file_path)
 
     def get_presigned_link(self, key, response_content_type, response_content_disposition, filename):
         params = {'Bucket': self._bucket_configuration["name"],
