@@ -14,7 +14,7 @@ class ProgressReport:
         self._last_printed_report = 0
         self._extra_information = extra_information
         self._steps_are_bytes = steps_are_bytes
-        print("*********** Progress Report - initialized - total_steps:", self._steps_to_human_readable(total_steps))
+        print("*********** Progress Report - initialized - Total steps:", self._steps_to_human_readable(total_steps))
 
     def increment_step(self):
         self._current_step += 1
@@ -46,7 +46,7 @@ class ProgressReport:
 
             speed_per_minute = speed*60
 
-            print("Speed minute: {} Percentage: {:.2f}%".format(self._steps_to_human_readable(speed_per_minute), percentage_complete))
+            print("Speed minute: {}/s Percentage: {:.2f}%".format(self._steps_to_human_readable(speed_per_minute), percentage_complete))
             print()
 
             self._last_printed_report = time.time()
@@ -55,7 +55,7 @@ class ProgressReport:
 
     def _steps_to_human_readable(self, steps):
         if self._steps_are_bytes:
-            return "{}/s".format(bytes_to_human_readable(steps))
+            return "{}".format(self._bytes_to_human_readable(steps))
         else:
             return "{:.2f} steps".format(steps)
 
@@ -77,12 +77,13 @@ class ProgressReport:
         return "{:.2f} days".format(days)
 
 
-def bytes_to_human_readable(num):
-    if num is None:
-        return "Unknown"
+    @staticmethod
+    def bytes_to_human_readable(num):
+        if num is None:
+            return "Unknown"
 
-    for unit in ['','KB','MB','GB','TB','PB','EB','ZB']:
-        if abs(num) < 1024.0:
-            return "{:.2f} {}".format(num, unit)
-        num /= 1024.0
-    return "%d %s" % (num, 'YB')
+        for unit in ['','KB','MB','GB','TB','PB','EB','ZB']:
+            if abs(num) < 1024.0:
+                return "{:.2f} {}".format(num, unit)
+            num /= 1024.0
+        return "%d %s" % (num, 'YB')
