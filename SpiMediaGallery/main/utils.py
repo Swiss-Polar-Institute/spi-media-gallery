@@ -63,7 +63,7 @@ def resize_video(input_file_path, width):
                    "-threads", "0",
                    "-vcodec", "vp8", "-crf", "27", "-preset", "veryfast", "-c:a", "libvorbis",
                    "-vf", "scale={}".format(size),
-                   "-auto-alt-ref", "1",    # Fixes error: "Transparency encoding with auto_alt_ref does not work", "Error initializing output stream 0:0 -- Error while opening encoder for output stream #0:0 - maybe incorrect parameters such as bit_rate, rate, width or height"
+                   "-auto-alt-ref", "0",    # Fixes error: "Transparency encoding with auto_alt_ref does not work", "Error initializing output stream 0:0 -- Error while opening encoder for output stream #0:0 - maybe incorrect parameters such as bit_rate, rate, width or height"
                    output_file_path.name]
 
         try:
