@@ -21,22 +21,28 @@ from main.progress_report import ProgressReport
 import time
 from main import utils
 
+
 class Command(BaseCommand):
     help = 'Updates photo tagging'
 
     def add_arguments(self, parser):
         parser.add_argument('bucket_name_media', type=str, help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
-        parser.add_argument('bucket_name_thumbnails', type=str, help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
+        parser.add_argument('bucket_name_resized', type=str, help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
         parser.add_argument('media_type', type=str, choices=["P", "V"], help="Resizes Photos or Videos")
-        parser.add_argument('size_type', type=str, choices=["T", "S", "M", "L", "O"], help="Type of resizing (thumbnail, small, medium, large, original). Original changes the format to JPEG, potential rotation")
+        parser.add_argument('sizes_type', nargs="+", type=str, help="Type of resizing (T for thumbnail, S for small, M for medium, L for large, O for original). Original changes the format to JPEG, potential rotation")
 
     def handle(self, *args, **options):
         bucket_name_media = options["bucket_name_media"]
-        bucket_name_thumbnails = options["bucket_name_thumbnails"]
+        bucket_name_resized = options["bucket_name_resized"]
         media_type = options['media_type']
-        size_type = options["size_type"]
+        sizes_type = options["sizes_type"]
 
-        resizer = Resizer(bucket_name_media, bucket_name_thumbnails, size_type, media_type)
+        for size in sizes_type:
+            if size not in "TSMLO":
+                print("Invalid size, needs to be T (Thumbnail), S (Small), M (Medium), L (Large) or O (Original)")
+                sys.exit(1)
+
+        resizer = Resizer(bucket_name_media, bucket_name_resized, sizes_type, media_type)
 
         resizer.resize_media()
 
@@ -51,19 +57,23 @@ def get_information_from_video(video_file):
             information['width'] = track.width
             information['height'] = track.height
             information['duration'] = float(track.duration) / 1000
+            if track.encoded_date is not None:
+                dt = datetime.datetime.strptime(track.encoded_date, "UTC %Y-%m-%d %H:%M:%S")
+                dt.replace(tzinfo=timezone.utc)
+                information['date_encoded'] = dt
 
     return information
 
 
 class Resizer(object):
-    def __init__(self, bucket_name_media, bucket_name_thumbnails, size_type, medium_type):
+    def __init__(self, bucket_name_media, bucket_name_resizes, sizes_type, medium_type):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name_media)
-        self._thumbnails_bucket = spi_s3_utils.SpiS3Utils(bucket_name_thumbnails)
-        self._size_type = size_type
+        self._resizes_bucket = spi_s3_utils.SpiS3Utils(bucket_name_resizes)
+        self._sizes_type = sizes_type
         self._medium_type = medium_type
 
     @staticmethod
-    def update_information_from_photo(photo, photo_file):
+    def _update_information_from_photo_if_needed(photo, photo_file):
         if photo.width is None or photo.height is None or photo.datetime_taken is None:
             media_photo = Image.open(photo_file)
             photo.width = media_photo.width
@@ -85,19 +95,28 @@ class Resizer(object):
 
 
     @staticmethod
-    def update_information_from_video(video, video_file):
+    def _update_information_from_video(video, video_file):
         if video.width is None or video.height is None or video.duration is None:
             information = get_information_from_video(video_file)
 
             video.width = information['width']
             video.height = information['height']
             video.duration = information['duration']
+            video.datetime_taken = information['date_encoded']
 
             video.save()
 
     def resize_media(self):
-        already_resized = MediumResized.objects.values_list('medium', flat=True).filter(size_label=self._size_type).filter(medium__medium_type=self._medium_type)
+        already_resized = None
+        for size_type in self._sizes_type:
+            qs = MediumResized.objects.values_list('medium', flat=True).filter(size_label=size_type).filter(medium__medium_type=self._medium_type)
+
+            if already_resized is None:
+                already_resized = qs
+            else:
+                already_resized |= qs
         media_to_be_resized = Medium.objects.filter(medium_type=self._medium_type).exclude(id__in=already_resized)
+
         verbose = self._medium_type == Medium.VIDEO
 
         if len(media_to_be_resized) == 0:
@@ -109,20 +128,16 @@ class Resizer(object):
         else:
             total_steps = media_to_be_resized.aggregate(Sum('file_size'))['file_size__sum']
 
-        progress_report = ProgressReport(total_steps, extra_information="Resizing medium to {}".format(self._size_type),
+        progress_report = ProgressReport(total_steps, extra_information="Resizing medium to {}".format(",".join(self._sizes_type)),
                                          steps_are_bytes=self._medium_type == Medium.VIDEO)
 
-        resized_width = None
-        if self._size_type != 'O':
-            resized_width = settings.IMAGE_LABEL_TO_SIZES[self._size_type][0]
-
         for medium in media_to_be_resized:
-            if self._size_type == Medium.PHOTO:
+            if self._medium_type == Medium.PHOTO:
                 progress_report.increment_and_print_if_needed()
             else:
                 progress_report.increment_steps_and_print_if_needed(medium.file_size)
 
-            # Read Media file
+            # Download Media file from the bucket
             media_file = tempfile.NamedTemporaryFile(delete=False)
             media_file.close()
             start_download = time.time()
@@ -141,32 +156,52 @@ class Resizer(object):
             if medium.md5 is None:
                 md5_media_file = utils.hash_of_file_path(media_file.name)
                 medium.md5 = md5_media_file
+                medium.save()
+
+            self._resize_media(medium, media_file.name, self._sizes_type)
+
+            print("Finished: medium.id: {}".format(medium.id))
+
+            os.remove(media_file.name)
+
+    def _resize_media(self, medium, media_file_name, sizes):
+        for size_label in sizes:
+            existing = MediumResized.objects.filter(medium=medium).filter(size_label=size_label)
+
+            if len(existing) > 0:
+                continue
 
             resized_medium = MediumResized()
 
+            if size_label == 'O':
+                resized_width = None
+            else:
+                resized_width = settings.IMAGE_LABEL_TO_SIZES[size_label][0]
+
             if medium.medium_type == Medium.PHOTO:
-                self.update_information_from_photo(medium, media_file.name)
+                self._update_information_from_photo_if_needed(medium, media_file_name)
 
-                thumbnail_file_name = utils.resize_photo(media_file.name, resized_width)
+                resized_medium = utils.resize_photo(media_file_name, resized_width)
 
-                resized_image_information = Image.open(thumbnail_file_name.name)
+                resized_image_information = Image.open(resized_medium)
                 resized_medium.width = resized_image_information.width
                 resized_medium.height = resized_image_information.height
 
             elif medium.medium_type == Medium.VIDEO:
-                self.update_information_from_video(medium, media_file.name)
+                self._update_information_from_video(medium, media_file_name)
+
+                assert size_label != "O" # Not supported to resize to the original size for videos
 
                 start_time = time.time()
-                thumbnail_file_name = utils.resize_video(media_file.name, resized_width)
+                resized_medium = utils.resize_video(media_file_name, resized_width)
                 duration_convert = time.time() - start_time
 
-                information = get_information_from_video(thumbnail_file_name)
+                information = get_information_from_video(resized_medium)
 
                 speed = information['duration'] / duration_convert
 
                 print("Conversion took: {} Speed: {:.2f}x".format(utils.seconds_to_human_readable(duration_convert),
-                                                             speed))
-
+                                                                  speed))
 
                 resized_medium.width = information['width']
                 resized_medium.height = information['height']
@@ -174,25 +209,25 @@ class Resizer(object):
             else:
                 assert False
 
-            md5_resized_file = utils.hash_of_file_path(thumbnail_file_name)
-            _, resized_file_extension = os.path.splitext(thumbnail_file_name)
+            md5_resized_file = utils.hash_of_file_path(resized_medium)
+            _, resized_file_extension = os.path.splitext(resized_medium)
             resized_file_extension = resized_file_extension[1:].lower()
 
             # Upload medium to bucket
-            thumbnail_key = os.path.join(settings.RESIZED_PREFIX, md5_resized_file + "-{}.{}".format(self._size_type, resized_file_extension))
+            thumbnail_key = os.path.join(settings.RESIZED_PREFIX,
+                                         md5_resized_file + "-{}.{}".format(size_label, resized_file_extension))
 
             resized_medium.object_storage_key = thumbnail_key
 
-            self._thumbnails_bucket.upload_file(thumbnail_file_name, thumbnail_key)
-            size = os.stat(thumbnail_file_name).st_size
+            self._resizes_bucket.upload_file(resized_medium, thumbnail_key)
+            file_size = os.stat(resized_medium).st_size
 
-            os.remove(thumbnail_file_name)
-            os.remove(media_file.name)
+            os.remove(resized_medium)
 
             # Update database
             resized_medium.md5 = md5_resized_file
-            resized_medium.file_size = size
-            resized_medium.size_label = self._size_type
+            resized_medium.file_size = file_size
+            resized_medium.size_label = size_label
             resized_medium.medium = medium
             resized_medium.datetime_resized = datetime.datetime.now(tz=timezone.utc)
             resized_medium.save()
