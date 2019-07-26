@@ -60,16 +60,20 @@
                     {% endif %}
                     <p>
                     Random <a href="/display/random/photo/">photo</a>, <a href="/display/random/video/">video</a>, <a href="/display/random/medium/">media</a>
+                    <p>
+                    {% if photo_latitude and photo_longitude %}
+                        {% leaflet_map "photo_map" %}
+                        <script language="javascript">
+                              window.addEventListener("map:init", function (event) {
+                                var map = event.detail.map;
 
-                    {% leaflet_map "photo_map" %}
-                    <script language="javascript">
-                          window.addEventListener("map:init", function (event) {
-                            var map = event.detail.map;
-
-                            var marker = L.marker([{{ photo_latitude }}, {{ photo_longitude }}]).addTo(map);
-                          });
-                    </script>
-                </div>
+                                var marker = L.marker([{{ photo_latitude }}, {{ photo_longitude }}]).addTo(map);
+                              });
+                        </script>
+                    {% else %}
+                        Photo without location information at the moment.
+                    {% endif %}
+                    </div>
             </div>
         </div>
 {% endblock %}
