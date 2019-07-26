@@ -151,6 +151,9 @@ IMAGE_LABEL_TO_SIZES = {
     'L': (1920, 1920)
 }
 
+PHOTO_EXTENSIONS =  {"jpeg", "jpg", "cr2"}
+VIDEO_EXTENSIONS = {"mp4", "mpeg", "mov", "avi", "webm"}
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 

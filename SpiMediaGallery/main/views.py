@@ -9,6 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.conf import settings
+from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.db.models.functions import Distance
@@ -175,6 +176,19 @@ class RandomVideo(TemplateView):
         return redirect("/display/{}".format(random_video.id))
 
 
+class RandomMedium(TemplateView):
+    def get(self, request, *args, **kwargs):
+        random_media = Medium.objects.all().order_by('?')
+
+        if len(random_media) == 0:
+            information = {"error_message": "No media available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
+            return render(request, "error.tmpl", information)
+
+        random_medium = random_media[0]
+
+        return redirect("/display/{}".format(random_medium.id))
+
+
 class SearchMediumId(TemplateView):
     def post(self, request, *args, **kwargs):
         medium_id = request.POST["medium_id"]
@@ -270,7 +284,12 @@ class MediumForPagination(Medium):
         return link_for_medium(resized, "inline", filename_for_resized_medium(self.pk, "S", "webm"))
 
     def link_for_thumbnail_resolution(self):
-        return link_for_medium(self._medium_resized("T"), "inline", filename_for_resized_medium(self.pk, "T", "jpg"))
+        medium_resized = self._medium_resized("T")
+
+        if medium_resized is None:
+            return static("images/thumbnail-does-not-exist.jpg")
+
+        return link_for_medium(medium_resized, "inline", filename_for_resized_medium(self.pk, "T", "jpg"))
 
     def link_for_original(self):
         return link_for_medium(self, "attachment", filename_for_original_medium(self))
@@ -311,17 +330,34 @@ class SearchVideos(TemplateView):
 
         return render(request, "search_videos.tmpl", information)
 
+def content_type_for_filename(filename):
+    extension = os.path.splitext(filename)[1][1:].lower()
+
+    assert extension in (settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS)
+
+    # Can add more from:
+    # Raw images: https://stackoverflow.com/questions/43473056/which-mime-type-should-be-used-for-a-raw-image
+    # Videos (and anything): https://www.sitepoint.com/mime-types-complete-list/
+
+    extension_to_content_type = {'jpg': 'image/jpeg',
+                                 'jpeg': 'image/jpeg',
+                                 'cr2': 'image/x-canon-cr2',
+                                 'mp4': 'video/mp4',
+                                 'mpeg': 'video/mpeg',
+                                 'mov': 'video/quicktime',
+                                 'avi': 'video/avi',
+                                 'webm': 'video/webm'}
+
+    assert extension in extension_to_content_type
+
+    return extension_to_content_type[extension]
 
 def link_for_medium(medium, content_disposition, filename):
-    if type(medium) == MediumResized:
-        medium_for_content_type = medium.medium
-    else:
-        medium_for_content_type = medium
-
-    if medium_for_content_type.medium_type == Medium.PHOTO:
-        content_type = "image/jpeg"
-    elif medium_for_content_type.medium_type == Medium.VIDEO:
-        content_type = "video/webm"
+    content_type = content_type_for_filename(filename)
+    # if medium_for_content_type.medium_type == Medium.PHOTO:
+    #     content_type = "image/jpeg"
+    # elif medium_for_content_type.medium_type == Medium.VIDEO:
+    #     content_type = "video/webm"
 
     if settings.PROXY_TO_OBJECT_STORAGE:
         d = {"content_type": content_type,
@@ -349,9 +385,9 @@ def filename_for_original_medium(medium):
     return "SPI-{}.{}".format(medium.pk, extension)
 
 
-def size_for_medium(medium):
+def human_readable_resolution_for_medium(medium):
     if medium.width is None or medium.height is None:
-        return "Unknown"
+        return "Unknown resolution"
     else:
         return "{}x{}".format(medium.width, medium.height)
 
@@ -373,8 +409,9 @@ def information_for_medium(medium):
         size_information['size'] = utils.bytes_to_human_readable(medium_resized.file_size)
         size_information['width'] = medium_resized.width
 
-        size_information['resolution'] = size_for_medium(medium_resized)
+        size_information['resolution'] = human_readable_resolution_for_medium(medium_resized)
 
+        # Resized images are always jpg or webm
         if medium.medium_type == Medium.PHOTO:
             extension = "jpg"
         elif medium.medium_type == Medium.VIDEO:
@@ -398,12 +435,16 @@ def information_for_medium(medium):
 
     information['sizes_list'] = sorted(sizes_presentation, key=lambda k: k['width'])
 
+    if medium.medium_type == Medium.PHOTO and not 'photo_small_url' in information or\
+        medium.medium_type == Medium.VIDEO and not 'video_small_url' in information:
+        information['photo_small_url'] = static('images/small-does-not-exist.jpg')
+
     _, file_extension = os.path.splitext(medium.object_storage_key)
     file_extension = file_extension.replace(".", "")
     information['file_id'] = "SPI-{}.{}".format(medium.id, file_extension)
 
     information['original_file'] = link_for_medium(medium, "attachment", "SPI-{}.{}".format(medium.id, file_extension))
-    information['original_resolution'] = size_for_medium(medium)
+    information['original_resolution'] = human_readable_resolution_for_medium(medium)
     information['original_file_size'] = utils.bytes_to_human_readable(medium.file_size)
 
     information['date_taken'] = medium.datetime_taken

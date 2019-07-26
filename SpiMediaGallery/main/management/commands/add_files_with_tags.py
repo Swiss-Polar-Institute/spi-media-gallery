@@ -4,6 +4,7 @@ from main.models import Medium, Tag
 from libxmp.utils import file_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
+from django.conf import settings
 
 import os
 import tempfile
@@ -45,8 +46,8 @@ class TagImporter(object):
 
         print("Total number of files to process:", len(all_keys))
 
-        photo_extensions = {"jpeg", "jpg", "cr2"}
-        video_extensions = {"mp4", "mpeg", "mov", "avi"}
+        photo_extensions = settings.PHOTO_EXTENSIONS
+        video_extensions = settings.VIDEO_EXTENSIONS
 
         valid_extensions = photo_extensions | video_extensions
 

@@ -1,6 +1,6 @@
 from django.urls import path
 from main.views import Homepage, SearchMultipleTags, SearchMediumId, SearchBox, SearchNear, SearchVideos, \
-    Display, RandomPhoto, RandomVideo, Map, PhotosGeojson, TrackGeojson, GetPhoto
+    Display, RandomPhoto, RandomVideo, RandomMedium, Map, PhotosGeojson, TrackGeojson, GetPhoto
 
 urlpatterns = [
     path('', Homepage.as_view()),
@@ -12,6 +12,7 @@ urlpatterns = [
     path('display/<int:media_id>', Display.as_view()),
     path('display/random/photo/', RandomPhoto.as_view()),
     path('display/random/video/', RandomVideo.as_view()),
+    path('display/random/medium/', RandomMedium.as_view()),
     path('map/photos.geojson', PhotosGeojson.as_view()),
     path('map/', Map.as_view()),
     path('map/track.geojson', TrackGeojson.as_view()),
