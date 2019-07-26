@@ -181,9 +181,9 @@ class Resizer(object):
             if medium.medium_type == Medium.PHOTO:
                 self._update_information_from_photo_if_needed(medium, media_file_name)
 
-                resized_medium = utils.resize_photo(media_file_name, resized_width)
+                resized_medium_file = utils.resize_photo(media_file_name, resized_width)
 
-                resized_image_information = Image.open(resized_medium)
+                resized_image_information = Image.open(resized_medium_file)
                 resized_medium.width = resized_image_information.width
                 resized_medium.height = resized_image_information.height
 
@@ -193,10 +193,10 @@ class Resizer(object):
                 assert size_label != "O" # Not supported to resize to the original size for videos
 
                 start_time = time.time()
-                resized_medium = utils.resize_video(media_file_name, resized_width)
+                resized_medium_file = utils.resize_video(media_file_name, resized_width)
                 duration_convert = time.time() - start_time
 
-                information = get_information_from_video(resized_medium)
+                information = get_information_from_video(resized_medium_file)
 
                 speed = information['duration'] / duration_convert
 
