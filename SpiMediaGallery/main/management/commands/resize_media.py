@@ -59,7 +59,7 @@ def get_information_from_video(video_file):
             information['duration'] = float(track.duration) / 1000
             if track.encoded_date is not None:
                 dt = datetime.datetime.strptime(track.encoded_date, "UTC %Y-%m-%d %H:%M:%S")
-                dt.replace(tzinfo=timezone.utc)
+                dt = dt.replace(tzinfo=timezone.utc)
                 information['date_encoded'] = dt
 
     return information
@@ -86,7 +86,9 @@ class Resizer(object):
             if EXIF_DATE_ID in exif_data:
                 try:
                     datetime_taken = datetime.datetime.strptime(exif_data[EXIF_DATE_ID], "%Y:%m:%d %H:%M:%S")
+                    datetime_taken = datetime_taken.replace(tzinfo=timezone.UTC)
                 except ValueError:
+                    print("Invalid datetime:", exif_data[EXIF_DATE_ID], "in photo:", photo.id)
                     datetime_taken = None
 
                 photo.datetime_taken = datetime_taken
