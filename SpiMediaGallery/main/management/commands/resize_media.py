@@ -209,20 +209,20 @@ class Resizer(object):
             else:
                 assert False
 
-            md5_resized_file = utils.hash_of_file_path(resized_medium)
-            _, resized_file_extension = os.path.splitext(resized_medium)
+            md5_resized_file = utils.hash_of_file_path(resized_medium_file)
+            _, resized_file_extension = os.path.splitext(resized_medium_file)
             resized_file_extension = resized_file_extension[1:].lower()
 
             # Upload medium to bucket
-            thumbnail_key = os.path.join(settings.RESIZED_PREFIX,
+            resized_key = os.path.join(settings.RESIZED_PREFIX,
                                          md5_resized_file + "-{}.{}".format(size_label, resized_file_extension))
 
-            resized_medium.object_storage_key = thumbnail_key
+            resized_medium.object_storage_key = resized_key
 
-            self._resizes_bucket.upload_file(resized_medium, thumbnail_key)
-            file_size = os.stat(resized_medium).st_size
+            self._resizes_bucket.upload_file(resized_medium_file, resized_key)
+            file_size = os.stat(resized_medium_file).st_size
 
-            os.remove(resized_medium)
+            os.remove(resized_medium_file)
 
             # Update database
             resized_medium.md5 = md5_resized_file
