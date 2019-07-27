@@ -62,6 +62,9 @@ def get_information_from_video(video_file):
                 dt = dt.replace(tzinfo=timezone.utc)
                 information['date_encoded'] = dt
 
+            else:
+                information['date_encoded'] = None
+
     return information
 
 
