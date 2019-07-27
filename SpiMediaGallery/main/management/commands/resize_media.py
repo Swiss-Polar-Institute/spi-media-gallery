@@ -211,8 +211,9 @@ class Resizer(object):
                 else:
                     print("Conversion took: {} Speed: unknown, duration of video not known".format(utils.seconds_to_human_readable(duration_convert)))
 
-                resized_medium.width = information['width']
-                resized_medium.height = information['height']
+                if 'width' in information and 'height' in information:
+                    resized_medium.width = information['width']
+                    resized_medium.height = information['height']
 
             else:
                 assert False
