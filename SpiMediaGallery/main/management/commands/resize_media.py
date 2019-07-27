@@ -127,10 +127,13 @@ class Resizer(object):
 
         if self._medium_type == Medium.PHOTO:
             total_steps = len(media_to_be_resized)
+            progress_report_unit = "photos"
         else:
             total_steps = media_to_be_resized.aggregate(Sum('file_size'))['file_size__sum']
+            progress_report_unit = None
 
-        progress_report = ProgressReport(total_steps, extra_information="Resizing medium to {}".format(",".join(self._sizes_type)),
+        progress_report = ProgressReport(total_steps, unit=progress_report_unit,
+                                         extra_information="Resizing medium to {}".format(",".join(self._sizes_type)),
                                          steps_are_bytes=self._medium_type == Medium.VIDEO)
 
         for medium in media_to_be_resized:
@@ -200,10 +203,13 @@ class Resizer(object):
 
                 information = get_information_from_video(resized_medium_file)
 
-                speed = information['duration'] / duration_convert
+                if 'duration' in information:
+                    speed = information['duration'] / duration_convert
 
-                print("Conversion took: {} Speed: {:.2f}x".format(utils.seconds_to_human_readable(duration_convert),
-                                                                  speed))
+                    print("Conversion took: {} Speed: {:.2f}x".format(utils.seconds_to_human_readable(duration_convert),
+                                                                    speed))
+                else:
+                    print("Conversion took: {} Speed: unknown, duration of video not known".format(utils.seconds_to_human_readable(duration_convert)))
 
                 resized_medium.width = information['width']
                 resized_medium.height = information['height']

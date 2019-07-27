@@ -5,16 +5,17 @@ import time
 
 
 class ProgressReport:
-    def __init__(self, total_steps, extra_information="", frequency_of_reports=1, steps_are_bytes=False):
+    def __init__(self, total_steps, unit="steps", extra_information="", frequency_of_reports=1, steps_are_bytes=False):
         self._frequency_of_reports = frequency_of_reports
         self._total_steps = total_steps
+        self._unit = unit
         self._current_step = 0
         self._start_time = time.time()
         self._steps_to_next_print_report = 0
         self._last_printed_report = 0
         self._extra_information = extra_information
         self._steps_are_bytes = steps_are_bytes
-        print("*********** Progress Report - initialized - Total steps:", self._steps_to_human_readable(total_steps))
+        print("*********** Progress Report - initialized - Total {}:", self._steps_to_human_readable(total_steps))
 
     def increment_step(self):
         self._current_step += 1
@@ -46,18 +47,18 @@ class ProgressReport:
 
             speed_per_minute = speed*60
 
-            print("Speed minute: {}/s Percentage: {:.2f}%".format(self._steps_to_human_readable(speed_per_minute), percentage_complete))
+            print("Speed minute: {}/s Percentage: {:.2f}%".format(self._steps_to_human_readable(speed_per_minute, format_output="{:.2f}"), percentage_complete))
             print()
 
             self._last_printed_report = time.time()
 
             return remaining_time
 
-    def _steps_to_human_readable(self, steps):
+    def _steps_to_human_readable(self, steps, format_output="{}"):
         if self._steps_are_bytes:
             return "{}".format(self._bytes_to_human_readable(steps))
         else:
-            return "{:.2f} steps".format(steps)
+            return (format_output+" {}").format(steps, self._unit)
 
     @staticmethod
     def _seconds_to_human_readable(seconds):
@@ -75,7 +76,6 @@ class ProgressReport:
             return "{:.2f} hours".format(hours)
 
         return "{:.2f} days".format(days)
-
 
     @staticmethod
     def _bytes_to_human_readable(num):
