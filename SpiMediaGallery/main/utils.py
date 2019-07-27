@@ -64,6 +64,7 @@ def resize_video(input_file_path, width):
                    "-vcodec", "vp8", "-crf", "27", "-preset", "veryfast", "-c:a", "libvorbis",
                    "-vf", "scale={}".format(size),
                    "-auto-alt-ref", "0",    # Fixes error: "Transparency encoding with auto_alt_ref does not work", "Error initializing output stream 0:0 -- Error while opening encoder for output stream #0:0 - maybe incorrect parameters such as bit_rate, rate, width or height"
+                   "-max_muxing_queue_size", "4096", # Fixes error: "Too many packets buffered for output stream 0:1."
                    output_file_path.name]
 
         try:
