@@ -108,8 +108,8 @@ class MediumResized(models.Model):
 
     size_label = models.CharField(max_length=1, choices=SIZES_OF_PHOTOS)
 
-    height = models.IntegerField(null=True, blank=True)
-    width = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField()
+    width = models.IntegerField()
     medium = models.ForeignKey(Medium, on_delete=models.PROTECT)
 
     @staticmethod
