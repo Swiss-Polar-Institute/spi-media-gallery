@@ -15,7 +15,7 @@ class ProgressReport:
         self._last_printed_report = 0
         self._extra_information = extra_information
         self._steps_are_bytes = steps_are_bytes
-        print("*********** Progress Report - initialized - Total {}:", self._steps_to_human_readable(total_steps))
+        print("*********** Progress Report - initialized - Total {}:".format(self._steps_to_human_readable(total_steps)))
 
     def increment_step(self):
         self._current_step += 1
