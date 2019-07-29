@@ -22,7 +22,7 @@ from django.core.serializers import serialize
 from django.core.paginator import Paginator
 
 import json
-
+import datetime
 import os
 import re
 import requests
@@ -338,7 +338,7 @@ class SearchVideosExportCsv(TemplateView):
     def get(self, request, *args, **kwargs):
         response = HttpResponse(content_type='text/csv')
 
-        response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+        response['Content-Disposition'] = 'attachment; filename="spi_search_videos-{}.csv"'.format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         videos_qs = MediumForPagination.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key")
 

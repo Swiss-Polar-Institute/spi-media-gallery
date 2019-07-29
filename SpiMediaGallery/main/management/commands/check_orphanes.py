@@ -59,12 +59,13 @@ class CheckOrphanes(object):
         files_in_database_not_in_buckets = all_database_files - all_bucket_files
         files_in_buckets_not_in_database = all_bucket_files - all_database_files
 
-        print("Files in the database missing in the buckets")
+        print("Files in the database missing in the buckets:")
 
         for file in files_in_database_not_in_buckets:
             print(file)
 
-        print("Files in the buckets but not referenced in the database")
+        print()
+        print("Files in the buckets but not referenced in the database:")
 
         for file in files_in_buckets_not_in_database:
             print(file)
