@@ -21,7 +21,7 @@
                     <tbody>
                         {% for medium in media %}
                             <tr>
-                                <td><a href="/display/{{ medium.id }}">{{ medium.id }}</a></td>
+                                <td><a href="/display/{{ medium.pk }}">{{ medium.pk }}</a></td>
                                 <td>{{ medium.object_storage_key }} </td>
                                 <td>{{ medium.duration_in_minutes_seconds }} </td>
 

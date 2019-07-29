@@ -27,6 +27,7 @@ import os
 import re
 import requests
 import urllib
+import csv
 
 from main.spi_s3_utils import SpiS3Utils
 import main.utils as utils
@@ -331,6 +332,23 @@ class SearchVideos(TemplateView):
         information['media'] = videos
 
         return render(request, "search_videos.tmpl", information)
+
+
+class SearchVideosExportCsv(TemplateView):
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type='text/csv')
+
+        response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+        videos_qs = MediumForPagination.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key")
+
+        writer = csv.writer(response)
+        writer.writerow(["ID", "Name", "Duration", "Link"])
+
+        for video in videos_qs:
+            writer.writerow([video.pk, video.object_storage_key, video.duration_in_minutes_seconds(), request.build_absolute_uri("/display/{}".format(video.pk))])
+
+        return response
 
 def content_type_for_filename(filename):
     extension = os.path.splitext(filename)[1][1:].lower()
