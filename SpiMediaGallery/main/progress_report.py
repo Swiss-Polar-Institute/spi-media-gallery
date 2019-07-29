@@ -44,7 +44,7 @@ class ProgressReport:
             eta = time.time() + remaining_time
 
             progress_print("PROGRESS: {}".format(self._extra_information))
-            progress_print("Processing {} of {}. Elapsed time: {}. Remaining time: {}. ETA: {}.".format(self._steps_to_human_readable(self._current_step),
+            progress_print("Processed {} of {}. Elapsed time: {}. Remaining time: {}. ETA: {}.".format(self._steps_to_human_readable(self._current_step),
                                                                                       self._steps_to_human_readable(self._total_steps),
                                                                                       self._seconds_to_human_readable(elapsed_time),
                                                                                       self._seconds_to_human_readable(remaining_time),

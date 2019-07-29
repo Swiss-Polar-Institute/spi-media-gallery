@@ -101,7 +101,7 @@ class Resizer(object):
 
     @staticmethod
     def _update_information_from_video(video, video_file):
-        if video.width is None or video.height is None or video.duration is None:
+        if video.width is None or video.height is None or video.duration is None or video.datetime_taken is None:
             information = get_information_from_video(video_file)
 
             video.width = information['width']
@@ -140,11 +140,6 @@ class Resizer(object):
                                          steps_are_bytes=self._medium_type == Medium.VIDEO)
 
         for medium in media_to_be_resized:
-            if self._medium_type == Medium.PHOTO:
-                progress_report.increment_and_print_if_needed()
-            else:
-                progress_report.increment_steps_and_print_if_needed(medium.file_size)
-
             # Download Media file from the bucket
             media_file = tempfile.NamedTemporaryFile(delete=False)
             media_file.close()
@@ -156,7 +151,8 @@ class Resizer(object):
 
             if verbose:
                 speed = (medium.file_size / 1024 / 1024) / download_time        # MB/s
-                print("Download Stats: Total size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(utils.bytes_to_human_readable(medium.file_size),
+                print("Download Stats {} Size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(medium.object_storage_key,
+                                                                                          utils.bytes_to_human_readable(medium.file_size),
                                                                                           utils.seconds_to_human_readable(download_time),
                                                                                           speed,
                                                                                           medium.object_storage_key))
@@ -171,6 +167,12 @@ class Resizer(object):
             print("Finished: medium.id: {}".format(medium.id))
 
             os.remove(media_file.name)
+
+            if self._medium_type == Medium.PHOTO:
+                progress_report.increment_and_print_if_needed()
+            else:
+                progress_report.increment_steps_and_print_if_needed(medium.file_size)
+
 
     def _resize_media(self, medium, media_file_name, sizes):
         for size_label in sizes:

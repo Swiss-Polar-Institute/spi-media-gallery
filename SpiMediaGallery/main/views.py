@@ -350,6 +350,7 @@ class SearchVideosExportCsv(TemplateView):
 
         return response
 
+
 def content_type_for_filename(filename):
     extension = os.path.splitext(filename)[1][1:].lower()
 
