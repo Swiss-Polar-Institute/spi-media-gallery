@@ -445,6 +445,7 @@ def information_for_medium(medium):
     file_extension = file_extension.replace(".", "")
     information['file_id'] = "SPI-{}.{}".format(medium.id, file_extension)
 
+    information['photo_key'] = medium.object_storage_key
     information['original_file'] = link_for_medium(medium, "attachment", "SPI-{}.{}".format(medium.id, file_extension))
     information['original_resolution'] = human_readable_resolution_for_medium(medium)
     information['original_file_size'] = utils.bytes_to_human_readable(medium.file_size)
