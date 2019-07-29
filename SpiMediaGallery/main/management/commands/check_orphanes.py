@@ -38,10 +38,12 @@ class CheckOrphanes(object):
         return s
 
     def run(self):
-        files_bucket_media = self._media_bucket.list_files("/")
+        valid_extensions = settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS
+
+        files_bucket_media = self._media_bucket.list_files("", only_from_extensions=valid_extensions)
         files_database_media = self._database_files(Medium.objects.all())
 
-        files_bucket_resized = self._resizes_bucket.list_files(settings.RESIZED_PREFIX + "/")
+        files_bucket_resized = self._resizes_bucket.list_files(settings.RESIZED_PREFIX + "/", only_from_extensions=valid_extensions)
         files_database_resized = self._database_files(MediumResized.objects.all())
 
         all_database_files = files_database_media.union(files_database_resized)
@@ -54,7 +56,6 @@ class CheckOrphanes(object):
 
         print("Files in the buckets but not referenced in the database, without XMP")
         files_in_buckets_not_in_database = all_bucket_files - all_database_files
-        files_in_buckets_not_in_database_without_xmp = {f for f in files_in_buckets_not_in_database if not f.lower().endswith(".xmp")}
 
-        for file in files_in_buckets_not_in_database_without_xmp:
+        for file in files_in_buckets_not_in_database:
             print(file)

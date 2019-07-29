@@ -60,13 +60,21 @@ class SpiS3Utils(object):
                                                                      'ResponseContentDisposition': 'attachment; filename={}'.format(filename),
                                                                      'ResponseContentType' : 'application/image'})
 
-    def list_files(self, prefix):
+    def list_files(self, prefix, only_from_extensions=None):
         files_set = set()
         files = self.bucket().objects.filter(Prefix=prefix).all()
 
         for file in files:
-            if file.key.endswith("/"):
-                continue
+            if only_from_extensions is not None:
+                basename, extension = os.path.splitext(file.key)
+
+                if len(extension) > 0:
+                    extension = extension[1:]
+
+                extension = extension.lower()
+
+                if extension not in only_from_extensions:
+                    continue
 
             files_set.add(file.key.lstrip("/"))
 
