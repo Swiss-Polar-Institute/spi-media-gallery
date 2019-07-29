@@ -44,8 +44,9 @@ class Homepage(TemplateView):
         total_photo_thumbnails = MediumResized.objects.filter(size_label="T").filter(medium__medium_type=Medium.PHOTO).count()
         total_video_thumbnails = MediumResized.objects.filter(size_label="S").filter(medium__medium_type=Medium.VIDEO).count()
 
-        size_of_photos = utils.bytes_to_human_readable(Medium.objects.filter(medium_type=Medium.PHOTO).aggregate(Sum('file_size'))['file_size__sum'])
-        size_of_videos = utils.bytes_to_human_readable(Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('file_size'))['file_size__sum'])
+        size_of_photos = Medium.objects.filter(medium_type=Medium.PHOTO).aggregate(Sum('file_size'))['file_size__sum']
+        size_of_videos = Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('file_size'))['file_size__sum']
+        size_of_videos_already_resized = int(MediumResized.objects.filter(size_label="S").filter(medium__medium_type="V").aggregate(Sum('medium__file_size'))['medium__file_size__sum'])
 
         duration_of_videos = utils.seconds_to_human_readable(Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('duration'))['duration__sum'])
 
@@ -64,8 +65,9 @@ class Homepage(TemplateView):
         context['total_number_photo_thumbnails'] = total_photo_thumbnails
         context['total_number_video_thumbnails'] = total_video_thumbnails
 
-        context['size_of_photos'] = size_of_photos
-        context['size_of_videos'] = size_of_videos
+        context['size_of_photos'] = utils.bytes_to_human_readable(size_of_photos)
+        context['size_of_videos'] = utils.bytes_to_human_readable(size_of_videos)
+        context['percentage_already_resized'] = (size_of_videos_already_resized / size_of_videos) * 100.0
 
         context['duration_videos'] = duration_of_videos
 
