@@ -60,3 +60,14 @@ class SpiS3Utils(object):
                                                                      'ResponseContentDisposition': 'attachment; filename={}'.format(filename),
                                                                      'ResponseContentType' : 'application/image'})
 
+    def list_files(self, prefix):
+        files_set = set()
+        files = self.bucket().objects.filter(Prefix=prefix).all()
+
+        for file in files:
+            if file.key.endswith("/"):
+                continue
+
+            files_set.add(file.key.lstrip("/"))
+
+        return files_set
