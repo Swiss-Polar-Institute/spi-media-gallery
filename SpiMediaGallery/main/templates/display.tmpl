@@ -12,11 +12,11 @@
         <div class="container">
             {% include "logo.tmpl" %}
             <p></p>
-            <b>{{ file_id }}</b>
+            <b>{{ medium.file_id }}</b>
             <div class="row">
                 <div class="col-md-6">
 
-                    {% if photo_small_url %}
+                    {% if medium.link_for_small_resolution %}
                         <img class="img-thumbnail" src="{{ photo_small_url }}"><br>
                     {% endif %}
 
@@ -31,10 +31,10 @@
                     {% endif %}
                     <small>
                         <br>
-                        <b>Copyright:</b> {{ copyright }}<br>
-                        <b>Photographer:</b> {{ photographer }}<br>
+                        <b>Copyright:</b> {{ medium.copyright_render }}<br>
+                        <b>Photographer:</b> {{ medium.photographer_render }}<br>
                         <b>License:</b> <br>
-                        {{ license | safe }}<p>
+                        {{ medium.license_render | safe }}<p>
                     </small>
                     <!--
                     <div align="left">
@@ -48,7 +48,7 @@
                         <a href="{{ photo_size.image_link }}">{{ photo_size.label }}</a> ({{ photo_size.resolution }}, {{ photo_size.size }})<br>
                     {% endfor %}
                     <p>
-                        <a href="{{ original_file }}">Download original file</a> ({{ original_resolution}}, {{ original_file_size }})</a>
+                        <a href="{{ medium.link_for_original }}">Download original file</a> ({{ medium.resolution_for_original }}, {{ medium.file_size_for_original }})</a>
                     <p>
                     Tags:
                         {% if list_of_tags %}
@@ -60,13 +60,15 @@
                         {% endif %}
                     <p>
 
-                    {% if date_taken %}
-                    Date taken: {{ date_taken }}
+                    {% if medium.datetime_taken %}
+                        Date taken: {{ medium.datetime_taken }}
+                    {% else %}
+                        Date taken: unknown
                     {% endif %}
                     <p>
-                    {% if photo_latitude %}
-                    Latitude: {{ photo_latitude|floatformat:3 }} Longitude: {{ photo_longitude|floatformat:3 }}<br>
-                    <a href="/search/near?latitude={{ photo_latitude }}&longitude={{ photo_longitude }}&km=10">Nearby (10 km) photos</a>
+                    {% if medium.latitude %}
+                    Latitude: {{ medium.latitude|floatformat:3 }} Longitude: {{ medium.longitude|floatformat:3 }}<br>
+                    <a href="/search/near?latitude={{ medium.latitude }}&longitude={{ medium.longitude }}&km=10">Nearby (10 km) photos</a>
                     {% endif %}
                     <p>
                     Random <a href="/display/random/photo/">photo</a>, <a href="/display/random/video/">video</a>, <a href="/display/random/medium/">media</a>
@@ -85,7 +87,7 @@
                     {% endif %}
                     <p>
                     <small>
-                        Photo path: {{ photo_key }}
+                        Photo path: {{ medium.object_storage_key }}
                     </small>
 
                     </div>

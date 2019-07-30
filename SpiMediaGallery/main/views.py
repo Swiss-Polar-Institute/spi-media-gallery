@@ -279,13 +279,6 @@ class MediumForPagination(Medium):
         else:
             return None
 
-    def link_for_low_resolution(self):
-        resized = self._medium_resized("S")
-        if resized is None:
-            return None
-
-        return link_for_medium(resized, "inline", filename_for_resized_medium(self.pk, "S", "webm"))
-
     def link_for_thumbnail_resolution(self):
         if self.medium_type == Medium.PHOTO:
             medium_resized = self._medium_resized("T")
@@ -303,13 +296,23 @@ class MediumForPagination(Medium):
 
             return link_for_medium(medium_resized, "inline", filename_for_resized_medium(self.pk, "S", "webm"))
 
+        else:
+            assert False
+
     def link_for_original(self):
         return link_for_medium(self, "attachment", filename_for_original_medium(self))
 
     def file_size_for_original(self):
         return utils.bytes_to_human_readable(self.file_size)
 
-    def file_size_for_low_resolution(self):
+    def link_for_small_resolution(self):
+        resized = self._medium_resized("S")
+        if resized is None:
+            return static("images/small-does-not-exist.jpg")
+
+        return link_for_medium(resized, "inline", filename_for_resized_medium(self.pk, "S", self.file_extension()))
+
+    def file_size_for_small_resolution(self):
         resized = self._medium_resized("S")
 
         if resized is None:
@@ -320,18 +323,58 @@ class MediumForPagination(Medium):
     def duration_in_minutes_seconds(self):
         return utils.seconds_to_minutes_seconds(self.duration)
 
-    def embed_responsive_ratio(self):
+    def video_embed_responsive_ratio(self):
         if math.isclose(self.width / self.height, 16/9):
             return "embed-responsive-16by9"
 
         return "embed-responsive-16by9"
 
-    def video_small_type(self):
-        return "video/webm"
+    def small_content_type(self):
+        if self.medium_type == Medium.VIDEO:
+            return "video/webm"
+        else:
+            return "image/jpeg"
 
     def border_color(self):
         if self.medium_type == Medium.VIDEO:
             return "border-dark"
+
+    def resolution_for_original(self):
+        if self.width is None or self.height is None:
+            return "Unknown"
+
+        return "{}x{}".format(self.width, self.height)
+
+    def file_extension(self):
+        _ , file_extension = os.path.splitext(self.object_storage_key)
+
+        if file_extension is None or len(file_extension) == 0:
+            return "unknown"
+
+        file_extension = file_extension[1:]
+
+        return file_extension
+
+    def file_id(self):
+        return "SPI-{}.{}".format(self.pk, self.file_extension())
+
+    def copyright_render(self):
+        if self.copyright is None:
+            return "Unknown"
+        else:
+            return self.copyright.public_text
+
+    def license_render(self):
+        if self.license is None:
+            return "Unknown"
+        else:
+            return self.license.public_text
+
+    def photographer_render(self):
+        if self.photographer is None:
+            return "Unknown"
+        else:
+            return "{} {}".format(self.photographer.first_name, self.photographer.last_name)
 
     class Meta:
         proxy = True
@@ -396,6 +439,7 @@ def content_type_for_filename(filename):
     assert extension in extension_to_content_type
 
     return extension_to_content_type[extension]
+
 
 def link_for_medium(medium, content_disposition, filename):
     content_type = content_type_for_filename(filename)
@@ -483,24 +527,7 @@ def information_for_medium(medium):
 
     information['sizes_list'] = sorted(sizes_presentation, key=lambda k: k['width'])
 
-    if medium.medium_type == Medium.PHOTO and not 'photo_small_url' in information or\
-        medium.medium_type == Medium.VIDEO and not 'video_small_url' in information:
-        information['photo_small_url'] = static('images/small-does-not-exist.jpg')
-
-    _, file_extension = os.path.splitext(medium.object_storage_key)
-    file_extension = file_extension.replace(".", "")
-    information['file_id'] = "SPI-{}.{}".format(medium.id, file_extension)
-
-    information['photo_key'] = medium.object_storage_key
-    information['original_file'] = link_for_medium(medium, "attachment", "SPI-{}.{}".format(medium.id, file_extension))
-    information['original_resolution'] = human_readable_resolution_for_medium(medium)
-    information['original_file_size'] = utils.bytes_to_human_readable(medium.file_size)
-
-    information['date_taken'] = medium.datetime_taken
-
-    information['photo_latitude'] = medium.latitude()
-    information['photo_longitude'] = medium.longitude()
-    information['medium_type'] = medium.medium_type
+    information['medium'] = medium
 
     list_of_tags = []
 
@@ -509,21 +536,6 @@ def information_for_medium(medium):
         list_of_tags.append(t)
 
     information['list_of_tags'] = sorted(list_of_tags, key=lambda k: k['tag'])
-
-    if medium.license is not None:
-        information['license'] = medium.license.public_text
-    else:
-        information['license'] = "Unknown"
-
-    if medium.copyright is not None:
-        information['copyright'] = medium.copyright.public_text
-    else:
-        information['copyright'] = "Unknown"
-
-    if medium.photographer is not None:
-        information['photographer'] = "{} {}".format(medium.photographer.first_name, medium.photographer.last_name)
-    else:
-        information['photographer'] = "Unknown"
 
     return information
 
@@ -534,7 +546,7 @@ class Display(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(Display, self).get_context_data(**kwargs)
 
-        context.update(information_for_medium(Medium.objects.get(id=kwargs['media_id'])))
+        context.update(information_for_medium(MediumForPagination.objects.get(id=kwargs['media_id'])))
 
         return context
 
