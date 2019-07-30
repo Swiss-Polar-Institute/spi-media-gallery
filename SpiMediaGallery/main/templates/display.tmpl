@@ -16,15 +16,16 @@
             <div class="row">
                 <div class="col-md-6">
 
-                    {% if medium.link_for_small_resolution %}
-                        <img class="img-thumbnail" src="{{ photo_small_url }}"><br>
+
+                    {% if medium.is_photo %}
+                        <img class="img-thumbnail" src="{{ medium.link_for_small_resolution }}"><br>
                     {% endif %}
 
-                    {% if video_small_url %}
+                    {% if medium.is_video %}
                         <div class="card p-1 {{ border_color }}">
-                            <div class="embed-responsive {{ embed_responsive_ratio }}">
+                            <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
                                     <video controls>
-                                        <source src="{{ video_small_url }}" type="video/webm">
+                                        <source src="{{ medium.link_for_small_resolution }}" type="video/webm">
                                     </video>
                             </div>
                         </div>
@@ -44,15 +45,15 @@
 
                 </div>
                 <div class="col-md-6">
-                    {% for photo_size in sizes_list %}
+                    {% for photo_size in medium.resizeds %}
                         <a href="{{ photo_size.image_link }}">{{ photo_size.label }}</a> ({{ photo_size.resolution }}, {{ photo_size.size }})<br>
                     {% endfor %}
                     <p>
                         <a href="{{ medium.link_for_original }}">Download original file</a> ({{ medium.resolution_for_original }}, {{ medium.file_size_for_original }})</a>
                     <p>
                     Tags:
-                        {% if list_of_tags %}
-                            {% for tag in list_of_tags %}
+                        {% if medium.list_of_tags %}
+                            {% for tag in medium.list_of_tags %}
                                 <a href="/search/tags/?tags={{tag.id}}">{{tag.tag}}</a>{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         {% else %}

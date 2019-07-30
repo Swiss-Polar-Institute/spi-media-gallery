@@ -1,6 +1,8 @@
 # from django.db import models
 from django.contrib.gis.db import models
 
+import os
+
 
 class Photographer(models.Model):
     first_name = models.CharField(max_length=255)
@@ -115,6 +117,17 @@ class MediumResized(models.Model):
     @staticmethod
     def bucket_name():
         return "resized"
+
+    def file_extension(self):
+        _, extension = os.path.splitext(self.object_storage_key)
+        if extension is None:
+            return "Unknown"
+
+        if len(extension) == 0:
+            return ""
+
+        return extension[1:]
+
 
     class Meta:
         verbose_name_plural = "MediaResized"

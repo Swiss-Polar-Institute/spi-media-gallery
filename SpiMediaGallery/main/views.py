@@ -112,7 +112,7 @@ def information_for_photo_queryset(photo_queryset):
 def information_for_tag_ids(tag_ids):
     information = {}
 
-    query_photos_for_tags = MediumForPagination.objects.order_by("datetime_taken")
+    query_photos_for_tags = MediumForView.objects.order_by("datetime_taken")
     tags_list = []
 
     for tag_id in tag_ids:
@@ -269,7 +269,7 @@ class SearchNear(TemplateView):
         return render(request, "search.tmpl", information)
 
 
-class MediumForPagination(Medium):
+class MediumForView(Medium):
     def _medium_resized(self, label):
         qs = MediumResized.objects.filter(medium=self).filter(size_label=label)
         assert len(qs) < 2
@@ -324,7 +324,7 @@ class MediumForPagination(Medium):
         return utils.seconds_to_minutes_seconds(self.duration)
 
     def video_embed_responsive_ratio(self):
-        if math.isclose(self.width / self.height, 16/9):
+        if self.width is not None and self.height is not None and math.isclose(self.width / self.height, 16/9):
             return "embed-responsive-16by9"
 
         return "embed-responsive-16by9"
@@ -348,8 +348,11 @@ class MediumForPagination(Medium):
     def file_extension(self):
         _ , file_extension = os.path.splitext(self.object_storage_key)
 
-        if file_extension is None or len(file_extension) == 0:
+        if file_extension is None:
             return "unknown"
+
+        if len(file_extension) == 0:
+            return ""
 
         file_extension = file_extension[1:]
 
@@ -376,6 +379,48 @@ class MediumForPagination(Medium):
         else:
             return "{} {}".format(self.photographer.first_name, self.photographer.last_name)
 
+    def list_of_tags(self):
+        list_of_tags = []
+
+        for tag in self.tags.all():
+            t = {'id': tag.id, 'tag': tag.tag}
+            list_of_tags.append(t)
+
+        list_of_tags = sorted(list_of_tags, key=lambda k: k['tag'])
+
+        return list_of_tags
+
+    def resizeds(self):
+        medium_resized_all = MediumResized.objects.filter(medium=self)
+
+        sizes_presentation = []
+
+        for medium_resized in medium_resized_all:
+            if medium_resized.size_label == "T":
+                continue
+
+            size_information = {}
+
+            size_information['label'] = utils.image_size_label_abbreviation_to_presentation(medium_resized.size_label)
+            size_information['size'] = utils.bytes_to_human_readable(medium_resized.file_size)
+            size_information['width'] = medium_resized.width
+
+            size_information['resolution'] = human_readable_resolution_for_medium(medium_resized)
+
+            filename = filename_for_resized_medium(self.pk, medium_resized.size_label, medium_resized.file_extension())
+
+            size_information['image_link'] = link_for_medium(medium_resized, "inline", filename)
+
+            sizes_presentation.append(size_information)
+
+        return sorted(sizes_presentation, key=lambda k: k['width'])
+
+    def is_photo(self):
+        return self.medium_type == self.PHOTO
+
+    def is_video(self):
+        return self.medium_type == self.VIDEO
+
     class Meta:
         proxy = True
 
@@ -386,7 +431,7 @@ class SearchVideos(TemplateView):
 
         information["search_explanation"] = "Videos"
 
-        videos_qs = MediumForPagination.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key")
+        videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key")
 
         paginator = Paginator(videos_qs, 100)
 
@@ -405,7 +450,7 @@ class SearchVideosExportCsv(TemplateView):
 
         response['Content-Disposition'] = 'attachment; filename="spi_search_videos-{}.csv"'.format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-        videos_qs = MediumForPagination.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key")
+        videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key")
 
         writer = csv.writer(response)
         writer.writerow(["ID", "Name", "Duration", "Link"])
@@ -481,72 +526,13 @@ def human_readable_resolution_for_medium(medium):
         return "{}x{}".format(medium.width, medium.height)
 
 
-def information_for_medium(medium):
-    information = {}
-
-    medium_resized_all = MediumResized.objects.filter(medium=medium)
-
-    sizes_presentation = []
-
-    for medium_resized in medium_resized_all:
-        if medium_resized.size_label == "T":
-            continue
-
-        size_information = {}
-
-        size_information['label'] = utils.image_size_label_abbreviation_to_presentation(medium_resized.size_label)
-        size_information['size'] = utils.bytes_to_human_readable(medium_resized.file_size)
-        size_information['width'] = medium_resized.width
-
-        size_information['resolution'] = human_readable_resolution_for_medium(medium_resized)
-
-        # Resized images are always jpg or webm
-        if medium.medium_type == Medium.PHOTO:
-            extension = "jpg"
-        elif medium.medium_type == Medium.VIDEO:
-            extension = "webm"
-        else:
-            assert False
-
-        filename = filename_for_resized_medium(medium.id, medium_resized.size_label, extension)
-
-        size_information['image_link'] = link_for_medium(medium_resized, "inline", filename)
-
-        sizes_presentation.append(size_information)
-
-        if medium_resized.size_label == "S":
-            if medium.medium_type == Medium.PHOTO:
-                information['photo_small_url'] = link_for_medium(medium_resized, "inline", filename)
-            elif medium.medium_type == Medium.VIDEO:
-                information['video_small_url'] = link_for_medium(medium_resized, "inline", filename)
-                information['video_small_type'] = "video/webm"
-                information['embed_responsive_ratio'] = "embed-responsive-16by9"
-                information['border_color'] = "border-dark"
-            else:
-                assert False
-
-    information['sizes_list'] = sorted(sizes_presentation, key=lambda k: k['width'])
-
-    information['medium'] = medium
-
-    list_of_tags = []
-
-    for tag in medium.tags.all():
-        t = {'id': tag.id, 'tag': tag.tag}
-        list_of_tags.append(t)
-
-    information['list_of_tags'] = sorted(list_of_tags, key=lambda k: k['tag'])
-
-    return information
-
-
 class Display(TemplateView):
     template_name = "display.tmpl"
 
     def get_context_data(self, **kwargs):
         context = super(Display, self).get_context_data(**kwargs)
 
-        context.update(information_for_medium(MediumForPagination.objects.get(id=kwargs['media_id'])))
+        context['medium'] = MediumForView.objects.get(id=kwargs['media_id'])
 
         return context
 
