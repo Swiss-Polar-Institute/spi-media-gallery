@@ -21,9 +21,13 @@
                     {% endif %}
 
                     {% if video_small_url %}
-                        <video width="550" controls>
-                            <source src="{{ video_small_url }}" type="{{ video_small_type }}">
-                        </video>
+                        <div class="card p-1 {{ border_color }}">
+                            <div class="embed-responsive {{ embed_responsive_ratio }}">
+                                    <video controls>
+                                        <source src="{{ video_small_url }}" type="video/webm">
+                                    </video>
+                            </div>
+                        </div>
                     {% endif %}
                     <small>
                         <br>

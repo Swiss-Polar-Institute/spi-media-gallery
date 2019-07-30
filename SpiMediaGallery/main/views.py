@@ -326,6 +326,13 @@ class MediumForPagination(Medium):
 
         return "embed-responsive-16by9"
 
+    def video_small_type(self):
+        return "video/webm"
+
+    def border_color(self):
+        if self.medium_type == Medium.VIDEO:
+            return "border-dark"
+
     class Meta:
         proxy = True
 
@@ -469,6 +476,8 @@ def information_for_medium(medium):
             elif medium.medium_type == Medium.VIDEO:
                 information['video_small_url'] = link_for_medium(medium_resized, "inline", filename)
                 information['video_small_type'] = "video/webm"
+                information['embed_responsive_ratio'] = "embed-responsive-16by9"
+                information['border_color'] = "border-dark"
             else:
                 assert False
 
