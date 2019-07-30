@@ -28,6 +28,7 @@ import re
 import requests
 import urllib
 import csv
+import math
 
 from main.spi_s3_utils import SpiS3Utils
 import main.utils as utils
@@ -82,7 +83,6 @@ class Homepage(TemplateView):
         return context
 
 
-
 def information_for_photo_queryset(photo_queryset):
     media_result_list = []
     for photo in photo_queryset[:200]:
@@ -112,7 +112,7 @@ def information_for_photo_queryset(photo_queryset):
 def information_for_tag_ids(tag_ids):
     information = {}
 
-    query_photos_for_tags = MediumForPagination.objects.filter(medium_type=Medium.PHOTO).order_by("datetime_taken")
+    query_photos_for_tags = MediumForPagination.objects.order_by("datetime_taken")
     tags_list = []
 
     for tag_id in tag_ids:
@@ -122,9 +122,9 @@ def information_for_tag_ids(tag_ids):
     tags_list = ", ".join(tags_list) # Tag.objects.get(id=kwargs["tag_id"])
 
     if len(query_photos_for_tags) != 1:
-        photos_string = "Photos"
+        photos_string = "Media"
     else:
-        photos_string = "Photo"
+        photos_string = "Medium"
 
     if len(tag_ids) != 1:
         information["search_explanation"] = "{} {} with these tags: {}".format(len(query_photos_for_tags), photos_string, tags_list)
@@ -287,12 +287,21 @@ class MediumForPagination(Medium):
         return link_for_medium(resized, "inline", filename_for_resized_medium(self.pk, "S", "webm"))
 
     def link_for_thumbnail_resolution(self):
-        medium_resized = self._medium_resized("T")
+        if self.medium_type == Medium.PHOTO:
+            medium_resized = self._medium_resized("T")
 
-        if medium_resized is None:
-            return static("images/thumbnail-does-not-exist.jpg")
+            if medium_resized is None:
+                return static("images/thumbnail-does-not-exist.jpg")
 
-        return link_for_medium(medium_resized, "inline", filename_for_resized_medium(self.pk, "T", "jpg"))
+            return link_for_medium(medium_resized, "inline", filename_for_resized_medium(self.pk, "T", "jpg"))
+
+        elif self.medium_type == Medium.VIDEO:
+            medium_resized = self._medium_resized("S")
+
+            if medium_resized is None:
+                return static("images/thumbnail-does-not-exist.jpg")
+
+            return link_for_medium(medium_resized, "inline", filename_for_resized_medium(self.pk, "S", "webm"))
 
     def link_for_original(self):
         return link_for_medium(self, "attachment", filename_for_original_medium(self))
@@ -310,6 +319,12 @@ class MediumForPagination(Medium):
 
     def duration_in_minutes_seconds(self):
         return utils.seconds_to_minutes_seconds(self.duration)
+
+    def embed_responsive_ratio(self):
+        if math.isclose(self.width / self.height, 16/9):
+            return "embed-responsive-16by9"
+
+        return "embed-responsive-16by9"
 
     class Meta:
         proxy = True

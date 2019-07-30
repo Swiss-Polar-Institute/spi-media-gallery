@@ -10,9 +10,22 @@
             <div class="container">
                 <div class="card-columns">
                 {% for medium in media %}
-                    <div class="card p-1">
-                        <a href="/display/{{ medium.id }}"><img class="card-img-top" src="{{ medium.link_for_thumbnail_resolution }}" alt=""></a>
-                    </div>
+                    {% if medium.medium_type == "P" %}
+                        <div class="card p-1">
+                            <a href="/display/{{ medium.id }}"><img class="card-img-top" src="{{ medium.link_for_thumbnail_resolution }}" alt=""></a>
+                        </div>
+                    {% else %}
+                        <div class="card p-1">
+
+                            <div class="embed-responsive {{ medium.embed_responsive_ratio }}">
+                                <a href="/display/{{ medium.id }}">
+                                    <video>
+                                        <source src="{{ medium.link_for_thumbnail_resolution }}" type="video/webm">
+                                    </video>
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
                 {%endfor %}
                 </div>
             </div>
