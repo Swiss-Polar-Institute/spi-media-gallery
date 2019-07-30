@@ -151,7 +151,8 @@ IMAGE_LABEL_TO_SIZES = {
     'L': (1920, 1920)
 }
 
-PHOTO_EXTENSIONS =  {"jpeg", "jpg", "cr2"}
+# If adding extensions here also add the content-type in views.content_type_for_filename()
+PHOTO_EXTENSIONS = {"jpeg", "jpg", "cr2", "arw", "nef"}
 VIDEO_EXTENSIONS = {"mp4", "mpeg", "mov", "avi", "webm"}
 
 # Internationalization

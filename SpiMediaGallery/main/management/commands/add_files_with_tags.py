@@ -27,9 +27,9 @@ class Command(BaseCommand):
         bucket_name = options["bucket_name"]
         prefix = options["prefix"]
 
-        tagImporter = TagImporter(bucket_name, prefix)
+        tag_importer = TagImporter(bucket_name, prefix)
 
-        tagImporter.import_tags()
+        tag_importer.import_tags()
 
 
 class TagImporter(object):
@@ -61,7 +61,7 @@ class TagImporter(object):
             if file_extension not in valid_extensions:
                 continue
 
-            size_of_media = s3_object.size
+            size_of_medium = s3_object.size
 
             xmp_file = s3_object.key + ".xmp"
 
@@ -69,6 +69,8 @@ class TagImporter(object):
             temporary_tags_file = None
 
             if xmp_file in all_keys:
+                # xmp_file exists in the list of files, it will download + extract tags
+
                 # Copies XMP into a file (libxmp seems to only be able to read
                 # from physical files)
                 xmp_object = self._media_bucket.get_object(xmp_file)
@@ -85,22 +87,22 @@ class TagImporter(object):
                 non_xmp_without_xmp_associated += 1
 
             try:
-                media = Medium.objects.get(object_storage_key=s3_object.key)
+                medium = Medium.objects.get(object_storage_key=s3_object.key)
             except ObjectDoesNotExist:
-                media = Medium()
-                media.object_storage_key = s3_object.key
-                media.md5 = None
-                media.file_size = size_of_media
+                medium = Medium()
+                medium.object_storage_key = s3_object.key
+                medium.md5 = None
+                medium.file_size = size_of_medium
 
                 if file_extension in photo_extensions:
-                    media.medium_type = Medium.PHOTO
+                    medium.medium_type = Medium.PHOTO
                 elif file_extension in video_extensions:
-                    media.medium_type = Medium.VIDEO
+                    medium.medium_type = Medium.VIDEO
                 else:
                     assert False
 
-                media.datetime_imported = datetime.datetime.now(tz=timezone.utc)
-                media.save()
+                medium.datetime_imported = datetime.datetime.now(tz=timezone.utc)
+                medium.save()
 
             for tag in tags:
                 try:
@@ -110,7 +112,7 @@ class TagImporter(object):
                     tag_model.tag = tag
                     tag_model.save()
 
-                media.tags.add(tag_model)
+                medium.tags.add(tag_model)
 
             if temporary_tags_file is not None:
                 os.remove(temporary_tags_file.name)

@@ -363,6 +363,8 @@ def content_type_for_filename(filename):
     extension_to_content_type = {'jpg': 'image/jpeg',
                                  'jpeg': 'image/jpeg',
                                  'cr2': 'image/x-canon-cr2',
+                                 'arw': 'image/x-sony-arw',
+                                 'nef': 'image/x-nikon-nef',
                                  'mp4': 'video/mp4',
                                  'mpeg': 'video/mpeg',
                                  'mov': 'video/quicktime',
