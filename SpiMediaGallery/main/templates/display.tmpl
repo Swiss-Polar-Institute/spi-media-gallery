@@ -22,7 +22,7 @@
 
                     {% if video_small_url %}
                         <video width="550" controls>
-                            <source src="{{ video_small_url }}" type="video/webm">
+                            <source src="{{ video_small_url }}" type="{{ video_small_type }}">
                         </video>
                     {% endif %}
                     <small>
@@ -44,12 +44,16 @@
                         <a href="{{ photo_size.image_link }}">{{ photo_size.label }}</a> ({{ photo_size.resolution }}, {{ photo_size.size }})<br>
                     {% endfor %}
                     <p>
-                        <a href="{{ original_file }}">Download Original file</a> ({{ original_resolution}}, {{ original_file_size }})</a>
+                        <a href="{{ original_file }}">Download original file</a> ({{ original_resolution}}, {{ original_file_size }})</a>
                     <p>
                     Tags:
-                        {% for tag in list_of_tags %}
-                            <a href="/search/tags/?tags={{tag.id}}">{{tag.tag}}</a>{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
+                        {% if list_of_tags %}
+                            {% for tag in list_of_tags %}
+                                <a href="/search/tags/?tags={{tag.id}}">{{tag.tag}}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                                none at the moment
+                        {% endif %}
                     <p>
 
                     {% if date_taken %}

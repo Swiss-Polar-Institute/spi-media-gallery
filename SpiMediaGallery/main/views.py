@@ -453,6 +453,7 @@ def information_for_medium(medium):
                 information['photo_small_url'] = link_for_medium(medium_resized, "inline", filename)
             elif medium.medium_type == Medium.VIDEO:
                 information['video_small_url'] = link_for_medium(medium_resized, "inline", filename)
+                information['video_small_type'] = "video/webm"
             else:
                 assert False
 

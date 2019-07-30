@@ -28,7 +28,7 @@ class LocationEntryCoordinates(forms.ModelForm):
         model = Medium
         exclude = []
         fields = ['object_storage_key', 'md5', 'file_size', 'height', 'width', 'duration', 'datetime_taken', 'location',
-                       'latitude', 'longitude']
+                       'latitude', 'longitude', 'license', 'copyright']
 
     def __init__(self, *args, **kwargs):
         position = kwargs['instance'].location
