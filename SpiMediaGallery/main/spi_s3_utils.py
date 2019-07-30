@@ -1,6 +1,7 @@
 import boto3
 from django.conf import settings
 import os
+from main.utils import content_type_for_filename
 
 
 class SpiS3Utils(object):
@@ -79,3 +80,23 @@ class SpiS3Utils(object):
             files_set.add(file.key.lstrip("/"))
 
         return files_set
+
+def link_for_medium(medium, content_disposition, filename):
+    content_type = content_type_for_filename(filename)
+    # if medium_for_content_type.medium_type == Medium.PHOTO:
+    #     content_type = "image/jpeg"
+    # elif medium_for_content_type.medium_type == Medium.VIDEO:
+    #     content_type = "video/webm"
+
+    if settings.PROXY_TO_OBJECT_STORAGE:
+        d = {"content_type": content_type,
+             "content_disposition_type": content_disposition,
+             "filename": filename,
+             "bucket": medium.bucket_name()
+        }
+
+        return "/get/photo/{}?{}".format(medium.md5, urllib.parse.urlencode(d))
+    else:
+        bucket = SpiS3Utils(medium.bucket_name())
+
+        return bucket.get_presigned_link(medium.object_storage_key, content_type, content_disposition, filename)

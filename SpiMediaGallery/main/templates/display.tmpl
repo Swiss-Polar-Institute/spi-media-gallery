@@ -15,14 +15,12 @@
             <b>{{ medium.file_id }}</b>
             <div class="row">
                 <div class="col-md-6">
-
-
                     {% if medium.is_photo %}
                         <img class="img-thumbnail" src="{{ medium.link_for_small_resolution }}"><br>
                     {% endif %}
 
                     {% if medium.is_video %}
-                        <div class="card p-1 {{ border_color }}">
+                        <div class="card p-1 {{ medium.border_color }}">
                             <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
                                     <video controls>
                                         <source src="{{ medium.link_for_small_resolution }}" type="video/webm">

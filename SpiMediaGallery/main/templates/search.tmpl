@@ -16,10 +16,10 @@
                     {% if medium.medium_type == "P" %}
                         <a href="/display/{{ medium.id }}"><img class="card-img-top" src="{{ medium.link_for_thumbnail_resolution }}" alt=""></a>
                     {% else %}
-                        <div class="embed-responsive {{ medium.embed_responsive_ratio }}">
+                        <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
                             <a href="/display/{{ medium.id }}">
                                 <video>
-                                    <source src="{{ medium.link_for_thumbnail_resolution }}" type="{{ medium.video_small_type }}">
+                                    <source src="{{ medium.link_for_thumbnail_resolution }}" type="{{ medium.small_content_type }}">
                                 </video>
                             </a>
                         </div>

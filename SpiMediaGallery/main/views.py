@@ -9,15 +9,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.conf import settings
-from django.contrib.staticfiles.templatetags.staticfiles import static
-
+from main.medium_for_view import MediumForView
 from django.contrib.gis.geos import Point, Polygon
-from django.contrib.gis.db.models.functions import Distance
 
 from django.core.serializers import serialize
-
-# from djeo
-# from djgeojson.views import GeoJSONLayerView
 
 from django.core.paginator import Paginator
 
@@ -28,9 +23,8 @@ import re
 import requests
 import urllib
 import csv
-import math
 
-from main.spi_s3_utils import SpiS3Utils
+from main.spi_s3_utils import SpiS3Utils, link_for_medium
 import main.utils as utils
 
 
@@ -81,32 +75,6 @@ class Homepage(TemplateView):
         context['form_search_medium_id'] = MediumIdForm
 
         return context
-
-
-def information_for_photo_queryset(photo_queryset):
-    media_result_list = []
-    for photo in photo_queryset[:200]:
-        thumbnail = MediumResized.objects.filter(medium=photo).filter(size_label="T")
-
-        filename = "SPI-{}.jpg".format(photo.id)
-
-        if len(thumbnail) == 1:
-            thumbnail_img = link_for_medium(thumbnail[0], "inline", filename)
-
-        else:
-            # Images should have a thumbnail
-            # TODO: have a placeholder
-            thumbnail_img = None
-
-        photo_result = {}
-
-        photo_result['thumbnail'] = thumbnail_img
-        photo_result['url'] = photo.object_storage_key
-        photo_result['id'] = photo.id
-
-        media_result_list.append(photo_result)
-
-    return media_result_list
 
 
 def information_for_tag_ids(tag_ids):
@@ -223,19 +191,19 @@ class SearchBox(TemplateView):
 
         geom = Polygon.from_bbox((east, south, west, north))
 
-        query_photos_in_geom = Medium.objects.filter(location__contained=geom)
+        query_media_in_geom = MediumForView.objects.filter(location__contained=geom)
 
-        if len(query_photos_in_geom) != 1:
+        if len(query_media_in_geom) != 1:
             photos_string = "photos"
         else:
             photos_string = "photo"
 
-        information["search_explanation"] = "{} {} taken in area {:.2f} {:.2f} {:.2f} {:.2f}".format(len(query_photos_in_geom),
-                                                                                                    photos_string,
-                                                                                                  north, east,
-                                                                                                  south, west)
+        information["search_explanation"] = "{} {} taken in area {:.2f} {:.2f} {:.2f} {:.2f}".format(len(query_media_in_geom),
+                                                                                                     photos_string,
+                                                                                                     north, east,
+                                                                                                     south, west)
 
-        information["photos"] = information_for_photo_queryset(query_photos_in_geom)
+        information["media"] = query_media_in_geom
 
         return render(request, "search.tmpl", information)
 
@@ -253,176 +221,26 @@ class SearchNear(TemplateView):
         center_point = Point(longitude, latitude, srid=4326)
         buffered = center_point.buffer(meters_to_degrees(km*1000))
 
-        query_photos_nearby = Medium.objects.filter(location__within=buffered)
+        query_media_nearby = MediumForView.objects.filter(location__within=buffered)
 
-        if len(query_photos_nearby) != 1:
-            photos_string = "photos"
+        if len(query_media_nearby) != 1:
+            photos_string = "media"
         else:
-            photos_string = "photo"
+            photos_string = "medium"
 
         information = {}
-        information["search_explanation"] = "{} {} in a radius of {} Km from latitude: {:.2f} longitude: {:.2f}".format(len(query_photos_nearby),
+        information["search_explanation"] = "{} {} in a radius of {} Km from latitude: {:.2f} longitude: {:.2f}".format(len(query_media_nearby),
                                                                                                                         photos_string, km, latitude, longitude)
+        paginator = Paginator(query_media_nearby, 100)
 
-        information["photos"] = information_for_photo_queryset(query_photos_nearby)
+        page = request.GET.get('page')
+
+        paginated = paginator.get_page(page)
+
+        information['media'] = paginated
 
         return render(request, "search.tmpl", information)
 
-
-class MediumForView(Medium):
-    def _medium_resized(self, label):
-        qs = MediumResized.objects.filter(medium=self).filter(size_label=label)
-        assert len(qs) < 2
-
-        if len(qs) == 1:
-            return qs[0]
-        else:
-            return None
-
-    def link_for_thumbnail_resolution(self):
-        if self.medium_type == Medium.PHOTO:
-            medium_resized = self._medium_resized("T")
-
-            if medium_resized is None:
-                return static("images/thumbnail-does-not-exist.jpg")
-
-            return link_for_medium(medium_resized, "inline", filename_for_resized_medium(self.pk, "T", "jpg"))
-
-        elif self.medium_type == Medium.VIDEO:
-            medium_resized = self._medium_resized("S")
-
-            if medium_resized is None:
-                return static("images/thumbnail-does-not-exist.jpg")
-
-            return link_for_medium(medium_resized, "inline", filename_for_resized_medium(self.pk, "S", "webm"))
-
-        else:
-            assert False
-
-    def link_for_original(self):
-        return link_for_medium(self, "attachment", filename_for_original_medium(self))
-
-    def file_size_for_original(self):
-        return utils.bytes_to_human_readable(self.file_size)
-
-    def link_for_small_resolution(self):
-        resized = self._medium_resized("S")
-        if resized is None:
-            return static("images/small-does-not-exist.jpg")
-
-        return link_for_medium(resized, "inline", filename_for_resized_medium(self.pk, "S", self.file_extension()))
-
-    def file_size_for_small_resolution(self):
-        resized = self._medium_resized("S")
-
-        if resized is None:
-            return None
-
-        return utils.bytes_to_human_readable(resized.file_size)
-
-    def duration_in_minutes_seconds(self):
-        return utils.seconds_to_minutes_seconds(self.duration)
-
-    def video_embed_responsive_ratio(self):
-        if self.width is not None and self.height is not None and math.isclose(self.width / self.height, 16/9):
-            return "embed-responsive-16by9"
-
-        return "embed-responsive-16by9"
-
-    def small_content_type(self):
-        if self.medium_type == Medium.VIDEO:
-            return "video/webm"
-        else:
-            return "image/jpeg"
-
-    def border_color(self):
-        if self.medium_type == Medium.VIDEO:
-            return "border-dark"
-
-    def resolution_for_original(self):
-        if self.width is None or self.height is None:
-            return "Unknown"
-
-        return "{}x{}".format(self.width, self.height)
-
-    def file_extension(self):
-        _ , file_extension = os.path.splitext(self.object_storage_key)
-
-        if file_extension is None:
-            return "unknown"
-
-        if len(file_extension) == 0:
-            return ""
-
-        file_extension = file_extension[1:]
-
-        return file_extension
-
-    def file_id(self):
-        return "SPI-{}.{}".format(self.pk, self.file_extension())
-
-    def copyright_render(self):
-        if self.copyright is None:
-            return "Unknown"
-        else:
-            return self.copyright.public_text
-
-    def license_render(self):
-        if self.license is None:
-            return "Unknown"
-        else:
-            return self.license.public_text
-
-    def photographer_render(self):
-        if self.photographer is None:
-            return "Unknown"
-        else:
-            return "{} {}".format(self.photographer.first_name, self.photographer.last_name)
-
-    def list_of_tags(self):
-        list_of_tags = []
-
-        for tag in self.tags.all():
-            t = {'id': tag.id, 'tag': tag.tag}
-            list_of_tags.append(t)
-
-        list_of_tags = sorted(list_of_tags, key=lambda k: k['tag'])
-
-        return list_of_tags
-
-    def resizeds(self):
-        medium_resized_all = MediumResized.objects.filter(medium=self)
-
-        sizes_presentation = []
-
-        for medium_resized in medium_resized_all:
-            if medium_resized.size_label == "T":
-                continue
-
-            size_information = {}
-
-            size_information['label'] = utils.image_size_label_abbreviation_to_presentation(medium_resized.size_label)
-            size_information['size'] = utils.bytes_to_human_readable(medium_resized.file_size)
-            size_information['width'] = medium_resized.width
-
-            size_information['resolution'] = human_readable_resolution_for_medium(medium_resized)
-
-            filename = filename_for_resized_medium(self.pk, medium_resized.size_label, medium_resized.file_extension())
-
-            size_information['image_link'] = link_for_medium(medium_resized, "inline", filename)
-
-            sizes_presentation.append(size_information)
-
-        return sorted(sizes_presentation, key=lambda k: k['width'])
-
-    def is_photo(self):
-        return self.medium_type == self.PHOTO
-
-    def is_video(self):
-        return self.medium_type == self.VIDEO
-
-    class Meta:
-        proxy = True
 
 
 class SearchVideos(TemplateView):
@@ -459,71 +277,6 @@ class SearchVideosExportCsv(TemplateView):
             writer.writerow([video.pk, video.object_storage_key, video.duration_in_minutes_seconds(), request.build_absolute_uri("/display/{}".format(video.pk))])
 
         return response
-
-
-def content_type_for_filename(filename):
-    extension = os.path.splitext(filename)[1][1:].lower()
-
-    assert extension in (settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS)
-
-    # Can add more from:
-    # Raw images: https://stackoverflow.com/questions/43473056/which-mime-type-should-be-used-for-a-raw-image
-    # Videos (and anything): https://www.sitepoint.com/mime-types-complete-list/
-
-    extension_to_content_type = {'jpg': 'image/jpeg',
-                                 'jpeg': 'image/jpeg',
-                                 'cr2': 'image/x-canon-cr2',
-                                 'arw': 'image/x-sony-arw',
-                                 'nef': 'image/x-nikon-nef',
-                                 'mp4': 'video/mp4',
-                                 'mpeg': 'video/mpeg',
-                                 'mov': 'video/quicktime',
-                                 'avi': 'video/avi',
-                                 'webm': 'video/webm'}
-
-    assert extension in extension_to_content_type
-
-    return extension_to_content_type[extension]
-
-
-def link_for_medium(medium, content_disposition, filename):
-    content_type = content_type_for_filename(filename)
-    # if medium_for_content_type.medium_type == Medium.PHOTO:
-    #     content_type = "image/jpeg"
-    # elif medium_for_content_type.medium_type == Medium.VIDEO:
-    #     content_type = "video/webm"
-
-    if settings.PROXY_TO_OBJECT_STORAGE:
-        d = {"content_type": content_type,
-             "content_disposition_type": content_disposition,
-             "filename": filename,
-             "bucket": medium.bucket_name()
-        }
-
-        return "/get/photo/{}?{}".format(medium.md5, urllib.parse.urlencode(d))
-    else:
-        bucket = SpiS3Utils(medium.bucket_name())
-
-        return bucket.get_presigned_link(medium.object_storage_key, content_type, content_disposition, filename)
-
-
-def filename_for_resized_medium(medium_id, photo_resize_label, extension):
-    return "SPI-{}-{}.{}".format(medium_id, photo_resize_label, extension)
-
-
-def filename_for_original_medium(medium):
-    _, extension = os.path.splitext(medium.object_storage_key)
-
-    extension = extension[1:]
-
-    return "SPI-{}.{}".format(medium.pk, extension)
-
-
-def human_readable_resolution_for_medium(medium):
-    if medium.width is None or medium.height is None:
-        return "Unknown resolution"
-    else:
-        return "{}x{}".format(medium.width, medium.height)
 
 
 class Display(TemplateView):

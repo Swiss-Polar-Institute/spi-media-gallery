@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import tempfile
+from django.conf import settings
 
 from main.models import MediumResized
 
@@ -50,6 +51,7 @@ def resize_photo(input_file_path, width):
             sys.exit(1)
 
     return output_file_path.name
+
 
 def resize_video(input_file_path, width):
     output_file_path = tempfile.NamedTemporaryFile(suffix=".webm", delete=False)
@@ -112,3 +114,49 @@ def seconds_to_human_readable(seconds):
         return "{:.2f} hours".format(hours)
 
     return "{:.2f} days".format(days)
+
+
+def content_type_for_filename(filename):
+    extension = os.path.splitext(filename)[1][1:].lower()
+
+    assert extension in (settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS)
+
+    # Can add more from:
+    # Raw images: https://stackoverflow.com/questions/43473056/which-mime-type-should-be-used-for-a-raw-image
+    # Videos (and anything): https://www.sitepoint.com/mime-types-complete-list/
+
+    extension_to_content_type = {'jpg': 'image/jpeg',
+                                 'jpeg': 'image/jpeg',
+                                 'cr2': 'image/x-canon-cr2',
+                                 'arw': 'image/x-sony-arw',
+                                 'nef': 'image/x-nikon-nef',
+                                 'mp4': 'video/mp4',
+                                 'mpeg': 'video/mpeg',
+                                 'mov': 'video/quicktime',
+                                 'avi': 'video/avi',
+                                 'webm': 'video/webm'}
+
+    assert extension in extension_to_content_type
+
+    return extension_to_content_type[extension]
+
+
+def filename_for_resized_medium(medium_id, photo_resize_label, extension):
+    return "SPI-{}-{}.{}".format(medium_id, photo_resize_label, extension)
+
+
+def filename_for_original_medium(medium):
+    _, extension = os.path.splitext(medium.object_storage_key)
+
+    extension = extension[1:]
+
+    return "SPI-{}.{}".format(medium.pk, extension)
+
+
+def human_readable_resolution_for_medium(medium):
+    if medium.width is None or medium.height is None:
+        return "Unknown resolution"
+    else:
+        return "{}x{}".format(medium.width, medium.height)
+
+
