@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Medium, MediumResized
+from main.models import Medium, MediumResized, File
 from django.conf import settings
 from PIL import Image
 import sys
@@ -230,18 +230,19 @@ class Resizer(object):
             resized_key = os.path.join(settings.RESIZED_PREFIX,
                                          md5_resized_file + "-{}.{}".format(size_label, resized_file_extension))
 
-            resized_medium.object_storage_key = resized_key
-
             self._resizes_bucket.upload_file(resized_medium_file, resized_key)
             file_size = os.stat(resized_medium_file).st_size
 
             os.remove(resized_medium_file)
 
             # Update database
-            resized_medium.file.md5 = md5_resized_file
-            resized_medium.file.size = file_size
-            resized_medium.file.save()
+            file = File()
+            file.object_storage_key = resized_key
+            file.md5 = md5_resized_file
+            file.size = file_size
+            file.save()
 
+            resized_medium.file = file
             resized_medium.size_label = size_label
             resized_medium.medium = medium
             resized_medium.datetime_resized = datetime.datetime.now(tz=timezone.utc)
