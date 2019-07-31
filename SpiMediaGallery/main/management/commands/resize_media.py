@@ -156,10 +156,10 @@ class Resizer(object):
                                                                                           speed,
                                                                                           medium.file.object_storage_key))
 
-            if medium.md5 is None:
+            if medium.file.md5 is None:
                 md5_media_file = utils.hash_of_file_path(media_file.name)
-                medium.md5 = md5_media_file
-                medium.save()
+                medium.file.md5 = md5_media_file
+                medium.file.save()
 
             self._resize_media(medium, media_file.name, self._sizes_type)
 
