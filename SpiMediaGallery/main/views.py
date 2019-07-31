@@ -77,7 +77,47 @@ class Homepage(TemplateView):
         return context
 
 
-def information_for_tag_ids(tag_ids):
+def search_for_nearby(latitude, longitude, km):
+    center_point = Point(longitude, latitude, srid=4326)
+    buffered = center_point.buffer(meters_to_degrees(km * 1000))
+
+    qs = MediumForView.objects.filter(location__within=buffered)
+
+    if len(qs) != 1:
+        photos_string = "media"
+    else:
+        photos_string = "medium"
+
+    information = {}
+    information["search_explanation"] = "{} {} in a radius of {} Km from latitude: {:.2f} longitude: {:.2f}".format(
+        len(qs),
+        photos_string, km, latitude, longitude)
+
+    return information, qs
+
+
+def search_in_box(north, south, east, west):
+    geom = Polygon.from_bbox((east, south, west, north))
+
+    qs = MediumForView.objects.filter(location__contained=geom)
+
+    if len(qs) != 1:
+        photos_string = "media"
+    else:
+        photos_string = "medium"
+
+    information = {}
+
+    information["search_explanation"] = "{} {} taken in area {:.2f} {:.2f} {:.2f} {:.2f}".format(
+        len(qs),
+        photos_string,
+        north, east,
+        south, west)
+
+    return information, qs
+
+
+def search_for_tag_ids(tag_ids):
     information = {}
 
     query_media_for_tags = MediumForView.objects.order_by("datetime_taken")
@@ -102,13 +142,28 @@ def information_for_tag_ids(tag_ids):
     return information, query_media_for_tags
 
 
-class SearchMultipleTags(TemplateView):
+class Search(TemplateView):
     def get(self, request, *args, **kwargs):
-        list_of_tag_ids = request.GET.getlist('tags')
+        if "tags" in request.GET:
+            list_of_tag_ids = request.GET.getlist('tags')
+            information, qs = search_for_tag_ids(list_of_tag_ids)
 
-        information = information_for_tag_ids(list_of_tag_ids)
+        elif "latitude" in request.GET and "longitude" in request.GET and "km" in request.GET:
+            latitude = float(request.GET["latitude"])
+            longitude = float(request.GET["longitude"])
+            km = float(request.GET["km"])
 
-        paginator = Paginator(information["photos_qs"], 200)
+            information, qs = search_for_nearby(latitude, longitude, km)
+
+        elif "north" in request.GET and "south" in request.GET and "east" in request.GET and "west" in request.GET:
+            north = float(request.GET["north"])
+            south = float(request.GET["south"])
+            east = float(request.GET["east"])
+            west = float(request.GET["west"])
+
+            information, qs = search_in_box(north, south, east, west)
+
+        paginator = Paginator(qs, 200)
 
         page = request.GET.get("page")
 
@@ -117,6 +172,24 @@ class SearchMultipleTags(TemplateView):
         information["media"] = photos
 
         return render(request, "search.tmpl", information)
+
+    def post(self, request, *args, **kwargs):
+        medium_id = request.POST["medium_id"]
+
+        medium_id = medium_id.split(".")[0]
+
+        medium_id = int(re.findall("\d+", medium_id)[0])
+
+        try:
+            photo = Medium.objects.get(id=medium_id)
+        except ObjectDoesNotExist:
+            template_information = {}
+            template_information['medium_id_not_found'] = medium_id
+            template_information['form_search_medium_id'] = MediumIdForm
+
+            return render(request, "error_medium_id_not_found.tmpl", template_information)
+
+        return redirect("/display/{}".format(photo.id))
 
 
 class DisplayRandom(TemplateView):
@@ -142,86 +215,8 @@ class DisplayRandom(TemplateView):
         return redirect("/display/{}".format(qs[0].pk))
 
 
-class SearchMediumId(TemplateView):
-    def post(self, request, *args, **kwargs):
-        medium_id = request.POST["medium_id"]
-
-        medium_id = medium_id.split(".")[0]
-
-        medium_id = int(re.findall("\d+", medium_id)[0])
-
-        try:
-            photo = Medium.objects.get(id=medium_id)
-        except ObjectDoesNotExist:
-            template_information = {}
-            template_information['medium_id_not_found'] = medium_id
-            template_information['form_search_medium_id'] = MediumIdForm
-
-            return render(request, "error_medium_id_not_found.tmpl", template_information)
-
-        return redirect("/display/{}".format(photo.id))
-
-
-class SearchBox(TemplateView):
-    def get(self, request, *args, **kwargs):
-        north = float(request.GET["north"])
-        south = float(request.GET["south"])
-        east = float(request.GET["east"])
-        west = float(request.GET["west"])
-
-        information = {}
-
-        geom = Polygon.from_bbox((east, south, west, north))
-
-        query_media_in_geom = MediumForView.objects.filter(location__contained=geom)
-
-        if len(query_media_in_geom) != 1:
-            photos_string = "photos"
-        else:
-            photos_string = "photo"
-
-        information["search_explanation"] = "{} {} taken in area {:.2f} {:.2f} {:.2f} {:.2f}".format(len(query_media_in_geom),
-                                                                                                     photos_string,
-                                                                                                     north, east,
-                                                                                                     south, west)
-
-        information["media"] = query_media_in_geom
-
-        return render(request, "search.tmpl", information)
-
-
 def meters_to_degrees(meters):
     return meters / 40000000.0 * 360.0
-
-
-class SearchNear(TemplateView):
-    def get(self, request, *args, **kwargs):
-        latitude = float(request.GET["latitude"])
-        longitude = float(request.GET["longitude"])
-        km = float(request.GET["km"])
-
-        center_point = Point(longitude, latitude, srid=4326)
-        buffered = center_point.buffer(meters_to_degrees(km*1000))
-
-        query_media_nearby = MediumForView.objects.filter(location__within=buffered)
-
-        if len(query_media_nearby) != 1:
-            photos_string = "media"
-        else:
-            photos_string = "medium"
-
-        information = {}
-        information["search_explanation"] = "{} {} in a radius of {} Km from latitude: {:.2f} longitude: {:.2f}".format(len(query_media_nearby),
-                                                                                                                        photos_string, km, latitude, longitude)
-        paginator = Paginator(query_media_nearby, 100)
-
-        page = request.GET.get('page')
-
-        paginated = paginator.get_page(page)
-
-        information['media'] = paginated
-
-        return render(request, "search.tmpl", information)
 
 
 class ListVideos(TemplateView):
@@ -243,7 +238,7 @@ class ListVideos(TemplateView):
         return render(request, "list_videos.tmpl", information)
 
 
-class SearchVideosExportCsv(TemplateView):
+class ListVideosExportCsv(TemplateView):
     def get(self, request, *args, **kwargs):
         response = HttpResponse(content_type='text/csv')
 
@@ -297,9 +292,9 @@ class GetFile(View):
     def get(self, request, *args, **kwargs):
         bucket_name = request.GET['bucket']
 
-        if bucket_name == "photos":
+        if bucket_name == "media":
             photo = Medium.objects.get(md5=kwargs['md5'])
-        elif bucket_name == "thumbnails":
+        elif bucket_name == "resized":
             photo = MediumResized.objects.get(md5=kwargs['md5'])
         else:
             assert False

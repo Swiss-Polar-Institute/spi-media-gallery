@@ -25,17 +25,17 @@
         <p>
 
         <h2>Videos</h2>
-        <a href="/list/videos/">List with all the videos</a>
+        <a href="{% url 'list_videos' %}">List with all the videos</a>
         <p>
         <h2>Navigate selecting one tag</h2>
         {% for tag in list_of_tags %}
-        <a href="/search/tags/?tags={{tag.id}}">{{tag.tag}}</a>{% if not forloop.last %}, {% endif %}
+        <a href="{% url 'search' %}?tags={{ tag.id }}">{{ tag.tag }}</a>{% if not forloop.last %}, {% endif %}
         {% endfor %}
         <p>
         <h2>Select multiple tags</h2>
         Only media having all the selected tags will be displayed.
 
-        <form action="/search/tags/" method="get">
+        <form action="{% url 'search' %}" method="get">
             <table border="0">
                 <tbody>
                     <tr>
@@ -57,7 +57,7 @@
         </form>
         <p>
         <h2>Search using ID</h2>
-        <form action="/search/id/" method="POST">
+        <form action="{% url 'search' %}" method="POST">
             {% csrf_token %}
 
             <table>

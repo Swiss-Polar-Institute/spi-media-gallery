@@ -40,6 +40,6 @@
 
         {% include "pagination.tmpl" %}
         <p>
-            <a href="/list/videos/export/csv/">Download CSV file with all the videos.</a>
+            <a href="{% url 'list_videos_export_csv' %}">Download CSV file with all the videos.</a>
         </div>
 {% endblock %}

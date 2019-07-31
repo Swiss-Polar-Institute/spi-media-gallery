@@ -3,6 +3,7 @@ from django.conf import settings
 import os
 from main.utils import content_type_for_filename
 import urllib
+from django.urls import reverse
 
 
 class SpiS3Utils(object):
@@ -82,6 +83,7 @@ class SpiS3Utils(object):
 
         return files_set
 
+
 def link_for_medium(medium, content_disposition, filename):
     content_type = content_type_for_filename(filename)
     # if medium_for_content_type.medium_type == Medium.PHOTO:
@@ -96,7 +98,7 @@ def link_for_medium(medium, content_disposition, filename):
              "bucket": medium.bucket_name()
         }
 
-        return "/get/file/{}?{}".format(medium.md5, urllib.parse.urlencode(d))
+        return "{}?{}".format(reverse("get_file", args=[medium.md5]), urllib.parse.urlencode(d))
     else:
         bucket = SpiS3Utils(medium.bucket_name())
 
