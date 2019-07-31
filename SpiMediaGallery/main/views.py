@@ -287,7 +287,7 @@ class TrackGeojson(View):
         return JsonResponse(json.load(track))
 
 
-#     path('get/photo_resized/<str:md5>', GetPhoto.as_view())
+#     path('get/file/<str:md5>', GetPhoto.as_view())
 class GetFile(View):
     def get(self, request, *args, **kwargs):
         bucket_name = request.GET['bucket']
