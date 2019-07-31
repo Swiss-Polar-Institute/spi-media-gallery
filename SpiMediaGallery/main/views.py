@@ -80,28 +80,26 @@ class Homepage(TemplateView):
 def information_for_tag_ids(tag_ids):
     information = {}
 
-    query_photos_for_tags = MediumForView.objects.order_by("datetime_taken")
+    query_media_for_tags = MediumForView.objects.order_by("datetime_taken")
     tags_list = []
 
     for tag_id in tag_ids:
-        query_photos_for_tags = query_photos_for_tags.filter(tags__id=int(tag_id))
+        query_media_for_tags = query_media_for_tags.filter(tags__id=int(tag_id))
         tags_list.append(Tag.objects.get(id=tag_id).tag)
 
     tags_list = ", ".join(tags_list) # Tag.objects.get(id=kwargs["tag_id"])
 
-    if len(query_photos_for_tags) != 1:
+    if len(query_media_for_tags) != 1:
         photos_string = "Media"
     else:
         photos_string = "Medium"
 
     if len(tag_ids) != 1:
-        information["search_explanation"] = "{} {} with these tags: {}".format(len(query_photos_for_tags), photos_string, tags_list)
+        information["search_explanation"] = "{} {} with these tags: {}".format(len(query_media_for_tags), photos_string, tags_list)
     else:
-        information["search_explanation"] = "{} {} with this tag: {}".format(len(query_photos_for_tags), photos_string, tags_list)
+        information["search_explanation"] = "{} {} with this tag: {}".format(len(query_media_for_tags), photos_string, tags_list)
 
-    information["photos_qs"] = query_photos_for_tags
-
-    return information
+    return information, query_media_for_tags
 
 
 class SearchMultipleTags(TemplateView):
@@ -119,6 +117,8 @@ class SearchMultipleTags(TemplateView):
         information["media"] = photos
 
         return render(request, "search.tmpl", information)
+
+class Search(TemplateView):
 
 
 class RandomPhoto(TemplateView):
@@ -242,7 +242,7 @@ class SearchNear(TemplateView):
         return render(request, "search.tmpl", information)
 
 
-class SearchVideos(TemplateView):
+class ListVideos(TemplateView):
     def get(self, request, *args, **kwargs):
         information = {}
 
@@ -258,7 +258,7 @@ class SearchVideos(TemplateView):
 
         information['media'] = videos
 
-        return render(request, "search_videos.tmpl", information)
+        return render(request, "list_videos.tmpl", information)
 
 
 class SearchVideosExportCsv(TemplateView):
@@ -311,7 +311,7 @@ class TrackGeojson(View):
 
 
 #     path('get/photo_resized/<str:md5>', GetPhoto.as_view())
-class GetPhoto(View):
+class GetFile(View):
     def get(self, request, *args, **kwargs):
         bucket_name = request.GET['bucket']
 
@@ -336,10 +336,3 @@ class GetPhoto(View):
         response = HttpResponse(r.raw, content_type=content_type)
         response["Content-Disposition"] = "{}; filename={}".format(content_disposition_type, filename)
         return response
-
-
-# class GetDownloadFromBucket(View):
-#     spi_s3_utils = SpiS3Utils("")
-#
-#     def get(self, rquest, *args, **kwargs):
-#         return None

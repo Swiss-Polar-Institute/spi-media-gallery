@@ -2,6 +2,7 @@ import boto3
 from django.conf import settings
 import os
 from main.utils import content_type_for_filename
+import urllib
 
 
 class SpiS3Utils(object):
@@ -95,7 +96,7 @@ def link_for_medium(medium, content_disposition, filename):
              "bucket": medium.bucket_name()
         }
 
-        return "/get/photo/{}?{}".format(medium.md5, urllib.parse.urlencode(d))
+        return "/get/file/{}?{}".format(medium.md5, urllib.parse.urlencode(d))
     else:
         bucket = SpiS3Utils(medium.bucket_name())
 
