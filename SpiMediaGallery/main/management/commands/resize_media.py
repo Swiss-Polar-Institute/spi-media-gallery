@@ -151,11 +151,10 @@ class Resizer(object):
 
             if verbose:
                 speed = (medium.file.size / 1024 / 1024) / download_time        # MB/s
-                print("Download Stats {} Size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(medium.object_storage_key,
-                                                                                          utils.bytes_to_human_readable(medium.file.size),
+                print("Download Stats. Size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(utils.bytes_to_human_readable(medium.file.size),
                                                                                           utils.seconds_to_human_readable(download_time),
                                                                                           speed,
-                                                                                          medium.object_storage_key))
+                                                                                          medium.file.object_storage_key))
 
             if medium.md5 is None:
                 md5_media_file = utils.hash_of_file_path(media_file.name)
