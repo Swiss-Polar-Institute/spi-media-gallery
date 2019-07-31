@@ -36,6 +36,12 @@ class Tag(models.Model):
         return self.tag
 
 
+class File(models.Model):
+    object_storage_key = models.CharField(max_length=1024)
+    md5 = models.CharField(max_length=32)
+    file_size = models.BigIntegerField()
+
+
 class Medium(models.Model):
     PHOTO = 'P'
     VIDEO = 'V'
@@ -44,6 +50,8 @@ class Medium(models.Model):
         (PHOTO, "Photo"),
         (VIDEO, "Video")
     )
+
+    file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
 
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(null=True, blank=True, max_length=32)
@@ -107,9 +115,12 @@ class MediumResized(models.Model):
         (ORIGINAL, 'Original')
     )
 
+    file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
+
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(max_length=32)
     file_size = models.BigIntegerField()
+
     datetime_resized = models.DateTimeField()
 
     size_label = models.CharField(max_length=1, choices=SIZES_OF_PHOTOS)
@@ -131,6 +142,8 @@ class MediumResized(models.Model):
             return ""
 
         return extension[1:]
+
+
 
     class Meta:
         verbose_name_plural = "MediaResized"
