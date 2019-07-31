@@ -69,20 +69,20 @@
                         Date taken: unknown
                     {% endif %}
                     <p>
-                    {% if medium.latitude %}
+                    {% if medium.latitude and medium.longitude %}
                     Latitude: {{ medium.latitude|floatformat:3 }} Longitude: {{ medium.longitude|floatformat:3 }}<br>
                     <a href="/search/near?latitude={{ medium.latitude }}&longitude={{ medium.longitude }}&km=10">Nearby (10 km) photos</a>
                     {% endif %}
                     <p>
                     {% include "random_selection.tmpl" %}
                     <p>
-                    {% if photo_latitude and photo_longitude %}
+                    {% if medium.latitude and medium.longitude %}
                         {% leaflet_map "photo_map" %}
                         <script language="javascript">
                               window.addEventListener("map:init", function (event) {
                                 var map = event.detail.map;
 
-                                var marker = L.marker([{{ photo_latitude }}, {{ photo_longitude }}]).addTo(map);
+                                var marker = L.marker([{{ medium.latitude }}, {{ medium.longitude }}]).addTo(map);
                               });
                         </script>
                     {% else %}
@@ -90,7 +90,7 @@
                     {% endif %}
                     <p>
                     <small>
-                        Photo path: {{ medium.object_storage_key }}
+                        File path: {{ medium.file.object_storage_key }}
                     </small>
 
                     </div>
