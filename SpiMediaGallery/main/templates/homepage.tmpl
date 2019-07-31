@@ -21,7 +21,7 @@
             <li>Total duration: {{ duration_videos }}</li>
         </ul>
         <h2>Random</h2>
-        <a href="/display/random/photo/">Photo</a> | <a href="/display/random/video/">Video</a> | <a href="/display/random/medium/">Media</a>
+        <a href="{% url 'display_random' type_of_medium='photo' %}">Photo</a> | <a href="{% url 'display_random' type_of_medium='video' %}">Video</a> | <a href="{% url 'display_random' type_of_medium='medium' %}">Media</a>
         <p>
 
         <h2>Videos</h2>

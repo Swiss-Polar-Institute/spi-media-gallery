@@ -5,7 +5,7 @@ from main.views import Homepage, SearchMultipleTags, SearchMediumId, SearchBox, 
 
 urlpatterns = [
     path('', Homepage.as_view()),
-    re_path('display/random/(?P<type_of_medium>photo|video|medium)/', DisplayRandom.as_view()),
+    re_path('display/random/(?P<type_of_medium>photo|video|medium)/', DisplayRandom.as_view(), name="display_random"),
     path('search/tags/', SearchMultipleTags.as_view()),
     path('search/id/', SearchMediumId.as_view()),
     path('search/box/', SearchBox.as_view()),

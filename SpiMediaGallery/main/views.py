@@ -132,6 +132,7 @@ class DisplayRandom(TemplateView):
             qs = qs.filter(medium_type=Medium.VIDEO)
             error_no_medium = {"error_message": "No videos available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
         elif type_of_medium == "medium":
+            qs = qs.all()
             error_no_medium = {"error_message": "No media available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
             pass
 
