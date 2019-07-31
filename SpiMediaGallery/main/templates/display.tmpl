@@ -74,7 +74,7 @@
                     <a href="/search/near?latitude={{ medium.latitude }}&longitude={{ medium.longitude }}&km=10">Nearby (10 km) photos</a>
                     {% endif %}
                     <p>
-                    Random <a href="/display/random/photo/">photo</a>, <a href="/display/random/video/">video</a>, <a href="/display/random/medium/">media</a>
+                    {% include "random_selection.tmpl" %}
                     <p>
                     {% if photo_latitude and photo_longitude %}
                         {% leaflet_map "photo_map" %}
