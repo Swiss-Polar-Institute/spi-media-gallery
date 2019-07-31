@@ -146,7 +146,7 @@ def filename_for_resized_medium(medium_id, photo_resize_label, extension):
 
 
 def filename_for_original_medium(medium):
-    _, extension = os.path.splitext(medium.object_storage_key)
+    _, extension = os.path.splitext(medium.file.object_storage_key)
 
     extension = extension[1:]
 

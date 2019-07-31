@@ -7,10 +7,10 @@ import main.utils
 
 
 class MediumAdmin(OSMGeoAdmin):
-    list_display = ('object_storage_key', 'md5', 'file_size', 'height', 'width', 'datetime_taken', 'location',
+    list_display = ('file_object_storage_key', 'file_md5', 'file_size', 'height', 'width', 'datetime_taken', 'location',
                     'public', 'photographer', 'license', 'medium_type', 'duration_mmss', 'tags_list', 'datetime_imported' )
-    ordering = ('object_storage_key', 'file_size', 'datetime_taken', 'photographer', 'license', 'medium_type', 'duration', 'public', 'datetime_imported' )
-    search_fields = ('object_storage_key', 'md5', )
+    ordering = ('file__object_storage_key', 'file__size', 'datetime_taken', 'photographer', 'license', 'medium_type', 'duration', 'public', 'datetime_imported' )
+    search_fields = ('file__object_storage_key', 'file__md5', )
 
     form = LocationEntryCoordinates
 
@@ -19,6 +19,15 @@ class MediumAdmin(OSMGeoAdmin):
 
     def duration_mmss(self, obj):
         return main.utils.seconds_to_minutes_seconds(obj.duration)
+
+    def file_object_storage_key(self, obj):
+        return obj.file.object_storage_key
+
+    def file_md5(self, obj):
+        return obj.file.md5
+
+    def file_size(self, obj):
+        return obj.file.size
 
 
 class PhotographerAdmin(admin.ModelAdmin):
@@ -46,9 +55,19 @@ class TagAdmin(admin.ModelAdmin):
 
 
 class MediumResizedAdmin(admin.ModelAdmin):
-    list_display = ('object_storage_key', 'md5', 'file_size', 'size_label', 'height', 'width', 'medium', 'datetime_resized')
-    ordering = ('object_storage_key', 'file_size', 'size_label', 'height', 'width', 'medium', 'datetime_resized')
-    search_fields = ('object_storage_key', 'md5', )
+    list_display = ('file_object_storage_key', 'file_md5', 'file_size', 'size_label', 'height', 'width', 'medium', 'datetime_resized')
+    ordering = ('file__object_storage_key', 'file__size', 'size_label', 'height', 'width', 'medium', 'datetime_resized')
+    search_fields = ('file__object_storage_key', 'file__md5', )
+
+    def file_object_storage_key(self, obj):
+        return obj.file.object_storage_key
+
+    def file_md5(self, obj):
+        return obj.file.md5
+
+    def file_size(self, obj):
+        return obj.file.size
+
 
 
 admin.site.register(main.models.Medium, MediumAdmin)

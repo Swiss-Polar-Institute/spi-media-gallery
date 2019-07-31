@@ -27,7 +27,7 @@ class LocationEntryCoordinates(forms.ModelForm):
     class Meta(object):
         model = Medium
         exclude = []
-        fields = ['object_storage_key', 'md5', 'file_size', 'height', 'width', 'duration', 'datetime_taken', 'location',
+        fields = ['file', 'height', 'width', 'duration', 'datetime_taken', 'location',
                        'latitude', 'longitude', 'tags', 'license', 'copyright']
 
     def __init__(self, *args, **kwargs):

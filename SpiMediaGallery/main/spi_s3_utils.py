@@ -102,4 +102,4 @@ def link_for_medium(medium, content_disposition, filename):
     else:
         bucket = SpiS3Utils(medium.bucket_name())
 
-        return bucket.get_presigned_link(medium.object_storage_key, content_type, content_disposition, filename)
+        return bucket.get_presigned_link(medium.file.object_storage_key, content_type, content_disposition, filename)

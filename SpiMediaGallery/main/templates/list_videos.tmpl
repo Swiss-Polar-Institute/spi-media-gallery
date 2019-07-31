@@ -22,7 +22,7 @@
                         {% for medium in media %}
                             <tr>
                                 <td><a href="{{ medium.get_absolute_url }}">{{ medium.pk }}</a></td>
-                                <td>{{ medium.object_storage_key }} </td>
+                                <td>{{ medium.file.object_storage_key }} </td>
                                 <td>{{ medium.duration_in_minutes_seconds }} </td>
 
                                 {% if medium.is_small_resolution_available %}

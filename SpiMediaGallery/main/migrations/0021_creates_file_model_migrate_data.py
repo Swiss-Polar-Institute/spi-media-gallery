@@ -4,6 +4,27 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+def copy_data_to_file_model(apps, queryset):
+    File = apps.get_model('main', 'File')
+
+    for row in queryset:
+        file = File()
+        file.object_storage_key = row.object_storage_key
+        file.md5 = row.md5
+        file.size = row.file_size
+        file.save()
+
+        row.file = file
+        row.save()
+
+
+def migrate_to_files_model(apps, schema_editor):
+    Medium = apps.get_model('main', 'Medium')
+    MediumResized = apps.get_model('main', 'MediumResized')
+
+    copy_data_to_file_model(apps, Medium.objects.all())
+    copy_data_to_file_model(apps, MediumResized.objects.all())
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -16,8 +37,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('object_storage_key', models.CharField(max_length=1024)),
-                ('md5', models.CharField(max_length=32)),
-                ('file_size', models.BigIntegerField()),
+                ('md5', models.CharField(null=True, blank=True, max_length=32)),
+                ('size', models.BigIntegerField()),
             ],
         ),
         migrations.DeleteModel(
@@ -53,5 +74,26 @@ class Migration(migrations.Migration):
             model_name='mediumresized',
             name='file',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='main.File'),
+        ),
+        migrations.RunPython(migrate_to_files_model),
+        migrations.RemoveField(
+            model_name='medium',
+            name='object_storage_key',
+        ),
+        migrations.RemoveField(
+            model_name='medium',
+            name='file_size',
+        ),
+        migrations.RemoveField(
+            model_name='mediumresized',
+            name='md5',
+        ),
+        migrations.RemoveField(
+            model_name='mediumresized',
+            name='object_storage_key',
+        ),
+        migrations.RemoveField(
+            model_name='mediumresized',
+            name='file_size',
         ),
     ]

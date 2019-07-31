@@ -132,7 +132,7 @@ class Resizer(object):
             total_steps = len(media_to_be_resized)
             progress_report_unit = "photos"
         else:
-            total_steps = media_to_be_resized.aggregate(Sum('file_size'))['file_size__sum']
+            total_steps = media_to_be_resized.aggregate(Sum('file__size'))['file__size__sum']
             progress_report_unit = None
 
         progress_report = ProgressReport(total_steps, unit=progress_report_unit,
@@ -144,15 +144,15 @@ class Resizer(object):
             media_file = tempfile.NamedTemporaryFile(delete=False)
             media_file.close()
             start_download = time.time()
-            self._media_bucket.bucket().download_file(medium.object_storage_key, media_file.name)
+            self._media_bucket.bucket().download_file(medium.file.object_storage_key, media_file.name)
             download_time = time.time() - start_download
 
-            assert os.stat(media_file.name).st_size == medium.file_size
+            assert os.stat(media_file.name).st_size == medium.file.size
 
             if verbose:
-                speed = (medium.file_size / 1024 / 1024) / download_time        # MB/s
+                speed = (medium.file.size / 1024 / 1024) / download_time        # MB/s
                 print("Download Stats {} Size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(medium.object_storage_key,
-                                                                                          utils.bytes_to_human_readable(medium.file_size),
+                                                                                          utils.bytes_to_human_readable(medium.file.size),
                                                                                           utils.seconds_to_human_readable(download_time),
                                                                                           speed,
                                                                                           medium.object_storage_key))
@@ -171,7 +171,7 @@ class Resizer(object):
             if self._medium_type == Medium.PHOTO:
                 progress_report.increment_and_print_if_needed()
             else:
-                progress_report.increment_steps_and_print_if_needed(medium.file_size)
+                progress_report.increment_steps_and_print_if_needed(medium.file.size)
 
 
     def _resize_media(self, medium, media_file_name, sizes):
@@ -239,8 +239,10 @@ class Resizer(object):
             os.remove(resized_medium_file)
 
             # Update database
-            resized_medium.md5 = md5_resized_file
-            resized_medium.file_size = file_size
+            resized_medium.file.md5 = md5_resized_file
+            resized_medium.file.size = file_size
+            resized_medium.file.save()
+
             resized_medium.size_label = size_label
             resized_medium.medium = medium
             resized_medium.datetime_resized = datetime.datetime.now(tz=timezone.utc)

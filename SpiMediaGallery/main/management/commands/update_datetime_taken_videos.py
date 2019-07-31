@@ -76,7 +76,7 @@ class UpdateDateTimeTaken(object):
             print("Nothing to be updated? Aborting")
             sys.exit(1)
 
-        total_bytes = videos_to_update.aggregate(Sum('file_size'))['file_size__sum']
+        total_bytes = videos_to_update.aggregate(Sum('file__size'))['file__size__sum']
 
         progress_report = ProgressReport(total_bytes,
                                          extra_information="Updating medium",
@@ -90,10 +90,10 @@ class UpdateDateTimeTaken(object):
             self._media_bucket.bucket().download_file(video.object_storage_key, media_file.name)
             download_time = time.time() - start_download
 
-            assert os.stat(media_file.name).st_size == video.file_size
+            assert os.stat(media_file.name).st_size == video.file.size
 
-            download_speed = (video.file_size / 1024 / 1024) / download_time        # MB/s
-            print("Download Stats: Total size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(utils.bytes_to_human_readable(video.file_size),
+            download_speed = (video.file.size / 1024 / 1024) / download_time        # MB/s
+            print("Download Stats: Total size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(utils.bytes_to_human_readable(video.file.size),
                                                                                       utils.seconds_to_human_readable(download_time),
                                                                                       download_speed,
                                                                                       video.object_storage_key))
@@ -102,4 +102,4 @@ class UpdateDateTimeTaken(object):
 
             os.remove(media_file.name)
 
-            progress_report.increment_steps_and_print_if_needed(video.file_size)
+            progress_report.increment_steps_and_print_if_needed(video.file.size)

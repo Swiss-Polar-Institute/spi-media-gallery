@@ -38,8 +38,8 @@ class Tag(models.Model):
 
 class File(models.Model):
     object_storage_key = models.CharField(max_length=1024)
-    md5 = models.CharField(max_length=32)
-    file_size = models.BigIntegerField()
+    md5 = models.CharField(null=True, blank=True, max_length=32)
+    size = models.BigIntegerField()
 
 
 class Medium(models.Model):
@@ -53,9 +53,10 @@ class Medium(models.Model):
 
     file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
 
-    object_storage_key = models.CharField(max_length=1024)
-    md5 = models.CharField(null=True, blank=True, max_length=32)
-    file_size = models.BigIntegerField()
+    # object_storage_key = models.CharField(max_length=1024)
+    # md5 = models.CharField(null=True, blank=True, max_length=32)
+    # file_size = models.BigIntegerField()
+
     location = models.PointField(null=True, blank=True)
 
     height = models.IntegerField(null=True, blank=True)
@@ -117,9 +118,9 @@ class MediumResized(models.Model):
 
     file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
 
-    object_storage_key = models.CharField(max_length=1024)
-    md5 = models.CharField(max_length=32)
-    file_size = models.BigIntegerField()
+    # object_storage_key = models.CharField(max_length=1024)
+    # md5 = models.CharField(max_length=32)
+    # file_size = models.BigIntegerField()
 
     datetime_resized = models.DateTimeField()
 
@@ -134,7 +135,7 @@ class MediumResized(models.Model):
         return "resized"
 
     def file_extension(self):
-        _, extension = os.path.splitext(self.object_storage_key)
+        _, extension = os.path.splitext(self.file.object_storage_key)
         if extension is None:
             return "Unknown"
 

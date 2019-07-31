@@ -32,8 +32,8 @@ class CheckOrphanes(object):
     def _database_files(self, qs):
         s = set()
 
-        for file in qs:
-            s.add(file.object_storage_key)
+        for row in qs:
+            s.add(row.file.object_storage_key)
 
         return s
 

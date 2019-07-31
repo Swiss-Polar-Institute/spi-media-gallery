@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Medium, Tag
+from main.models import Medium, Tag, File
 from libxmp.utils import file_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
@@ -87,12 +87,18 @@ class TagImporter(object):
                 non_xmp_without_xmp_associated += 1
 
             try:
-                medium = Medium.objects.get(object_storage_key=s3_object.key)
+                medium = Medium.objects.get(file__object_storage_key=s3_object.key)
             except ObjectDoesNotExist:
                 medium = Medium()
-                medium.object_storage_key = s3_object.key
-                medium.md5 = None
-                medium.file_size = size_of_medium
+
+                file = File()
+
+                file.object_storage_key = s3_object.key
+                file.md5 = None
+                file.size = size_of_medium
+                file.save()
+
+                medium.file = file
 
                 if file_extension in photo_extensions:
                     medium.medium_type = Medium.PHOTO
