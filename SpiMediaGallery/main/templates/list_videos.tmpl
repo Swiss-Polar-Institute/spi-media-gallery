@@ -25,12 +25,12 @@
                                 <td>{{ medium.object_storage_key }} </td>
                                 <td>{{ medium.duration_in_minutes_seconds }} </td>
 
-                                {% if medium.small_resolution_exist %}
-                                    <td><a href="{{ medium.link_for_small_resolution }}">Play ({{ medium.file_size_for_small_resolution }})</a></td>
+                                {% if medium.is_small_resolution_available %}
+                                    <td><a href="{{ medium.small_resolution_url }}">Play ({{ medium.file_size_small }})</a></td>
                                 {% else %}
                                     <td>Not available</td>
                                 {% endif %}
-                                <td><a href="{{ medium.link_for_original }}">Download ({{ medium.file_size_for_original }})</a></td>
+                                <td><a href="{{ medium.original_file_attachment_url }}">Download ({{ medium.file_size_original }})</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>

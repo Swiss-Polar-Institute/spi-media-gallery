@@ -3,64 +3,55 @@ import math
 import os
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from main import utils
-from main.spi_s3_utils import SpiS3Utils, link_for_medium
+from main.spi_s3_utils import link_for_medium
 from main.utils import filename_for_resized_medium, filename_for_original_medium, human_readable_resolution_for_medium
 
+
 class MediumForView(Medium):
-    def _medium_resized(self, label):
-        qs = MediumResized.objects.filter(medium=self).filter(size_label=label)
-        assert len(qs) < 2
-
-        if len(qs) == 1:
-            return qs[0]
-        else:
-            return None
-
-    def link_for_thumbnail_resolution(self):
+    def thumbnail_url(self):
         if self.medium_type == Medium.PHOTO:
-            medium_resized = self._medium_resized("T")
-
-            if medium_resized is None:
-                return static("images/thumbnail-does-not-exist.jpg")
-
-            return link_for_medium(medium_resized, "inline", filename_for_resized_medium(self.pk, "T", "jpg"))
-
+            size_label = "T"
         elif self.medium_type == Medium.VIDEO:
-            medium_resized = self._medium_resized("S")
-
-            if medium_resized is None:
-                return static("images/thumbnail-does-not-exist.jpg")
-
-            return link_for_medium(medium_resized, "inline", filename_for_resized_medium(self.pk, "S", "webm"))
-
+            size_label = "S"
         else:
             assert False
 
-    def link_for_original(self):
+        medium_resized = self._medium_resized(size_label)
+
+        if medium_resized is None:
+            return static("images/thumbnail-does-not-exist.jpg")
+
+        resized_extension = MediumForView._get_file_extension(medium_resized.object_storage_key)
+
+        return link_for_medium(medium_resized, "inline",
+                               filename_for_resized_medium(self.pk, size_label, resized_extension))
+
+    def original_file_attachment_url(self):
         return link_for_medium(self, "attachment", filename_for_original_medium(self))
 
-    def file_size_for_original(self):
-        return utils.bytes_to_human_readable(self.file_size)
-
-    def link_for_small_resolution(self):
-        resized = self._medium_resized("S")
+    def small_resolution_url(self):
+        resized = self._medium_resized(MediumResized.SMALL)
         if resized is None:
             return static("images/small-does-not-exist.jpg")
 
-        return link_for_medium(resized, "inline", filename_for_resized_medium(self.pk, "S", resized.file_extension()))
+        return link_for_medium(resized, "inline",
+                               filename_for_resized_medium(self.pk, MediumResized.SMALL, resized.file_extension()))
 
-    def small_resolution_exist(self):
-        resized = self._medium_resized("S")
+    def file_size_original(self):
+        return utils.bytes_to_human_readable(self.file_size)
 
-        return resized is not None
-
-    def file_size_for_small_resolution(self):
-        resized = self._medium_resized("S")
+    def file_size_small(self):
+        resized = self._medium_resized(MediumResized.SMALL)
 
         if resized is None:
             return None
 
         return utils.bytes_to_human_readable(resized.file_size)
+
+    def is_small_resolution_available(self):
+        resized = self._medium_resized(MediumResized.SMALL)
+
+        return resized is not None
 
     def duration_in_minutes_seconds(self):
         return utils.seconds_to_minutes_seconds(self.duration)
@@ -71,11 +62,13 @@ class MediumForView(Medium):
 
         return "embed-responsive-16by9"
 
-    def small_content_type(self):
+    def resized_content_type(self):
         if self.medium_type == Medium.VIDEO:
             return "video/webm"
-        else:
+        elif self.medium_type == Medium.PHOTO:
             return "image/jpeg"
+        else:
+            assert False
 
     def border_color(self):
         if self.medium_type == Medium.VIDEO:
@@ -87,39 +80,8 @@ class MediumForView(Medium):
 
         return "{}x{}".format(self.width, self.height)
 
-    def file_extension(self):
-        _ , file_extension = os.path.splitext(self.object_storage_key)
-
-        if file_extension is None:
-            return "unknown"
-
-        if len(file_extension) == 0:
-            return ""
-
-        file_extension = file_extension[1:]
-
-        return file_extension
-
-    def file_id(self):
-        return "SPI-{}.{}".format(self.pk, self.file_extension())
-
-    def copyright_render(self):
-        if self.copyright is None:
-            return "Unknown"
-        else:
-            return self.copyright.public_text
-
-    def license_render(self):
-        if self.license is None:
-            return "Unknown"
-        else:
-            return self.license.public_text
-
-    def photographer_render(self):
-        if self.photographer is None:
-            return "Unknown"
-        else:
-            return "{} {}".format(self.photographer.first_name, self.photographer.last_name)
+    def file_name(self):
+        return "SPI-{}.{}".format(self.pk, self._get_file_extension(self.object_storage_key))
 
     def list_of_tags(self):
         list_of_tags = []
@@ -132,13 +94,13 @@ class MediumForView(Medium):
 
         return list_of_tags
 
-    def resizeds(self):
+    def list_of_resized(self):
         medium_resized_all = MediumResized.objects.filter(medium=self)
 
         sizes_presentation = []
 
         for medium_resized in medium_resized_all:
-            if medium_resized.size_label == "T":
+            if medium_resized.size_label == MediumResized.THUMBNAIL:
                 continue
 
             size_information = {}
@@ -149,7 +111,7 @@ class MediumForView(Medium):
 
             size_information['resolution'] = human_readable_resolution_for_medium(medium_resized)
 
-            filename = filename_for_resized_medium(self.pk, medium_resized.size_label, medium_resized.file_extension())
+            filename = filename_for_resized_medium(self.pk, medium_resized.size_label, MediumForView._get_file_extension(medium_resized.object_storage_key))
 
             size_information['image_link'] = link_for_medium(medium_resized, "inline", filename)
 
@@ -157,11 +119,52 @@ class MediumForView(Medium):
 
         return sorted(sizes_presentation, key=lambda k: k['width'])
 
+    def copyright_text(self):
+        if self.copyright is None:
+            return "Unknown"
+        else:
+            return self.copyright.public_text
+
+    def license_text(self):
+        if self.license is None:
+            return "Unknown"
+        else:
+            return self.license.public_text
+
+    def photographer_name(self):
+        if self.photographer is None:
+            return "Unknown"
+        else:
+            return "{} {}".format(self.photographer.first_name, self.photographer.last_name)
+
     def is_photo(self):
         return self.medium_type == self.PHOTO
 
     def is_video(self):
         return self.medium_type == self.VIDEO
+
+    def _medium_resized(self, label):
+        qs = MediumResized.objects.filter(medium=self).filter(size_label=label)
+        assert len(qs) < 2
+
+        if len(qs) == 1:
+            return qs[0]
+        else:
+            return None
+
+    @staticmethod
+    def _get_file_extension(filename):
+        _ , file_extension = os.path.splitext(filename)
+
+        if file_extension is None:
+            return "unknown"
+
+        if len(file_extension) == 0:
+            return ""
+
+        file_extension = file_extension[1:]
+
+        return file_extension
 
     class Meta:
         proxy = True

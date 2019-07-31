@@ -163,12 +163,13 @@ class Search(TemplateView):
 
             information, qs = search_in_box(north, south, east, west)
 
+        else:
+            error = {"error_message": "Invalid parameters received"}
+            return render(request, "error.tmpl", error)
+
         paginator = Paginator(qs, 200)
-
-        page = request.GET.get("page")
-
-        photos = paginator.get_page(page)
-
+        page_number = request.GET.get("page")
+        photos = paginator.get_page(page_number)
         information["media"] = photos
 
         return render(request, "search.tmpl", information)
@@ -228,11 +229,8 @@ class ListVideos(TemplateView):
         videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).order_by("object_storage_key")
 
         paginator = Paginator(videos_qs, 100)
-
-        page = request.GET.get('page')
-
-        videos = paginator.get_page(page)
-
+        page_number = request.GET.get('page')
+        videos = paginator.get_page(page_number)
         information['media'] = videos
 
         return render(request, "list_videos.tmpl", information)

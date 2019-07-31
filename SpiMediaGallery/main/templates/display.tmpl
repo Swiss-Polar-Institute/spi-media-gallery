@@ -12,32 +12,32 @@
         <div class="container">
             {% include "logo.tmpl" %}
             <p></p>
-            <b>{{ medium.file_id }}</b>
+            <b>{{ medium.file_name }}</b>
             <div class="row">
                 <div class="col-md-6">
                     {% if medium.is_photo %}
-                        <img class="img-thumbnail" src="{{ medium.link_for_small_resolution }}"><br>
+                        <img class="img-thumbnail" src="{{ medium.small_resolution_url }}"><br>
                     {% endif %}
 
                     {% if medium.is_video %}
-                        {% if medium.small_resolution_exist %}
+                        {% if medium.is_small_resolution_available %}
                             <div class="card p-1 {{ medium.border_color }}">
                                 <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
                                         <video controls>
-                                            <source src="{{ medium.link_for_small_resolution }}" type="video/webm">
+                                            <source src="{{ medium.small_resolution_url }}" type="video/webm">
                                         </video>
                                 </div>
                             </div>
                         {% else %}
-                            <img class="img-thumbnail {{ medium.border_color }}" src="{{ medium.link_for_small_resolution }}"><br>
+                            <img class="img-thumbnail {{ medium.border_color }}" src="{{ medium.small_resolution_url }}"><br>
                         {% endif %}
                     {% endif %}
                     <small>
                         <br>
-                        <b>Copyright:</b> {{ medium.copyright_render }}<br>
-                        <b>Photographer:</b> {{ medium.photographer_render }}<br>
+                        <b>Copyright:</b> {{ medium.copyright_text }}<br>
+                        <b>Photographer:</b> {{ medium.photographer_name }}<br>
                         <b>License:</b> <br>
-                        {{ medium.license_render | safe }}<p>
+                        {{ medium.license_text | safe }}<p>
                     </small>
                     <!--
                     <div align="left">
@@ -47,11 +47,11 @@
 
                 </div>
                 <div class="col-md-6">
-                    {% for photo_size in medium.resizeds %}
+                    {% for photo_size in medium.list_of_resized %}
                         <a href="{{ photo_size.image_link }}">{{ photo_size.label }}</a> ({{ photo_size.resolution }}, {{ photo_size.size }})<br>
                     {% endfor %}
                     <p>
-                        <a href="{{ medium.link_for_original }}">Download original file</a> ({{ medium.resolution_for_original }}, {{ medium.file_size_for_original }})</a>
+                        <a href="{{ medium.original_file_attachment_url }}">Download original file</a> ({{ medium.resolution_for_original }}, {{ medium.file_size_original }})</a>
                     <p>
                     Tags:
                         {% if medium.list_of_tags %}

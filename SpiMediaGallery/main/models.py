@@ -33,7 +33,7 @@ class Tag(models.Model):
     tag = models.CharField(max_length=256)
 
     def __str__(self):
-        return "{}".format(self.tag)
+        return self.tag
 
 
 class Medium(models.Model):
@@ -88,7 +88,6 @@ class Medium(models.Model):
     def get_absolute_url(self):
         return reverse('medium', args=[str(self.pk)])
 
-
     def __str__(self):
         return "{}".format(self.pk)
 
@@ -132,7 +131,6 @@ class MediumResized(models.Model):
             return ""
 
         return extension[1:]
-
 
     class Meta:
         verbose_name_plural = "MediaResized"
