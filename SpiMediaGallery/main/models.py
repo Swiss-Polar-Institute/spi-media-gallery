@@ -41,6 +41,9 @@ class File(models.Model):
     md5 = models.CharField(null=True, blank=True, max_length=32)
     size = models.BigIntegerField()
 
+    def __str__(self):
+        return self.object_storage_key
+
 
 class Medium(models.Model):
     PHOTO = 'P'

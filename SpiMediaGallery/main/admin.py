@@ -8,9 +8,12 @@ import main.utils
 
 class MediumAdmin(OSMGeoAdmin):
     list_display = ('file_object_storage_key', 'file_md5', 'file_size', 'height', 'width', 'datetime_taken', 'location',
-                    'public', 'photographer', 'license', 'medium_type', 'duration_mmss', 'tags_list', 'datetime_imported' )
-    ordering = ('file__object_storage_key', 'file__size', 'datetime_taken', 'photographer', 'license', 'medium_type', 'duration', 'public', 'datetime_imported' )
+                    'public', 'photographer', 'license', 'medium_type', 'duration_mmss', 'tags_list',
+                    'datetime_imported', )
+    ordering = ('file__object_storage_key', 'file__size', 'datetime_taken', 'photographer', 'license', 'medium_type',
+                'duration', 'public', 'datetime_imported', )
     search_fields = ('file__object_storage_key', 'file__md5', )
+    raw_id_fields = ('file', )
 
     form = LocationEntryCoordinates
 
@@ -55,9 +58,12 @@ class TagAdmin(admin.ModelAdmin):
 
 
 class MediumResizedAdmin(admin.ModelAdmin):
-    list_display = ('file_object_storage_key', 'file_md5', 'file_size', 'size_label', 'height', 'width', 'medium', 'datetime_resized')
-    ordering = ('file__object_storage_key', 'file__size', 'size_label', 'height', 'width', 'medium', 'datetime_resized')
+    list_display = ('file_object_storage_key', 'file_md5', 'file_size', 'size_label', 'height', 'width', 'medium',
+                    'datetime_resized', )
+    ordering = ('file__object_storage_key', 'file__size', 'size_label', 'height', 'width', 'medium',
+                'datetime_resized', )
     search_fields = ('file__object_storage_key', 'file__md5', )
+    raw_id_fields = ('file',)
 
     def file_object_storage_key(self, obj):
         return obj.file.object_storage_key
