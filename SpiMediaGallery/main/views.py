@@ -242,7 +242,6 @@ class SearchNear(TemplateView):
         return render(request, "search.tmpl", information)
 
 
-
 class SearchVideos(TemplateView):
     def get(self, request, *args, **kwargs):
         information = {}

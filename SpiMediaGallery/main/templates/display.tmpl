@@ -20,13 +20,17 @@
                     {% endif %}
 
                     {% if medium.is_video %}
-                        <div class="card p-1 {{ medium.border_color }}">
-                            <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
-                                    <video controls>
-                                        <source src="{{ medium.link_for_small_resolution }}" type="video/webm">
-                                    </video>
+                        {% if medium.small_resolution_exist %}
+                            <div class="card p-1 {{ medium.border_color }}">
+                                <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
+                                        <video controls>
+                                            <source src="{{ medium.link_for_small_resolution }}" type="video/webm">
+                                        </video>
+                                </div>
                             </div>
-                        </div>
+                        {% else %}
+                            <img class="img-thumbnail {{ medium.border_color }}" src="{{ medium.link_for_small_resolution }}"><br>
+                        {% endif %}
                     {% endif %}
                     <small>
                         <br>
@@ -52,7 +56,7 @@
                     Tags:
                         {% if medium.list_of_tags %}
                             {% for tag in medium.list_of_tags %}
-                                <a href="/search/tags/?tags={{tag.id}}">{{tag.tag}}</a>{% if not forloop.last %}, {% endif %}
+                                <a href="/search/tags/?tags={{ tag.id }}">{{tag.tag}}</a>{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         {% else %}
                                 none at the moment

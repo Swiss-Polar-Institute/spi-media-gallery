@@ -49,6 +49,11 @@ class MediumForView(Medium):
 
         return link_for_medium(resized, "inline", filename_for_resized_medium(self.pk, "S", resized.file_extension()))
 
+    def small_resolution_exist(self):
+        resized = self._medium_resized("S")
+
+        return resized is not None
+
     def file_size_for_small_resolution(self):
         resized = self._medium_resized("S")
 

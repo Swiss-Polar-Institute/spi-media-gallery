@@ -21,11 +21,11 @@
                     <tbody>
                         {% for medium in media %}
                             <tr>
-                                <td><a href="/display/{{ medium.pk }}">{{ medium.pk }}</a></td>
+                                <td><a href="{{ medium.get_absolute_url }}">{{ medium.pk }}</a></td>
                                 <td>{{ medium.object_storage_key }} </td>
                                 <td>{{ medium.duration_in_minutes_seconds }} </td>
 
-                                {% if medium.link_for_small_resolution %}
+                                {% if medium.small_resolution_exist %}
                                     <td><a href="{{ medium.link_for_small_resolution }}">Play ({{ medium.file_size_for_small_resolution }})</a></td>
                                 {% else %}
                                     <td>Not available</td>
@@ -40,6 +40,6 @@
 
         {% include "pagination.tmpl" %}
         <p>
-            <a href="/search/videos/export/csv/">Download CSV file with all the videos.</a>
+            <a href="/list/videos/export/csv/">Download CSV file with all the videos.</a>
         </div>
 {% endblock %}

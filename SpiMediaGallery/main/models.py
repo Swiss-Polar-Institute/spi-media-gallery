@@ -1,5 +1,6 @@
 # from django.db import models
 from django.contrib.gis.db import models
+from django.urls import reverse
 
 import os
 
@@ -83,6 +84,10 @@ class Medium(models.Model):
 
     class Meta:
         verbose_name_plural = "Media"
+
+    def get_absolute_url(self):
+        return reverse('medium', args=[str(self.pk)])
+
 
     def __str__(self):
         return "{}".format(self.pk)

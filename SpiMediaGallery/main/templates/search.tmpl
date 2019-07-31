@@ -14,10 +14,10 @@
                     <div class="card p-1 {{ medium.border_color }}">
 
                     {% if medium.medium_type == "P" %}
-                        <a href="/display/{{ medium.id }}"><img class="card-img-top" src="{{ medium.link_for_thumbnail_resolution }}" alt=""></a>
+                        <a href="{{ medium.get_absolute_url }}"><img class="card-img-top" src="{{ medium.link_for_thumbnail_resolution }}" alt=""></a>
                     {% else %}
                         <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
-                            <a href="/display/{{ medium.id }}">
+                            <a href="{{ medium.get_absolute_url }}">
                                 <video>
                                     <source src="{{ medium.link_for_thumbnail_resolution }}" type="{{ medium.small_content_type }}">
                                 </video>
