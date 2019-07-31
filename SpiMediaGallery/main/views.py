@@ -118,46 +118,27 @@ class SearchMultipleTags(TemplateView):
 
         return render(request, "search.tmpl", information)
 
-class Search(TemplateView):
 
-
-class RandomPhoto(TemplateView):
+class DisplayRandom(TemplateView):
     def get(self, request, *args, **kwargs):
-        random_photos = Medium.objects.filter(medium_type=Medium.PHOTO).order_by('?')
+        type_of_medium = kwargs["type_of_medium"]
 
-        if len(random_photos) == 0:
-            information = {"error_message": "No photos available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
-            return render(request, "error.tmpl", information)
+        qs = Medium.objects
 
-        random_photo = random_photos[0]
+        if type_of_medium == "photo":
+            qs = qs.filter(medium_type=Medium.PHOTO)
+            error_no_medium = {"error_message": "No photos available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
+        elif type_of_medium == "video":
+            qs = qs.filter(medium_type=Medium.VIDEO)
+            error_no_medium = {"error_message": "No videos available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
+        elif type_of_medium == "medium":
+            error_no_medium = {"error_message": "No media available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
+            pass
 
-        return redirect("/display/{}".format(random_photo.id))
+        if len(qs) == 0:
+            return render(request, "error.tmpl", error_no_medium)
 
-
-class RandomVideo(TemplateView):
-    def get(self, request, *args, **kwargs):
-        random_videos = Medium.objects.filter(medium_type=Medium.VIDEO).order_by('?')
-
-        if len(random_videos) == 0:
-            information = {"error_message": "No videos available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
-            return render(request, "error.tmpl", information)
-
-        random_video = random_videos[0]
-
-        return redirect("/display/{}".format(random_video.id))
-
-
-class RandomMedium(TemplateView):
-    def get(self, request, *args, **kwargs):
-        random_media = Medium.objects.all().order_by('?')
-
-        if len(random_media) == 0:
-            information = {"error_message": "No media available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
-            return render(request, "error.tmpl", information)
-
-        random_medium = random_media[0]
-
-        return redirect("/display/{}".format(random_medium.id))
+        return redirect("/display/{}".format(qs[0].pk))
 
 
 class SearchMediumId(TemplateView):

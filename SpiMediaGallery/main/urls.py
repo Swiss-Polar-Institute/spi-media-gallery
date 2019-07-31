@@ -1,11 +1,11 @@
-from django.urls import path
+from django.urls import path, re_path
 from main.views import Homepage, SearchMultipleTags, SearchMediumId, SearchBox, SearchNear, ListVideos, \
-    SearchVideosExportCsv, Display, RandomPhoto, RandomVideo, RandomMedium, Map, PhotosGeojson, TrackGeojson, GetFile, \
-    Search
+    SearchVideosExportCsv, Display, Map, PhotosGeojson, TrackGeojson, GetFile, \
+    DisplayRandom
 
 urlpatterns = [
     path('', Homepage.as_view()),
-    path('search/', Search.as_view()),
+    re_path('display/random/(?P<type_of_medium>photo|video|medium)/', DisplayRandom.as_view()),
     path('search/tags/', SearchMultipleTags.as_view()),
     path('search/id/', SearchMediumId.as_view()),
     path('search/box/', SearchBox.as_view()),
@@ -13,9 +13,6 @@ urlpatterns = [
     path('list/videos/', ListVideos.as_view()),
     path('list/videos/export/csv/', SearchVideosExportCsv.as_view()),
     path('display/<int:media_id>', Display.as_view(), name="medium"),
-    path('display/random/photo/', RandomPhoto.as_view()),
-    path('display/random/video/', RandomVideo.as_view()),
-    path('display/random/medium/', RandomMedium.as_view()),
     path('map/photos.geojson', PhotosGeojson.as_view()),
     path('map/', Map.as_view()),
     path('map/track.geojson', TrackGeojson.as_view()),
