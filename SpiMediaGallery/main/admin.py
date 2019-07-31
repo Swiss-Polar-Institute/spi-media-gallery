@@ -14,6 +14,7 @@ class MediumAdmin(OSMGeoAdmin):
                 'duration', 'public', 'datetime_imported', )
     search_fields = ('file__object_storage_key', 'file__md5', )
     raw_id_fields = ('file', )
+    list_select_related = ('file',)
 
     form = LocationEntryCoordinates
 
@@ -64,6 +65,7 @@ class MediumResizedAdmin(admin.ModelAdmin):
                 'datetime_resized', )
     search_fields = ('file__object_storage_key', 'file__md5', )
     raw_id_fields = ('file',)
+    list_select_related = ('file', )
 
     def file_object_storage_key(self, obj):
         return obj.file.object_storage_key
