@@ -213,6 +213,8 @@ class DisplayRandom(TemplateView):
         if len(qs) == 0:
             return render(request, "error.tmpl", error_no_medium)
 
+        qs = qs.order_by("?")
+
         return redirect("/display/{}".format(qs[0].pk))
 
 
