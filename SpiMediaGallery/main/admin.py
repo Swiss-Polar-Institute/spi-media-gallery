@@ -31,7 +31,7 @@ class MediumAdmin(OSMGeoAdmin):
         return obj.file.md5
 
     def file_size(self, obj):
-        return obj.file.size
+        return main.utils.bytes_to_human_readable(obj.file.size)
 
 
 class PhotographerAdmin(admin.ModelAdmin):

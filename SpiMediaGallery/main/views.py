@@ -228,7 +228,7 @@ class ListVideos(TemplateView):
 
         information["search_explanation"] = "Videos"
 
-        videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).order_by("file__object_storage_key")
+        videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).select_related('file').order_by("file__object_storage_key")
 
         paginator = Paginator(videos_qs, 100)
         page_number = request.GET.get('page')
@@ -244,7 +244,7 @@ class ListVideosExportCsv(TemplateView):
 
         response['Content-Disposition'] = 'attachment; filename="spi_search_videos-{}.csv"'.format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-        videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).order_by("file__object_storage_key")
+        videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).select_related('file').order_by("file__object_storage_key")
 
         writer = csv.writer(response)
         writer.writerow(["ID", "Name", "Duration", "Link"])
