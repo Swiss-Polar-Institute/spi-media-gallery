@@ -89,7 +89,7 @@ class Resizer(object):
             if EXIF_DATE_ID in exif_data:
                 try:
                     datetime_taken = datetime.datetime.strptime(exif_data[EXIF_DATE_ID], "%Y:%m:%d %H:%M:%S")
-                    datetime_taken = datetime_taken.replace(tzinfo=timezone.UTC)
+                    datetime_taken = datetime_taken.replace(tzinfo=timezone.utc)
                 except ValueError:
                     print("Invalid datetime:", exif_data[EXIF_DATE_ID], "in photo:", photo.id)
                     datetime_taken = None
