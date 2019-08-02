@@ -33,6 +33,9 @@ class MediumAdmin(OSMGeoAdmin):
     def file_size(self, obj):
         return main.utils.bytes_to_human_readable(obj.file.size)
 
+    file_size.admin_order_field = 'file__size'
+    duration_mmss.admin_order_field = 'duration'
+
 
 class PhotographerAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', )
