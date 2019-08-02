@@ -203,6 +203,11 @@ class Resizer(object):
 
                 start_time = time.time()
                 resized_medium_file = utils.resize_video(media_file_name, resized_width)
+
+                if resized_medium_file is None:
+                    print("File {} cannot be encoded".format(media_file_name))
+                    continue
+
                 duration_convert = time.time() - start_time
 
                 information = get_information_from_video(resized_medium_file)

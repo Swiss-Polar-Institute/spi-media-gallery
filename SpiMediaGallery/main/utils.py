@@ -75,7 +75,13 @@ def resize_video(input_file_path, width):
             print("Error in the command:", command)
             sys.exit(1)
 
-    return output_file_path.name
+    output_file_path_name = output_file_path.name
+
+    if not os.path.isfile(output_file_path):
+        # Encoding failed
+        return None
+
+    return output_file_path_name
 
 
 def bytes_to_human_readable(num):
