@@ -9,15 +9,13 @@
         {% include "logo.tmpl" %} <H1>Welcome to the SPI Media Gallery</H1>
         <p>
         <ul>
-            <li>Total number of photos indexed: {{ total_number_photos }}<br>
-            <li>Total number of photos with thumbnail: {{ total_number_photo_thumbnails }}
-            <li>Size of photos: {{ size_of_photos }}</li>
+            <li>Total number of photos: {{ total_number_photos }} (resized: {{ total_number_photos_resized }}, {{ percentage_number_photos_resized|floatformat:-2 }}%)<br>
+            <li>Size of photos: {{ size_of_photos }} (resized: {{ size_photos_resized }} , {{ percentage_size_photos_resized|floatformat:-2 }}% resized)</li>
         </ul>
         <p>
         <ul>
-            <li>Total number of videos indexed: {{ total_number_videos }}<br>
-            <li>Total number of videos with thumbnail: {{ total_number_video_thumbnails }}
-            <li>Size of videos: {{ size_of_videos }} ({{ percentage_already_resized|floatformat:-2 }}% already resized)</li>
+            <li>Total number of videos indexed: {{ total_number_videos }} (resized: {{ total_number_videos_resized }}, {{ percentage_number_videos_resized|floatformat:-2 }}%)<br>
+            <li>Size of videos: {{ size_of_videos }} (resized: {{ size_videos_resized }}, {{ percentage_size_videos_resized|floatformat:-2 }}%)</li>
             <li>Total duration: {{ duration_videos }}</li>
         </ul>
         <h2>Random</h2>

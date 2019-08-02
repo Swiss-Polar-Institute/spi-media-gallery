@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from django.conf import settings
 from main.medium_for_view import MediumForView
 from django.contrib.gis.geos import Point, Polygon
+from django.urls import reverse
 
 from django.core.serializers import serialize
 
@@ -34,17 +35,49 @@ class Homepage(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(Homepage, self).get_context_data(**kwargs)
 
-        total_photos = Medium.objects.filter(medium_type=Medium.PHOTO).count()
-        total_videos = Medium.objects.filter(medium_type=Medium.VIDEO).count()
+        total_number_photos = Medium.objects.filter(medium_type=Medium.PHOTO).count()
+        total_number_videos = Medium.objects.filter(medium_type=Medium.VIDEO).count()
 
-        total_photo_thumbnails = MediumResized.objects.filter(size_label="T").filter(medium__medium_type=Medium.PHOTO).count()
-        total_video_thumbnails = MediumResized.objects.filter(size_label="S").filter(medium__medium_type=Medium.VIDEO).count()
+        total_number_photos_resized = MediumResized.objects.filter(size_label="T").filter(medium__medium_type=Medium.PHOTO).count()
+        total_number_videos_resized = MediumResized.objects.filter(size_label="S").filter(medium__medium_type=Medium.VIDEO).count()
 
         size_of_photos = Medium.objects.filter(medium_type=Medium.PHOTO).aggregate(Sum('file__size'))['file__size__sum']
         size_of_videos = Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('file__size'))['file__size__sum']
-        size_of_videos_already_resized = int(MediumResized.objects.filter(size_label="S").filter(medium__medium_type="V").aggregate(Sum('medium__file__size'))['medium__file__size__sum'])
+        size_of_videos_resized = MediumResized.objects.filter(size_label="S").filter(medium__medium_type="V").aggregate(Sum('medium__file__size'))['medium__file__size__sum']
+        size_of_photos_resized = MediumResized.objects.filter(size_label="S").filter(medium__medium_type="P").aggregate(Sum('medium__file__size'))['medium__file__size__sum']
+
+        if size_of_videos_resized is None:
+            size_of_videos_resized = 0
+        else:
+            size_of_videos_resized = int(size_of_videos_resized)
+
+        if size_of_photos_resized is None:
+            size_of_photos_resized = 0
+        else:
+            size_of_photos_resized = int(size_of_photos_resized)
+
 
         duration_of_videos = utils.seconds_to_human_readable(Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('duration'))['duration__sum'])
+
+        context['total_number_photos'] = total_number_photos
+        context['total_number_videos'] = total_number_videos
+
+        context['total_number_photos_resized'] = total_number_photos_resized
+        context['total_number_videos_resized'] = total_number_videos_resized
+
+        context['size_of_photos'] = utils.bytes_to_human_readable(size_of_photos)
+        context['size_of_videos'] = utils.bytes_to_human_readable(size_of_videos)
+
+        context['percentage_number_photos_resized'] = (total_number_photos_resized / total_number_photos) * 100.0
+        context['percentage_number_videos_resized'] = (total_number_videos_resized / total_number_videos) * 100.0
+
+        context['size_photos_resized'] = utils.bytes_to_human_readable(size_of_photos_resized)
+        context['size_videos_resized'] = utils.bytes_to_human_readable(size_of_videos_resized)
+
+        context['percentage_size_photos_resized'] = (size_of_photos_resized / size_of_photos) * 100.0
+        context['percentage_size_videos_resized'] = (size_of_videos_resized / size_of_videos) * 100.0
+
+        context['duration_videos'] = duration_of_videos
 
         tags = []
         for tag in Tag.objects.order_by("tag"):
@@ -54,18 +87,6 @@ class Homepage(TemplateView):
             t['count'] = Medium.objects.filter(tags__id=tag.id).count()
 
             tags.append(t)
-
-        context['total_number_photos'] = total_photos
-        context['total_number_videos'] = total_videos
-
-        context['total_number_photo_thumbnails'] = total_photo_thumbnails
-        context['total_number_video_thumbnails'] = total_video_thumbnails
-
-        context['size_of_photos'] = utils.bytes_to_human_readable(size_of_photos)
-        context['size_of_videos'] = utils.bytes_to_human_readable(size_of_videos)
-        context['percentage_already_resized'] = (size_of_videos_already_resized / size_of_videos) * 100.0
-
-        context['duration_videos'] = duration_of_videos
 
         context['list_of_tags'] = tags
 
@@ -182,7 +203,7 @@ class Search(TemplateView):
         medium_id = int(re.findall("\d+", medium_id)[0])
 
         try:
-            photo = Medium.objects.get(id=medium_id)
+            medium = Medium.objects.get(id=medium_id)
         except ObjectDoesNotExist:
             template_information = {}
             template_information['medium_id_not_found'] = medium_id
@@ -190,8 +211,7 @@ class Search(TemplateView):
 
             return render(request, "error_medium_id_not_found.tmpl", template_information)
 
-        return redirect("/display/{}".format(photo.id))
-
+        return redirect(reverse("medium", kwargs={"media_id": medium.pk}))
 
 class DisplayRandom(TemplateView):
     def get(self, request, *args, **kwargs):
@@ -215,7 +235,7 @@ class DisplayRandom(TemplateView):
 
         qs = qs.order_by("?")
 
-        return redirect("/display/{}".format(qs[0].pk))
+        return redirect(reverse("medium", kwargs={"media_id": qs[0].pk}))
 
 
 def meters_to_degrees(meters):

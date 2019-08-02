@@ -52,7 +52,7 @@ class ProgressReport:
 
             speed_per_minute = speed*60
 
-            progress_print("Speed minute: {}/s Percentage: {:.2f}%".format(self._steps_to_human_readable(speed_per_minute, format_output="{:.2f}"), percentage_complete))
+            progress_print("Speed: {}/minute Percentage: {:.2f}%".format(self._steps_to_human_readable(speed_per_minute, format_output="{:.2f}"), percentage_complete))
             print()
 
             self._last_printed_report = time.time()
