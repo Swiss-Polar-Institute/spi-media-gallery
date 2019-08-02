@@ -77,8 +77,9 @@ def resize_video(input_file_path, width):
 
     output_file_path_name = output_file_path.name
 
-    if not os.path.isfile(output_file_path_name):
+    if os.stat(output_file_path_name).st_size == 0:
         # Encoding failed
+        os.remove(output_file_path_name)
         return None
 
     return output_file_path_name
