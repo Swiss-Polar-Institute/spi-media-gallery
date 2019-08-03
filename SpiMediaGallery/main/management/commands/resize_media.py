@@ -196,7 +196,7 @@ class Resizer(object):
 
                 resized_medium_file = utils.resize_photo(media_file_name, resized_width)
 
-                if os.stat(resized_medium_file).st_size == 0
+                if os.stat(resized_medium_file).st_size == 0:
                     print("File {} resized output size is 0, skipping it".format(medium.file.object_storage_key))
                     continue
 
