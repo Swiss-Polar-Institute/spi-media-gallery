@@ -182,6 +182,10 @@ class Resizer(object):
 
             resized_medium = MediumResized()
 
+            if medium.file.size == 0:
+                print("File {} size is 0, skipping".format(medium.file.object_storage_key))
+                continue
+
             if size_label == 'O':
                 resized_width = None
             else:
