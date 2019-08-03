@@ -180,11 +180,11 @@ class Resizer(object):
             if len(existing) > 0:
                 continue
 
-            resized_medium = MediumResized()
-
             if medium.file.size == 0:
                 print("File {} size is 0, skipping".format(medium.file.object_storage_key))
                 continue
+
+            resized_medium = MediumResized()
 
             if size_label == 'O':
                 resized_width = None
@@ -195,6 +195,10 @@ class Resizer(object):
                 self._update_information_from_photo_if_needed(medium, media_file_name)
 
                 resized_medium_file = utils.resize_photo(media_file_name, resized_width)
+
+                if os.stat(resized_medium_file).st_size == 0
+                    print("File {} resized output size is 0, skipping it".format(medium.file.object_storage_key))
+                    continue
 
                 resized_image_information = Image.open(resized_medium_file)
                 resized_medium.width = resized_image_information.width
