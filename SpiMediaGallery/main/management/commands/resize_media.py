@@ -205,6 +205,7 @@ class Resizer(object):
                 ok = self._update_information_from_photo_if_needed(medium, media_file_name)
 
                 if not ok:
+                    print("File {} cannot be opened by PIL.Image.open, skipping it".format(medium.file.object_storage_key))
                     continue
 
                 resized_medium_file = utils.resize_photo(media_file_name, resized_width)
