@@ -81,8 +81,10 @@ class Resizer(object):
         if photo.width is None or photo.height is None or photo.datetime_taken is None:
             try:
                 media_photo = Image.open(photo_file)
-            except OSError:
+            except OSError as e:
                 # for example: OSError: cannot identify image file '/tmp/tmpjn0bbh_o'
+                print("Failed to open: {}".format(photo_file))
+                print(e)
                 return False
             photo.width = media_photo.width
             photo.height = media_photo.height
