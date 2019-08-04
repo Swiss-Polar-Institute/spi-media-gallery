@@ -77,8 +77,13 @@ class Resizer(object):
 
     @staticmethod
     def _update_information_from_photo_if_needed(photo, photo_file):
+        # Returns False if information should have been updated but it failed
         if photo.width is None or photo.height is None or photo.datetime_taken is None:
-            media_photo = Image.open(photo_file)
+            try:
+                media_photo = Image.open(photo_file)
+            except OSError:
+                # for example: OSError: cannot identify image file '/tmp/tmpjn0bbh_o'
+                return False
             photo.width = media_photo.width
             photo.height = media_photo.height
 
@@ -97,6 +102,9 @@ class Resizer(object):
                 photo.datetime_taken = datetime_taken
 
             photo.save()
+            return True
+
+        return True
 
 
     @staticmethod
@@ -192,7 +200,10 @@ class Resizer(object):
                 resized_width = settings.IMAGE_LABEL_TO_SIZES[size_label][0]
 
             if medium.medium_type == Medium.PHOTO:
-                self._update_information_from_photo_if_needed(medium, media_file_name)
+                ok = self._update_information_from_photo_if_needed(medium, media_file_name)
+
+                if not ok:
+                    continue
 
                 resized_medium_file = utils.resize_photo(media_file_name, resized_width)
 
