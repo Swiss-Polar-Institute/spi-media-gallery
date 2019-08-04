@@ -39,11 +39,11 @@ class Homepage(TemplateView):
         total_number_videos = Medium.objects.filter(medium_type=Medium.VIDEO).count()
 
         total_number_photos_resized = MediumResized.objects.filter(size_label="T").filter(medium__medium_type=Medium.PHOTO).count()
-        total_number_videos_resized = MediumResized.objects.filter(size_label="S").filter(medium__medium_type=Medium.VIDEO).count()
+        total_number_videos_resized = MediumResized.objects.filter(size_label="L").filter(medium__medium_type=Medium.VIDEO).count()
 
         size_of_photos = Medium.objects.filter(medium_type=Medium.PHOTO).aggregate(Sum('file__size'))['file__size__sum']
         size_of_videos = Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('file__size'))['file__size__sum']
-        size_of_videos_resized = MediumResized.objects.filter(size_label="S").filter(medium__medium_type="V").aggregate(Sum('medium__file__size'))['medium__file__size__sum']
+        size_of_videos_resized = MediumResized.objects.filter(size_label="L").filter(medium__medium_type="V").aggregate(Sum('medium__file__size'))['medium__file__size__sum']
         size_of_photos_resized = MediumResized.objects.filter(size_label="S").filter(medium__medium_type="P").aggregate(Sum('medium__file__size'))['medium__file__size__sum']
 
         if size_of_videos_resized is None:
