@@ -178,8 +178,10 @@ def file_extension(file_name):
 
 def convert_raw_to_ppm(file_name):
     # dcraw might generate a non .ppm but a .pgm?
-    output_file_path = tempfile.NamedTemporaryFile(suffix=".ppm", delete=False)
+    output_file = tempfile.NamedTemporaryFile(suffix=".ppm", delete=False)
 
-    subprocess.Popen(["dcraw", "-c", file_name], stdout=output_file_path)
+    p = subprocess.Popen(["dcraw", "-c", file_name], stdout=output_file)
+    p.wait()
+    output_file.close()
 
-    return output_file_path.name
+    return output_file.name
