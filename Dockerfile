@@ -18,7 +18,7 @@ RUN gcc -o /usr/bin/dcraw -O4 /tmp/dcraw.c -lm -DNODEPS
 RUN pip3 install -r /code/requirements.txt
 RUN apt-get purge -y gcc-7 gcc \
 	libmariadbclient-dev libmariadb-dev-compat \
-	libpq-dev libpython3.7-dev \
+	libpq-dev libpython3.7-dev && \
     apt-get autoremove -y && \
     apt-get clean
 
