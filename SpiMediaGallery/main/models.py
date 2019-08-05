@@ -147,7 +147,5 @@ class MediumResized(models.Model):
 
         return extension[1:]
 
-
-
     class Meta:
         verbose_name_plural = "MediaResized"

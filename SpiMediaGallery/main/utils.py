@@ -167,3 +167,19 @@ def human_readable_resolution_for_medium(medium):
         return "{}x{}".format(medium.width, medium.height)
 
 
+def file_extension(file_name):
+    _, extension = os.path.splitext(file_name)
+
+    if len(extension) > 0:
+        extension = extension[1:]
+
+    return extension
+
+
+def convert_raw_to_ppm(file_name):
+    # dcraw might generate a non .ppm but a .pgm?
+    output_file_path = tempfile.NamedTemporaryFile(suffix=".ppm", delete=False)
+
+    subprocess.Popen(["dcraw", "-c", file_name], stdout=output_file_path)
+
+    return output_file_path.name

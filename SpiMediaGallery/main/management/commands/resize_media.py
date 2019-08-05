@@ -2,15 +2,14 @@ from django.core.management.base import BaseCommand, CommandError
 
 from main.models import Medium, MediumResized, File
 from django.conf import settings
-from PIL import Image
 import sys
+import subprocess
 from django.utils import timezone
-
-Image.MAX_IMAGE_PIXELS = None
 
 import datetime
 import tempfile
 import os
+import json
 from pymediainfo import MediaInfo
 from django.db.models import Sum
 
@@ -68,6 +67,35 @@ def get_information_from_video(video_file):
     return information
 
 
+def get_photo_information(image_filepath):
+    command = ["exiftool", "-json", image_filepath]
+
+    run = subprocess.run(command, stdout=subprocess.PIPE)
+    output = run.stdout
+    output = output.decode("utf-8")
+    exif = json.loads(output)[0]
+
+    image_information = {}
+    image_information['width'] = exif['ImageWidth']
+    image_information['height'] = exif['ImageHeight']
+
+    if 'DateTimeOriginal' in exif:
+        datetime_original = exif['DateTimeOriginal']
+
+        # TODO: refactor this
+        try:
+            datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M:%S")
+        except ValueError:
+            try:
+                datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M:")
+            except ValueError:
+                datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M")
+
+        image_information['datetime_taken'] = datetime_processed
+
+    return image_information
+
+
 class Resizer(object):
     def __init__(self, bucket_name_media, bucket_name_resizes, sizes_type, medium_type):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name_media)
@@ -79,35 +107,13 @@ class Resizer(object):
     def _update_information_from_photo_if_needed(photo, photo_file):
         # Returns False if information should have been updated but it failed
         if photo.width is None or photo.height is None or photo.datetime_taken is None:
-            try:
-                media_photo = Image.open(photo_file)
-            except OSError as e:
-                # for example: OSError: cannot identify image file '/tmp/tmpjn0bbh_o'
-                print("Failed to open: {}".format(photo_file))
-                print(e)
-                return False
-            photo.width = media_photo.width
-            photo.height = media_photo.height
+            photo_information = get_photo_information(photo_file)
 
-            exif_data = media_photo.getexif()
-
-            EXIF_DATE_ID = 36867
-
-            if EXIF_DATE_ID in exif_data:
-                try:
-                    datetime_taken = datetime.datetime.strptime(exif_data[EXIF_DATE_ID], "%Y:%m:%d %H:%M:%S")
-                    datetime_taken = datetime_taken.replace(tzinfo=timezone.utc)
-                except ValueError:
-                    print("Invalid datetime:", exif_data[EXIF_DATE_ID], "in photo:", photo.id)
-                    datetime_taken = None
-
-                photo.datetime_taken = datetime_taken
+            photo.width = photo_information["width"]
+            photo.height = photo_information["height"]
+            photo.datetime_taken = photo_information["datetime_taken"]
 
             photo.save()
-            return True
-
-        return True
-
 
     @staticmethod
     def _update_information_from_video(video, video_file):
@@ -151,7 +157,8 @@ class Resizer(object):
 
         for medium in media_to_be_resized:
             # Download Media file from the bucket
-            media_file = tempfile.NamedTemporaryFile(delete=False)
+            suffix = utils.file_extension(medium.file.object_storage_key)
+            media_file = tempfile.NamedTemporaryFile(suffix="." + suffix, delete=False)
             media_file.close()
             start_download = time.time()
             self._media_bucket.bucket().download_file(medium.file.object_storage_key, media_file.name)
@@ -182,8 +189,10 @@ class Resizer(object):
             else:
                 progress_report.increment_steps_and_print_if_needed(medium.file.size)
 
+    def _resize_media(self, medium, medium_file_name, sizes):
+        delete_file = None
+        file_converted = False
 
-    def _resize_media(self, medium, media_file_name, sizes):
         for size_label in sizes:
             existing = MediumResized.objects.filter(medium=medium).filter(size_label=size_label)
 
@@ -202,32 +211,34 @@ class Resizer(object):
                 resized_width = settings.IMAGE_LABEL_TO_SIZES[size_label][0]
 
             if medium.medium_type == Medium.PHOTO:
-                ok = self._update_information_from_photo_if_needed(medium, media_file_name)
+                self._update_information_from_photo_if_needed(medium, medium_file_name)
 
-                if not ok:
-                    print("File {} cannot be opened by PIL.Image.open, skipping it".format(medium.file.object_storage_key))
-                    continue
+                if utils.file_extension(medium_file_name).lower() == "arw" and not file_converted:
+                    temporary_intermediate_file = utils.convert_raw_to_ppm(medium_file_name)
+                    file_converted = True
+                    delete_file = temporary_intermediate_file
+                    medium_file_name = temporary_intermediate_file
 
-                resized_medium_file = utils.resize_photo(media_file_name, resized_width)
+                resized_medium_file = utils.resize_photo(medium_file_name, resized_width)
 
                 if os.stat(resized_medium_file).st_size == 0:
                     print("File {} resized output size is 0, skipping it".format(medium.file.object_storage_key))
                     continue
 
-                resized_image_information = Image.open(resized_medium_file)
-                resized_medium.width = resized_image_information.width
-                resized_medium.height = resized_image_information.height
+                resized_image_information = get_photo_information(resized_medium_file)
+                resized_medium.width = resized_image_information['width']
+                resized_medium.height = resized_image_information['height']
 
             elif medium.medium_type == Medium.VIDEO:
-                self._update_information_from_video(medium, media_file_name)
+                self._update_information_from_video(medium, medium_file_name)
 
                 assert size_label != "O" # Not supported to resize to the original size for videos
 
                 start_time = time.time()
-                resized_medium_file = utils.resize_video(media_file_name, resized_width)
+                resized_medium_file = utils.resize_video(medium_file_name, resized_width)
 
                 if resized_medium_file is None:
-                    print("File {} cannot be encoded".format(media_file_name))
+                    print("File {} cannot be encoded".format(medium_file_name))
                     continue
 
                 duration_convert = time.time() - start_time
@@ -274,3 +285,6 @@ class Resizer(object):
             resized_medium.medium = medium
             resized_medium.datetime_resized = datetime.datetime.now(tz=timezone.utc)
             resized_medium.save()
+
+        if delete_file is not None:
+            os.remove(delete_file)

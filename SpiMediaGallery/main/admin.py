@@ -80,6 +80,10 @@ class MediumResizedAdmin(admin.ModelAdmin):
         return obj.file.size
 
 
+class FileAdmin(admin.ModelAdmin):
+    list_display = ('object_storage_key', 'md5', 'size')
+    ordering = ('object_storage_key', 'size')
+
 
 admin.site.register(main.models.Medium, MediumAdmin)
 admin.site.register(main.models.Tag, TagAdmin)
@@ -87,3 +91,4 @@ admin.site.register(main.models.MediumResized, MediumResizedAdmin)
 admin.site.register(main.models.Photographer, PhotographerAdmin)
 admin.site.register(main.models.License, LicenseAdmin)
 admin.site.register(main.models.Copyright, CopyrightAdmin)
+admin.site.register(main.models.File, FileAdmin)
