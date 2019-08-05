@@ -113,7 +113,9 @@ class Resizer(object):
 
             photo.width = photo_information["width"]
             photo.height = photo_information["height"]
-            photo.datetime_taken = photo_information["datetime_taken"]
+
+            if 'datetime_taken' in photo_information:
+                photo.datetime_taken = photo_information["datetime_taken"]
 
             photo.save()
 
