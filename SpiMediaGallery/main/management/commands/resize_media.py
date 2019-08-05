@@ -91,6 +91,8 @@ def get_photo_information(image_filepath):
             except ValueError:
                 datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M")
 
+        datetime_processed = datetime_processed(tz=timezone.utc)
+
         image_information['datetime_taken'] = datetime_processed
 
     return image_information
