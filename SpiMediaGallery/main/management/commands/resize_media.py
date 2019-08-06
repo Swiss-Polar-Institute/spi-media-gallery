@@ -217,7 +217,9 @@ class Resizer(object):
             if medium.medium_type == Medium.PHOTO:
                 self._update_information_from_photo_if_needed(medium, medium_file_name)
 
-                if utils.file_extension(medium_file_name).lower() == "arw" and not file_converted:
+                file_extension = utils.file_extension(medium_file_name).lower()
+
+                if (file_extension == "arw" or file_extension == "nef") and not file_converted:
                     temporary_intermediate_file = utils.convert_raw_to_ppm(medium_file_name)
                     file_converted = True
                     delete_file = temporary_intermediate_file
