@@ -58,7 +58,7 @@ def search_for_nearby(latitude, longitude, km):
     center_point = Point(longitude, latitude, srid=4326)
     buffered = center_point.buffer(meters_to_degrees(km * 1000))
 
-    qs = MediumForView.objects.select_related('files').filter(location__within=buffered)
+    qs = MediumForView.objects.select_related('file').filter(location__within=buffered)
 
     if len(qs) != 1:
         photos_string = "media"
@@ -76,7 +76,7 @@ def search_for_nearby(latitude, longitude, km):
 def search_in_box(north, south, east, west):
     geom = Polygon.from_bbox((east, south, west, north))
 
-    qs = MediumForView.objects.select_related('files').filter(location__contained=geom)
+    qs = MediumForView.objects.select_related('file').filter(location__contained=geom)
 
     if len(qs) != 1:
         photos_string = "media"
@@ -97,7 +97,7 @@ def search_in_box(north, south, east, west):
 def search_for_tag_ids(tag_ids):
     information = {}
 
-    query_media_for_tags = MediumForView.objects.select_related('files').order_by("datetime_taken")
+    query_media_for_tags = MediumForView.objects.select_related('file').order_by("datetime_taken")
     tags_list = []
 
     for tag_id in tag_ids:
