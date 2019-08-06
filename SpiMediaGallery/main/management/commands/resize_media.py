@@ -14,7 +14,6 @@ from pymediainfo import MediaInfo
 from django.db.models import Sum
 
 from main import spi_s3_utils
-from main import utils
 from main.progress_report import ProgressReport
 
 import time
@@ -65,37 +64,6 @@ def get_information_from_video(video_file):
     return information
 
 
-def get_photo_information(image_filepath):
-    command = ["exiftool", "-json", image_filepath]
-
-    run = subprocess.run(command, stdout=subprocess.PIPE)
-    output = run.stdout
-    output = output.decode("utf-8")
-    exif = json.loads(output)[0]
-
-    image_information = {}
-    image_information['width'] = exif['ImageWidth']
-    image_information['height'] = exif['ImageHeight']
-
-    if 'DateTimeOriginal' in exif:
-        datetime_original = exif['DateTimeOriginal']
-
-        # TODO: refactor this
-        try:
-            datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M:%S")
-        except ValueError:
-            try:
-                datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M:")
-            except ValueError:
-                datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M")
-
-        datetime_processed = datetime_processed.replace(tzinfo=timezone.utc)
-
-        image_information['datetime_taken'] = datetime_processed
-
-    return image_information
-
-
 class Resizer(object):
     def __init__(self, bucket_name_media, bucket_name_resizes, sizes_type, medium_type):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name_media)
@@ -113,7 +81,7 @@ class Resizer(object):
     def _update_information_from_photo_if_needed(photo, photo_file):
         # Returns False if information should have been updated but it failed
         if photo.width is None or photo.height is None or photo.datetime_taken is None:
-            photo_information = get_photo_information(photo_file)
+            photo_information = utils.get_medium_information(photo_file)
 
             photo.width = photo_information["width"]
             photo.height = photo_information["height"]
@@ -235,7 +203,7 @@ class Resizer(object):
                     print("File {} resized output size is 0, skipping it".format(medium.file.object_storage_key))
                     continue
 
-                resized_image_information = get_photo_information(resized_medium_file)
+                resized_image_information = utils.get_medium_information(resized_medium_file)
                 resized_medium.width = resized_image_information['width']
                 resized_medium.height = resized_image_information['height']
 

@@ -3,6 +3,9 @@ import os
 import sys
 import subprocess
 import tempfile
+import json
+import datetime
+from django.utils import timezone
 from django.conf import settings
 
 def image_size_label_abbreviation_to_presentation(abbreviation):
@@ -184,3 +187,41 @@ def convert_raw_to_ppm(file_name):
     output_file.close()
 
     return output_file.name
+
+
+def get_medium_information(image_filepath):
+    command = ["exiftool", "-json", image_filepath]
+
+    run = subprocess.run(command, stdout=subprocess.PIPE)
+    output = run.stdout
+    output = output.decode("utf-8")
+    exif = json.loads(output)[0]
+
+    image_information = {}
+    image_information['width'] = exif['ImageWidth']
+    image_information['height'] = exif['ImageHeight']
+
+    date_field = None
+
+    if 'DateTimeOriginal' in exif:
+        date_field = 'DateTimeOriginal'
+    elif 'CreateDate' in exif:
+        date_field = 'CreateDate'
+
+    if date_field is not None:
+        datetime_original = exif[date_field]
+
+        # TODO: refactor this
+        try:
+            datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M:%S")
+        except ValueError:
+            try:
+                datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M:")
+            except ValueError:
+                datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M")
+
+        datetime_processed = datetime_processed.replace(tzinfo=timezone.utc)
+
+        image_information['datetime_taken'] = datetime_processed
+
+    return image_information
