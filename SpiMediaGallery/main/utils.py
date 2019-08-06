@@ -211,7 +211,7 @@ def get_medium_information(image_filepath):
     if date_field is not None:
         datetime_original = exif[date_field]
 
-        possible_formats = ["Y:%m:%d %H:%M:%S%z", "%Y:%m:%d %H:%M:%S", "%Y:%m:%d %H:%M:", "%Y:%m:%d %H:%M"]
+        possible_formats = ["%Y:%m:%d %H:%M:%S%z", "%Y:%m:%d %H:%M:%S", "%Y:%m:%d %H:%M:", "%Y:%m:%d %H:%M"]
 
         for possible_format in possible_formats:
             try:
