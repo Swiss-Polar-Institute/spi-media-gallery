@@ -25,14 +25,12 @@ class Command(BaseCommand):
     help = 'Updates photo tagging'
 
     def add_arguments(self, parser):
-        parser.add_argument('bucket_name_media', type=str, help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
-        parser.add_argument('bucket_name_resized', type=str, help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
-        parser.add_argument('media_type', type=str, choices=["P", "V"], help="Resizes Photos or Videos")
+        parser.add_argument('media_type', type=str, choices=["Photos", "Videos"], help="Resizes Photos or Videos")
         parser.add_argument('sizes_type', nargs="+", type=str, help="Type of resizing (T for thumbnail, S for small, M for medium, L for large, O for original). Original changes the format to JPEG, potential rotation")
 
     def handle(self, *args, **options):
-        bucket_name_media = options["bucket_name_media"]
-        bucket_name_resized = options["bucket_name_resized"]
+        bucket_name_media = "original"
+        bucket_name_resized = "processed"
         media_type = options['media_type']
         sizes_type = options["sizes_type"]
 
@@ -103,7 +101,13 @@ class Resizer(object):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name_media)
         self._resizes_bucket = spi_s3_utils.SpiS3Utils(bucket_name_resizes)
         self._sizes_type = sizes_type
-        self._medium_type = medium_type
+
+        if medium_type == "Photos":
+            self._medium_type = "P"
+        elif medium_type == "Videos":
+            self._medium_type = "V"
+        else:
+            assert False
 
     @staticmethod
     def _update_information_from_photo_if_needed(photo, photo_file):
@@ -284,6 +288,7 @@ class Resizer(object):
             file.object_storage_key = resized_key
             file.md5 = md5_resized_file
             file.size = file_size
+            file.bucket = File.PROCESSED
             file.save()
 
             resized_medium.file = file

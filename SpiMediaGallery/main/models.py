@@ -1,6 +1,9 @@
 # from django.db import models
 from django.contrib.gis.db import models
 from django.urls import reverse
+from django.dispatch import receiver
+
+from main.spi_s3_utils import SpiS3Utils
 
 import os
 
@@ -37,12 +40,37 @@ class Tag(models.Model):
 
 
 class File(models.Model):
+    ORIGINAL = "O"
+    PROCESSED = "P"
+
+    BUCKET_NAMES = (
+        (ORIGINAL, 'Original'),
+        (PROCESSED, 'Processed'),
+    )
+
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(null=True, blank=True, max_length=32)
     size = models.BigIntegerField()
+    bucket = models.CharField(max_length=1, choices=BUCKET_NAMES, null=False, blank=True)
 
     def __str__(self):
         return self.object_storage_key
+
+    def bucket_name(self):
+        if self.bucket == File.ORIGINAL:
+            return "original"
+        elif self.bucket == File.PROCESSED:
+            return "processed"
+        else:
+            assert False
+
+
+@receiver(models.signals.post_delete, sender=File)
+def delete_file(sender, instance, *args, **kwargs):
+    print("File deleted")
+    spi_s3_utils = SpiS3Utils(instance.bucket_name())
+
+    spi_s3_utils.delete(instance.object_storage_key)
 
 
 class Medium(models.Model):
@@ -54,7 +82,7 @@ class Medium(models.Model):
         (VIDEO, "Video")
     )
 
-    file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
+    file = models.ForeignKey(File, null=True, blank=True, on_delete=models.SET_NULL)
 
     # object_storage_key = models.CharField(max_length=1024)
     # md5 = models.CharField(null=True, blank=True, max_length=32)
@@ -90,10 +118,6 @@ class Medium(models.Model):
 
         return self.location.x
 
-    @staticmethod
-    def bucket_name():
-        return "media"
-
     class Meta:
         verbose_name_plural = "Media"
 
@@ -119,7 +143,7 @@ class MediumResized(models.Model):
         (ORIGINAL, 'Original')
     )
 
-    file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
+    file = models.ForeignKey(File, null=True, blank=True, on_delete=models.SET_NULL)
 
     # object_storage_key = models.CharField(max_length=1024)
     # md5 = models.CharField(max_length=32)
@@ -132,10 +156,6 @@ class MediumResized(models.Model):
     height = models.IntegerField()
     width = models.IntegerField()
     medium = models.ForeignKey(Medium, on_delete=models.PROTECT)
-
-    @staticmethod
-    def bucket_name():
-        return "resized"
 
     def file_extension(self):
         _, extension = os.path.splitext(self.file.object_storage_key)

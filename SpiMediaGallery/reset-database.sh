@@ -2,10 +2,10 @@
 
 echo "drop database spi_media_gallery; create database spi_media_gallery;" | python3 manage.py dbshell
 
-rm -rf main/migrations/
+#rm -rf main/migrations/
 
-echo "Make migrations"
-python3 manage.py makemigrations main
+#echo "Make migrations"
+#python3 manage.py makemigrations main
 
 echo "Migrate:"
 python3 manage.py migrate
