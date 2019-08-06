@@ -54,9 +54,10 @@ class UpdateTime(object):
 
             information = utils.get_medium_information(local_media_file.name)
 
-            medium.datetime_taken = information['datetime_taken']
+            if 'datetime_taken' in information:
+                medium.datetime_taken = information['datetime_taken']
 
-            medium.save()
+                medium.save()
 
             print("Finished: medium.id: {}".format(medium.id))
 
