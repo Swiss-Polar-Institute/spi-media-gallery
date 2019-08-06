@@ -29,6 +29,7 @@ class CheckOrphanes(object):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name_media)
         self._resizes_bucket = spi_s3_utils.SpiS3Utils(bucket_name_resizes)
 
+
     def _database_files(self, qs):
         s = set()
 

@@ -35,50 +35,6 @@ class Homepage(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(Homepage, self).get_context_data(**kwargs)
 
-        total_number_photos = Medium.objects.filter(medium_type=Medium.PHOTO).count()
-        total_number_videos = Medium.objects.filter(medium_type=Medium.VIDEO).count()
-
-        total_number_photos_resized = MediumResized.objects.filter(size_label="T").filter(medium__medium_type=Medium.PHOTO).count()
-        total_number_videos_resized = MediumResized.objects.filter(size_label="L").filter(medium__medium_type=Medium.VIDEO).count()
-
-        size_of_photos = Medium.objects.filter(medium_type=Medium.PHOTO).aggregate(Sum('file__size'))['file__size__sum']
-        size_of_videos = Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('file__size'))['file__size__sum']
-        size_of_videos_resized = MediumResized.objects.filter(size_label="L").filter(medium__medium_type="V").aggregate(Sum('medium__file__size'))['medium__file__size__sum']
-        size_of_photos_resized = MediumResized.objects.filter(size_label="S").filter(medium__medium_type="P").aggregate(Sum('medium__file__size'))['medium__file__size__sum']
-
-        if size_of_videos_resized is None:
-            size_of_videos_resized = 0
-        else:
-            size_of_videos_resized = int(size_of_videos_resized)
-
-        if size_of_photos_resized is None:
-            size_of_photos_resized = 0
-        else:
-            size_of_photos_resized = int(size_of_photos_resized)
-
-
-        duration_of_videos = utils.seconds_to_human_readable(Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('duration'))['duration__sum'])
-
-        context['total_number_photos'] = total_number_photos
-        context['total_number_videos'] = total_number_videos
-
-        context['total_number_photos_resized'] = total_number_photos_resized
-        context['total_number_videos_resized'] = total_number_videos_resized
-
-        context['size_of_photos'] = utils.bytes_to_human_readable(size_of_photos)
-        context['size_of_videos'] = utils.bytes_to_human_readable(size_of_videos)
-
-        context['percentage_number_photos_resized'] = (total_number_photos_resized / total_number_photos) * 100.0
-        context['percentage_number_videos_resized'] = (total_number_videos_resized / total_number_videos) * 100.0
-
-        context['size_photos_resized'] = utils.bytes_to_human_readable(size_of_photos_resized)
-        context['size_videos_resized'] = utils.bytes_to_human_readable(size_of_videos_resized)
-
-        context['percentage_size_photos_resized'] = (size_of_photos_resized / size_of_photos) * 100.0
-        context['percentage_size_videos_resized'] = (size_of_videos_resized / size_of_videos) * 100.0
-
-        context['duration_videos'] = duration_of_videos
-
         tags = []
         for tag in Tag.objects.order_by("tag"):
             t = {}
@@ -102,7 +58,7 @@ def search_for_nearby(latitude, longitude, km):
     center_point = Point(longitude, latitude, srid=4326)
     buffered = center_point.buffer(meters_to_degrees(km * 1000))
 
-    qs = MediumForView.objects.filter(location__within=buffered)
+    qs = MediumForView.objects.select_related('files').filter(location__within=buffered)
 
     if len(qs) != 1:
         photos_string = "media"
@@ -120,7 +76,7 @@ def search_for_nearby(latitude, longitude, km):
 def search_in_box(north, south, east, west):
     geom = Polygon.from_bbox((east, south, west, north))
 
-    qs = MediumForView.objects.filter(location__contained=geom)
+    qs = MediumForView.objects.select_related('files').filter(location__contained=geom)
 
     if len(qs) != 1:
         photos_string = "media"
@@ -141,7 +97,7 @@ def search_in_box(north, south, east, west):
 def search_for_tag_ids(tag_ids):
     information = {}
 
-    query_media_for_tags = MediumForView.objects.order_by("datetime_taken")
+    query_media_for_tags = MediumForView.objects.select_related('files').order_by("datetime_taken")
     tags_list = []
 
     for tag_id in tag_ids:
@@ -333,3 +289,56 @@ class GetFile(View):
         response = HttpResponse(r.raw, content_type=content_type)
         response["Content-Disposition"] = "{}; filename={}".format(content_disposition_type, filename)
         return response
+
+
+class Stats(TemplateView):
+    template_name = "stats.tmpl"
+
+    def get_context_data(self, **kwargs):
+        context = super(TemplateView, self).get_context_data(**kwargs)
+
+        total_number_photos = Medium.objects.filter(medium_type=Medium.PHOTO).count()
+        total_number_videos = Medium.objects.filter(medium_type=Medium.VIDEO).count()
+
+        total_number_photos_resized = MediumResized.objects.filter(size_label="T").filter(medium__medium_type=Medium.PHOTO).count()
+        total_number_videos_resized = MediumResized.objects.filter(size_label="L").filter(medium__medium_type=Medium.VIDEO).count()
+
+        size_of_photos = Medium.objects.filter(medium_type=Medium.PHOTO).aggregate(Sum('file__size'))['file__size__sum']
+        size_of_videos = Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('file__size'))['file__size__sum']
+        size_of_videos_resized = MediumResized.objects.filter(size_label="L").filter(medium__medium_type="V").aggregate(Sum('medium__file__size'))['medium__file__size__sum']
+        size_of_photos_resized = MediumResized.objects.filter(size_label="S").filter(medium__medium_type="P").aggregate(Sum('medium__file__size'))['medium__file__size__sum']
+
+        if size_of_videos_resized is None:
+            size_of_videos_resized = 0
+        else:
+            size_of_videos_resized = int(size_of_videos_resized)
+
+        if size_of_photos_resized is None:
+            size_of_photos_resized = 0
+        else:
+            size_of_photos_resized = int(size_of_photos_resized)
+
+
+        duration_of_videos = utils.seconds_to_human_readable(Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('duration'))['duration__sum'])
+
+        context['total_number_photos'] = total_number_photos
+        context['total_number_videos'] = total_number_videos
+
+        context['total_number_photos_resized'] = total_number_photos_resized
+        context['total_number_videos_resized'] = total_number_videos_resized
+
+        context['size_of_photos'] = utils.bytes_to_human_readable(size_of_photos)
+        context['size_of_videos'] = utils.bytes_to_human_readable(size_of_videos)
+
+        context['percentage_number_photos_resized'] = (total_number_photos_resized / total_number_photos) * 100.0
+        context['percentage_number_videos_resized'] = (total_number_videos_resized / total_number_videos) * 100.0
+
+        context['size_photos_resized'] = utils.bytes_to_human_readable(size_of_photos_resized)
+        context['size_videos_resized'] = utils.bytes_to_human_readable(size_of_videos_resized)
+
+        context['percentage_size_photos_resized'] = (size_of_photos_resized / size_of_photos) * 100.0
+        context['percentage_size_videos_resized'] = (size_of_videos_resized / size_of_videos) * 100.0
+
+        context['duration_videos'] = duration_of_videos
+
+        return context
