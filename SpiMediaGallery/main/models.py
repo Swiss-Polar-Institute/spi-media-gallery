@@ -51,7 +51,7 @@ class File(models.Model):
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(null=True, blank=True, max_length=32)
     size = models.BigIntegerField()
-    bucket = models.CharField(max_length=1, choices=BUCKET_NAMES, null=False, blank=True)
+    bucket = models.CharField(max_length=1, choices=BUCKET_NAMES, null=False, blank=True, default=None)
 
     def __str__(self):
         return self.object_storage_key
@@ -67,9 +67,7 @@ class File(models.Model):
 
 @receiver(models.signals.post_delete, sender=File)
 def delete_file(sender, instance, *args, **kwargs):
-    print("File deleted")
     spi_s3_utils = SpiS3Utils(instance.bucket_name())
-
     spi_s3_utils.delete(instance.object_storage_key)
 
 

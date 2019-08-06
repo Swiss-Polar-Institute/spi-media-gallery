@@ -95,6 +95,7 @@ class TagImporter(object):
                 file.object_storage_key = s3_object.key
                 file.md5 = None
                 file.size = size_of_medium
+                file.bucket = File.ORIGINAL
                 file.save()
 
                 medium.file = file

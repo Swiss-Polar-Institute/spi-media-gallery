@@ -71,18 +71,28 @@ class MediumResizedAdmin(admin.ModelAdmin):
     list_select_related = ('file', )
 
     def file_object_storage_key(self, obj):
-        return obj.file.object_storage_key
+        if obj.file is None:
+            return None
+        else:
+            return obj.file.object_storage_key
 
     def file_md5(self, obj):
-        return obj.file.md5
+        if obj.file is None:
+            return None
+        else:
+            return obj.file.md5
 
     def file_size(self, obj):
-        return obj.file.size
+        if obj.file is None:
+            return None
+        else:
+            return obj.file.size
 
 
 class FileAdmin(admin.ModelAdmin):
-    list_display = ('object_storage_key', 'md5', 'size')
-    ordering = ('object_storage_key', 'size')
+    list_display = ('object_storage_key', 'md5', 'size', )
+    ordering = ('object_storage_key', 'size', )
+    search_fields = ('object_storage_key', 'md5', 'size', 'bucket', )
 
 
 admin.site.register(main.models.Medium, MediumAdmin)
