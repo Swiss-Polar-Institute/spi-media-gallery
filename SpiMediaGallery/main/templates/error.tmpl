@@ -1,11 +1,11 @@
-{% extends 'base.tmpl' %}
+{% extends '_base.tmpl' %}
 {% load leaflet_tags %}
 {% block title %}SPI Media Gallery - Error{% endblock %}
 
 {% block body_contents %}
     <p>
         <div class="container">
-            {% include "logo.tmpl" %}
+            {% include "_logo.tmpl" %}
             <p></p>
             {{ error_message }}
             <p>

@@ -1,11 +1,11 @@
-{% extends 'base.tmpl' %}
+{% extends '_base.tmpl' %}
 {% block title %}SPI Media Gallery - Search result text{% endblock %}
 
 {% block body_attributes %}class="d-flex flex-column h-100"{% endblock %}
 
 {% block body_contents %}
         <div class="container theme-showcase" role="main">
-            {% include "logo.tmpl" %} <h3>{{ tags_list }}</h3>
+            {% include "_logo.tmpl" %} <h3>{{ tags_list }}</h3>
             {{ search_explanation }} (Total: {{ media.paginator.count }})
             <div class="container">
                 <table border="1">
@@ -38,7 +38,7 @@
                 <p></p>
             </div>
 
-        {% include "pagination.tmpl" %}
+        {% include "_pagination.tmpl" %}
         <p>
             <a href="{% url 'list_videos_export_csv' %}">Download CSV file with all the videos.</a>
         </div>

@@ -1,4 +1,4 @@
-{% extends 'base.tmpl' %}
+{% extends '_base.tmpl' %}
 {% load leaflet_tags %}
 {% block title %}SPI Media Gallery - Map{% endblock %}
 
@@ -66,7 +66,7 @@
 {% endblock %}
 
 {% block body_contents %}
-    {% include "logo.tmpl" %}
+    {% include "_logo.tmpl" %}
     {% leaflet_map "photo_map" %}
     <br>
     <input id="search" type="button" value="Search" onclick="searchPhotos();" />

@@ -1,3 +1,5 @@
+# This can be incorporated (missing the duration at the moment9 into update_datetime_taken
+
 from django.core.management.base import BaseCommand, CommandError
 
 from main.models import Medium

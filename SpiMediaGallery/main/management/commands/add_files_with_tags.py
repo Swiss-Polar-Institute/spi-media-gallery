@@ -53,9 +53,7 @@ class TagImporter(object):
         for s3_object in self._media_bucket.objects_in_bucket(self._prefix):
             progress_report.increment_and_print_if_needed()
 
-            filename, file_extension = os.path.splitext(s3_object.key)
-
-            file_extension = file_extension[1:].lower()
+            file_extension = utils.file_extension(s3_object.key).lower()
 
             if file_extension not in valid_extensions:
                 continue

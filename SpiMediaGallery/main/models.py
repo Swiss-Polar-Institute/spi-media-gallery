@@ -80,11 +80,7 @@ class Medium(models.Model):
         (VIDEO, "Video")
     )
 
-    file = models.ForeignKey(File, null=True, blank=True, on_delete=models.SET_NULL)
-
-    # object_storage_key = models.CharField(max_length=1024)
-    # md5 = models.CharField(null=True, blank=True, max_length=32)
-    # file_size = models.BigIntegerField()
+    file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
 
     location = models.PointField(null=True, blank=True)
 
@@ -141,7 +137,7 @@ class MediumResized(models.Model):
         (ORIGINAL, 'Original')
     )
 
-    file = models.ForeignKey(File, null=True, blank=True, on_delete=models.SET_NULL)
+    file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
 
     # object_storage_key = models.CharField(max_length=1024)
     # md5 = models.CharField(max_length=32)
@@ -154,16 +150,6 @@ class MediumResized(models.Model):
     height = models.IntegerField()
     width = models.IntegerField()
     medium = models.ForeignKey(Medium, on_delete=models.PROTECT)
-
-    def file_extension(self):
-        _, extension = os.path.splitext(self.file.object_storage_key)
-        if extension is None:
-            return "Unknown"
-
-        if len(extension) == 0:
-            return ""
-
-        return extension[1:]
 
     class Meta:
         verbose_name_plural = "MediaResized"

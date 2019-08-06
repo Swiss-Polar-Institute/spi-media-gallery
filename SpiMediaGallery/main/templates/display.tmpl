@@ -1,4 +1,4 @@
-{% extends 'base.tmpl' %}
+{% extends '_base.tmpl' %}
 {% load leaflet_tags %}
 {% block title %}SPI Media Gallery - Display media{% endblock %}
 
@@ -10,7 +10,7 @@
 {% block body_contents %}
     <p>
         <div class="container">
-            {% include "logo.tmpl" %}
+            {% include "_logo.tmpl" %}
             <p></p>
             <b>{{ medium.file_name }}</b>
             <div class="row">
@@ -75,7 +75,7 @@
                     {% endif %}
                     <p>
                     Go to random:
-                    {% include "random_selection.tmpl" %}
+                    {% include "_random_selection.tmpl" %}
                     <p>
                     {% if medium.latitude and medium.longitude %}
                         {% leaflet_map "photo_map" %}

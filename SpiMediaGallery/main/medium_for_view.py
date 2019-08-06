@@ -35,7 +35,7 @@ class MediumForView(Medium):
             return static("images/small-does-not-exist.jpg")
 
         return link_for_medium(resized, "inline",
-                               filename_for_resized_medium(self.pk, MediumResized.SMALL, resized.file_extension()))
+                               filename_for_resized_medium(self.pk, MediumResized.SMALL, utils.file_extension(resized.file.object_storage_key)))
 
     def file_size_original(self):
         return utils.bytes_to_human_readable(self.file.size)
@@ -81,7 +81,7 @@ class MediumForView(Medium):
         return "{}x{}".format(self.width, self.height)
 
     def file_name(self):
-        return "SPI-{}.{}".format(self.pk, self._get_file_extension(self.file.object_storage_key))
+        return "SPI-{}.{}".format(self.pk, utils.file_extension(self.file.object_storage_key))
 
     def list_of_tags(self):
         list_of_tags = []
@@ -111,7 +111,7 @@ class MediumForView(Medium):
 
             size_information['resolution'] = human_readable_resolution_for_medium(medium_resized)
 
-            filename = filename_for_resized_medium(self.pk, medium_resized.size_label, MediumForView._get_file_extension(medium_resized.file.object_storage_key))
+            filename = filename_for_resized_medium(self.pk, medium_resized.size_label, utils.file_extension(medium_resized.file.object_storage_key))
 
             size_information['image_link'] = link_for_medium(medium_resized, "inline", filename)
 
@@ -151,20 +151,6 @@ class MediumForView(Medium):
             return qs[0]
         else:
             return None
-
-    @staticmethod
-    def _get_file_extension(filename):
-        _ , file_extension = os.path.splitext(filename)
-
-        if file_extension is None:
-            return "unknown"
-
-        if len(file_extension) == 0:
-            return ""
-
-        file_extension = file_extension[1:]
-
-        return file_extension
 
     class Meta:
         proxy = True

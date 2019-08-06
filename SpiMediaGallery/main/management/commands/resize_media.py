@@ -239,8 +239,7 @@ class Resizer(object):
                 assert False
 
             md5_resized_file = utils.hash_of_file_path(resized_medium_file)
-            _, resized_file_extension = os.path.splitext(resized_medium_file)
-            resized_file_extension = resized_file_extension[1:].lower()
+            resized_file_extension = utils.file_extension(resized_medium_file).lower()
 
             # Upload medium to bucket
             resized_key = os.path.join(settings.RESIZED_PREFIX,
