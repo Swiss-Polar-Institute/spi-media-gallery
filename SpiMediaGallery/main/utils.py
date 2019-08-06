@@ -211,16 +211,20 @@ def get_medium_information(image_filepath):
     if date_field is not None:
         datetime_original = exif[date_field]
 
-        # TODO: refactor this
-        try:
-            datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M:%S")
-        except ValueError:
-            try:
-                datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M:")
-            except ValueError:
-                datetime_processed = datetime.datetime.strptime(datetime_original, "%Y:%m:%d %H:%M")
+        possible_formats = ["Y:%m:%d %H:%M:%S%z", "%Y:%m:%d %H:%M:%S", "%Y:%m:%d %H:%M:", "%Y:%m:%d %H:%M"]
 
-        datetime_processed = datetime_processed.replace(tzinfo=timezone.utc)
+        for possible_format in possible_formats:
+            try:
+                datetime_processed = datetime.datetime.strptime(datetime_original, possible_format)
+
+                if datetime_processed.tzinfo is None:
+                    datetime_processed = datetime_processed.replace(tzinfo=timezone.utc)
+                break
+            except ValueError:
+                continue
+
+        else:
+            raise ValueError("Can't convert string to date: _{}_".format(datetime_original))
 
         image_information['datetime_taken'] = datetime_processed
 
