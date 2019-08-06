@@ -214,6 +214,7 @@ def get_medium_information(image_filepath):
         possible_formats = ["%Y:%m:%d %H:%M:  ",
                             "%Y:%m:%d %H:%MZ",
                             "%Y:%m:%d %H:%M:%S%z",
+                            "%Y:%m:%d %H:%M%z",
                             "%Y:%m:%d %H:%M:%S",
                             "%Y:%m:%d %H:%M:",
                             "%Y:%m:%d %H:%M"]
