@@ -114,7 +114,7 @@ class MediumForView(Medium):
         return list_of_tags
 
     def list_of_resized(self):
-        medium_resized_all = MediumResized.objects.filter(medium=self)
+        medium_resized_all = self.mediumresized_set.all()
 
         sizes_presentation = []
 
