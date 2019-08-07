@@ -51,7 +51,7 @@ class MediumForView(Medium):
     def file_size_small(self):
         return self._file_size(MediumResized.SMALL)
 
-    def file_size_small(self):
+    def file_size_large(self):
         return self._file_size(MediumResized.LARGE)
 
     def is_small_resolution_available(self):
