@@ -60,14 +60,14 @@ def search_for_nearby(latitude, longitude, km):
 
     qs = MediumForView.objects.filter(location__within=buffered)
 
-    if len(qs) != 1:
+    if qs.count() != 1:
         photos_string = "media"
     else:
         photos_string = "medium"
 
     information = {}
     information["search_explanation"] = "{} {} in a radius of {} Km from latitude: {:.2f} longitude: {:.2f}".format(
-        len(qs),
+        qs.count(),
         photos_string, km, latitude, longitude)
 
     return information, qs
@@ -78,7 +78,7 @@ def search_in_box(north, south, east, west):
 
     qs = MediumForView.objects.filter(location__contained=geom)
 
-    if len(qs) != 1:
+    if qs.count() != 1:
         photos_string = "media"
     else:
         photos_string = "medium"
@@ -86,7 +86,7 @@ def search_in_box(north, south, east, west):
     information = {}
 
     information["search_explanation"] = "{} {} taken in area {:.2f} {:.2f} {:.2f} {:.2f}".format(
-        len(qs),
+        qs.count(),
         photos_string,
         north, east,
         south, west)
@@ -112,9 +112,9 @@ def search_for_tag_ids(tag_ids):
         photos_string = "Medium"
 
     if len(tag_ids) != 1:
-        information["search_explanation"] = "{} {} with these tags: {}".format(len(query_media_for_tags), photos_string, tags_list)
+        information["search_explanation"] = "{} {} with these tags: {}".format(query_media_for_tags.count(), photos_string, tags_list)
     else:
-        information["search_explanation"] = "{} {} with this tag: {}".format(len(query_media_for_tags), photos_string, tags_list)
+        information["search_explanation"] = "{} {} with this tag: {}".format(query_media_for_tags.count(), photos_string, tags_list)
 
     return information, query_media_for_tags
 
@@ -144,7 +144,7 @@ class Search(TemplateView):
             error = {"error_message": "Invalid parameters received"}
             return render(request, "error.tmpl", error)
 
-        paginator = Paginator(qs, 200)
+        paginator = Paginator(qs, 100)
         page_number = request.GET.get("page")
         photos = paginator.get_page(page_number)
         information["media"] = photos
@@ -187,7 +187,7 @@ class DisplayRandom(TemplateView):
             error_no_medium = {"error_message": "No media available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
             pass
 
-        if len(qs) == 0:
+        if qs.count() == 0:
             return render(request, "error.tmpl", error_no_medium)
 
         qs = qs.order_by("?")
