@@ -1,9 +1,11 @@
 import sqlite3
 import os
+from django.conf import settings
+
 
 class DatetimeToPosition(object):
     def __init__(self):
-        database_path = os.environ["DATETIME_POSITIONS_SQLITE3_PATH"]
+        database_path = settings.DATETIME_POSITIONS_SQLITE3_PATH
 
         uri = "file:{}?mode=ro".format(database_path)
         conn = sqlite3.connect(uri, uri=True)

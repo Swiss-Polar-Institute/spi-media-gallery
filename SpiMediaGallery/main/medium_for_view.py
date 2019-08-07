@@ -21,7 +21,7 @@ class MediumForView(Medium):
         if medium_resized is None:
             return static("images/thumbnail-does-not-exist.jpg")
 
-        resized_extension = MediumForView._get_file_extension(medium_resized.file.object_storage_key)
+        resized_extension = utils.file_extension(medium_resized.file.object_storage_key)
 
         return link_for_medium(medium_resized, "inline",
                                filename_for_resized_medium(self.pk, size_label, resized_extension))

@@ -22,6 +22,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+
+# Note: If in production change this in the local_settings.py
 SECRET_KEY = 'w0!0umbw+uq$#e943ezmvny1!jo-*72q%#ds+v1=g2rz)#aamj'
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -86,6 +88,18 @@ def secrets_file(file_name):
         return file_path_in_run_secrets
 
     raise "Configuration for {} doesn't exist".format(file_name)
+
+def find_file(file_name):
+    """ First try $HOME/file_name, then /code/file_name, else raises an exception"""
+    file_path_in_home_directory = os.path.join(str(pathlib.Path.home()), file_name)
+    if os.path.exists(file_path_in_home_directory):
+        return file_path_in_home_directory
+
+    file_path_in_code = os.path.join("/code", file_name)
+    if os.path.exists(file_path_in_code):
+        return file_path_in_code
+
+    raise "File location for {} doesn't exist".format(file_name)
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -177,6 +191,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 TRACK_MAP_FILEPATH = '/tmp/test.geojson'
 
+DATETIME_POSITIONS_SQLITE3_PATH = find_file("gps.sqlite3")
 
 PROXY_TO_OBJECT_STORAGE = False
 

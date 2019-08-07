@@ -10,8 +10,6 @@ from main.datetime_to_position import DatetimeToPosition
 from django.contrib.gis.geos import Point
 
 
-import os
-
 class Command(BaseCommand):
     help = 'Gets date time taken from photos and looks up the position, updates the position'
 
@@ -26,13 +24,13 @@ class MediaLocationLookup(object):
         pass
 
     def lookup(self):
-        photos_to_be_lookedup = Medium.objects.filter(location=None).exclude(datetime_taken__isnull=True)
+        media_to_geolocate = Medium.objects.filter(location=None).exclude(datetime_taken__isnull=True)
 
-        progress_report = ProgressReport(len(photos_to_be_lookedup), extra_information="Adding location information to photos")
+        progress_report = ProgressReport(len(media_to_geolocate), extra_information="Adding location information to media")
 
         datetime_to_position = DatetimeToPosition()
 
-        for photo in photos_to_be_lookedup:
+        for photo in media_to_geolocate:
             progress_report.increment_and_print_if_needed()
 
             datetime_taken = photo.datetime_taken
@@ -40,7 +38,7 @@ class MediaLocationLookup(object):
             location = datetime_to_position.lookup_datetime_datetime(datetime_taken)
 
             if location is None:
-                print("No location for this date time")
+                print("No location for: {}".format(datetime_taken))
             else:
                 photo.location = Point(location[1], location[0])
                 photo.save()

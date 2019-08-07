@@ -56,7 +56,7 @@
                     Tags:
                         {% if medium.list_of_tags %}
                             {% for tag in medium.list_of_tags %}
-                                <a href="/search/tags/?tags={{ tag.id }}">{{tag.tag}}</a>{% if not forloop.last %}, {% endif %}
+                                <a href="{% url 'search' %}?tags={{ tag.id }}">{{tag.tag}}</a>{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         {% else %}
                                 none at the moment
@@ -71,7 +71,7 @@
                     <p>
                     {% if medium.latitude and medium.longitude %}
                     Latitude: {{ medium.latitude|floatformat:3 }} Longitude: {{ medium.longitude|floatformat:3 }}<br>
-                    <a href="/search/near?latitude={{ medium.latitude }}&longitude={{ medium.longitude }}&km=10">Nearby (10 km) photos</a>
+                    <a href="{% url 'search' %}?latitude={{ medium.latitude }}&longitude={{ medium.longitude }}&km=10">Nearby (10 km) photos</a>
                     {% endif %}
                     <p>
                     Go to random:

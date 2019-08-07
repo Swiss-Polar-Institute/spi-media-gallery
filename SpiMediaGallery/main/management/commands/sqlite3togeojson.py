@@ -4,6 +4,7 @@ from django.contrib.gis.geos import LineString, MultiLineString, Point
 
 from django.conf import settings
 
+
 class Command(BaseCommand):
     help = 'Reads sqlite3 file with the positions and generates a GeoJSON file'
 
