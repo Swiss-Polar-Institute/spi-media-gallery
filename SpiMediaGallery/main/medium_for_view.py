@@ -155,13 +155,10 @@ class MediumForView(Medium):
         return self.medium_type == self.VIDEO
 
     def _medium_resized(self, label):
-        qs = MediumResized.objects.filter(medium=self).filter(size_label=label)
-        assert len(qs) < 2
-
-        if len(qs) == 1:
-            return qs[0]
-        else:
-            return None
+        for mediumresized in self.mediumresized_set.all():
+            if mediumresized.size_label == label:
+                return mediumresized
+        return None
 
     class Meta:
         proxy = True
