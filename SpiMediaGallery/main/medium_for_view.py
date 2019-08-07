@@ -40,16 +40,27 @@ class MediumForView(Medium):
     def file_size_original(self):
         return utils.bytes_to_human_readable(self.file.size)
 
-    def file_size_small(self):
-        resized = self._medium_resized(MediumResized.SMALL)
+    def _file_size(self, size_label):
+        resized = self._medium_resized(size_label)
 
         if resized is None:
             return None
 
         return utils.bytes_to_human_readable(resized.file.size)
 
+    def file_size_small(self):
+        return self._file_size(MediumResized.SMALL)
+
+    def file_size_small(self):
+        return self._file_size(MediumResized.LARGE)
+
     def is_small_resolution_available(self):
         resized = self._medium_resized(MediumResized.SMALL)
+
+        return resized is not None
+
+    def is_large_resolution_available(self):
+        resized = self._medium_resized(MediumResized.LARGE)
 
         return resized is not None
 

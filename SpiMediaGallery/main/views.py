@@ -169,6 +169,7 @@ class Search(TemplateView):
 
         return redirect(reverse("medium", kwargs={"media_id": medium.pk}))
 
+
 class DisplayRandom(TemplateView):
     def get(self, request, *args, **kwargs):
         type_of_medium = kwargs["type_of_medium"]
@@ -226,7 +227,8 @@ class ListVideosExportCsv(TemplateView):
         writer.writerow(["ID", "Name", "Duration", "Link"])
 
         for video in videos_qs:
-            writer.writerow([video.pk, video.file.object_storage_key, video.duration_in_minutes_seconds(), request.build_absolute_uri("/display/{}".format(video.pk))])
+            absolute_link_to_medium_page = request.build_absolute_uri(reverse("medium", kwargs={"media_id": video.pk}))
+            writer.writerow([video.pk, video.file.object_storage_key, video.duration_in_minutes_seconds(), absolute_link_to_medium_page])
 
         return response
 

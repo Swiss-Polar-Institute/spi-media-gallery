@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
 # Buster Dcraw are not correctly generated
 ADD https://www.dechifro.org/dcraw/dcraw.c /tmp/
 RUN gcc -o /usr/bin/dcraw -O4 /tmp/dcraw.c -lm -DNODEPS
+RUN rm /tmp/dcraw.c
 RUN pip3 install -r /code/requirements.txt
 RUN apt-get purge -y gcc-7 gcc \
 	libmariadbclient-dev libmariadb-dev-compat \
