@@ -11,7 +11,7 @@ from django.conf import settings
 def image_size_label_abbreviation_to_presentation(abbreviation):
     from main.models import MediumResized
 
-    for size in MediumResized.SIZES_OF_PHOTOS:
+    for size in MediumResized.SIZES_OF_MEDIA:
         if size[0] == abbreviation:
             return size[1]
 

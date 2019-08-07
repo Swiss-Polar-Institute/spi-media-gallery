@@ -129,7 +129,7 @@ class MediumResized(models.Model):
     LARGE = "L"
     ORIGINAL = "O"
 
-    SIZES_OF_PHOTOS = (
+    SIZES_OF_MEDIA = (
         (THUMBNAIL, 'Thumbnail'),
         (SMALL, 'Small'),
         (MEDIUM, 'Medium'),
@@ -145,7 +145,7 @@ class MediumResized(models.Model):
 
     datetime_resized = models.DateTimeField()
 
-    size_label = models.CharField(max_length=1, choices=SIZES_OF_PHOTOS)
+    size_label = models.CharField(max_length=1, choices=SIZES_OF_MEDIA)
 
     height = models.IntegerField()
     width = models.IntegerField()
