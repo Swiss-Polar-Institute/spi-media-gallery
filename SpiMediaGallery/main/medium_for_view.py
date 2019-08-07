@@ -15,15 +15,16 @@ class MediumForViewManager(models.Manager):
 
 class MediumForView(Medium):
     objects = MediumForViewManager()
+    def _thumbnail_size(self):
+        if self.medium_type == Medium.PHOTO:
+            return MediumResized.THUMBNAIL
+        elif self.medium_type == Medium.VIDEO:
+            return MediumResized.SMALL
+
+        assert False
 
     def thumbnail_url(self):
-        if self.medium_type == Medium.PHOTO:
-            size_label = "T"
-        elif self.medium_type == Medium.VIDEO:
-            size_label = "S"
-        else:
-            assert False
-
+        size_label = self._thumbnail_size()
         medium_resized = self._medium_resized(size_label)
 
         if medium_resized is None:
@@ -38,12 +39,19 @@ class MediumForView(Medium):
         return link_for_medium(self, "attachment", filename_for_original_medium(self))
 
     def small_resolution_url(self):
-        resized = self._medium_resized(MediumResized.SMALL)
+        return self._url(MediumResized.SMALL)
+
+    def large_resolution_url(self):
+        return self._url(MediumResized.LARGE)
+
+    def _url(self, size_label):
+        resized = self._medium_resized(size_label)
+
         if resized is None:
             return static("images/small-does-not-exist.jpg")
 
         return link_for_medium(resized, "inline",
-                               filename_for_resized_medium(self.pk, MediumResized.SMALL, utils.file_extension(resized.file.object_storage_key)))
+                               filename_for_resized_medium(self.pk, size_label, utils.file_extension(resized.file.object_storage_key)))
 
     def file_size_original(self):
         return utils.bytes_to_human_readable(self.file.size)
@@ -81,13 +89,9 @@ class MediumForView(Medium):
 
         return "embed-responsive-16by9"
 
-    def resized_content_type(self):
-        if self.medium_type == Medium.VIDEO:
-            return "video/webm"
-        elif self.medium_type == Medium.PHOTO:
-            return "image/jpeg"
-        else:
-            assert False
+    def thumbnail_content_type(self):
+        size_label = self._thumbnail_size()
+        return utils.content_type_for_filename(self._medium_resized(size_label).file.object_storage_key)
 
     def border_color(self):
         if self.medium_type == Medium.VIDEO:
