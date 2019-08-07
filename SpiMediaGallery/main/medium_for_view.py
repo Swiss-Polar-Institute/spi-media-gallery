@@ -5,9 +5,17 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 from main import utils
 from main.spi_s3_utils import link_for_medium
 from main.utils import filename_for_resized_medium, filename_for_original_medium, human_readable_resolution_for_medium
+from django.db import models
+
+
+class MediumForViewManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('mediumresized_set').prefetch_related('mediumresized_set__file').select_related('file')
 
 
 class MediumForView(Medium):
+    objects = MediumForViewManager()
+
     def thumbnail_url(self):
         if self.medium_type == Medium.PHOTO:
             size_label = "T"
