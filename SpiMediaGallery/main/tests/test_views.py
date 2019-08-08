@@ -29,4 +29,3 @@ class ViewsTest(TestCase):
         self.assertContains(response, "landscape")
 
         self.assertNotContains(response, "this is not a tag")
-        self.assertContains(response, "landscape")
