@@ -1,7 +1,5 @@
-from django.test import TransactionTestCase, TestCase
+from django.test import TestCase
 from main.models import *
-import datetime
-import pytz
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from main.medium_for_view import MediumForView
@@ -20,7 +18,7 @@ class ImportSamplesTest(TestCase):
     def tearDown(self):
         pass
 
-    def test_medium_for_view(self):
+    def test_general(self):
         medium_for_view = MediumForView.objects.all()[0]
 
         self.assertEqual(medium_for_view.copyright, Copyright.objects.filter(holder="EPFL")[0])
@@ -42,3 +40,15 @@ class ImportSamplesTest(TestCase):
         self.assertEqual(medium_for_view.is_photo(), True)
 
         self.assertEqual(medium_for_view.is_video(), False)
+
+    def test_author(self):
+        medium_for_view = MediumForView.objects.all()[0]
+
+        photographer = Photographer(first_name="John", last_name="Doe")
+        photographer.save()
+
+        medium_for_view.photographer = photographer
+
+        medium_for_view.save()
+
+        self.assertEqual(medium_for_view.photographer_name(), "John Doe")
