@@ -1,0 +1,42 @@
+-   model: main.license
+    pk: 1
+    fields:
+        name: cc-by-nc-sa-4.0
+        public_text: Creative Commons 4.0
+-   model: main.copyright
+    pk: 1
+    fields:
+        holder: EPFL
+        public_text: Copyright EPFL
+-   model: main.tag
+    pk: 1
+    fields:
+        tag: landscape
+-   model: main.tag
+    pk: 2
+    fields:
+        tag: helicopter
+-   model: main.file
+    pk: 1
+    fields:
+        object_storage_key: disk1/test01.jpg
+        md5: 94fef567e2cb803d492c70a2c9ac3d1b
+        size: 4243152
+        bucket: O
+-   model: main.medium
+    pk: 1
+    fields:
+        file: 1
+        location: SRID=4326;POINT (19.95117187222257 -35.08994847562055)
+        height: 4000
+        width: 3000
+        datetime_taken: 2019-07-09 12:46:42+00:00
+        datetime_imported: 2019-08-08 11:03:02+00:00
+        public: false
+        photographer: null
+        license: 1
+        copyright: 1
+        medium_type: P
+        duration: null
+        tags:
+        - 1
