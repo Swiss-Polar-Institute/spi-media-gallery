@@ -87,7 +87,8 @@ def secrets_file(file_name):
     if os.path.exists(file_path_in_run_secrets):
         return file_path_in_run_secrets
 
-    raise "Configuration for {} doesn't exist".format(file_name)
+    raise FileNotFoundError("Configuration for {} doesn't exist".format(file_name))
+
 
 def find_file(file_name):
     """ First try $HOME/file_name, then /code/file_name, else raises an exception"""
@@ -99,7 +100,7 @@ def find_file(file_name):
     if os.path.exists(file_path_in_code):
         return file_path_in_code
 
-    raise "File location for {} doesn't exist".format(file_name)
+    return None
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -112,6 +113,9 @@ DATABASES = {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
         },
+        'TEST': {
+            'NAME': 'test_spi_media_gallery',
+        }
     }
 }
 
@@ -133,6 +137,23 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+CACHE_ENABLED = False
+
+if CACHE_ENABLED:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+            'LOCATION': '/tmp/django_cache',
+            'TIMEOUT': 300,
+            'OPTIONS': {
+                'MAX_ENTRIES': 1000
+            }
+        }
+    }
+
+    MIDDLEWARE.insert(0, 'django.middleware.cache.UpdateCacheMiddleware')
+    MIDDLEWARE.append('django.middleware.cache.FetchFromCacheMiddleware')
 
 # It's in this place for convenience in the staging environment
 with open(secrets_file("spi_media_gallery_buckets.json")) as json_file:

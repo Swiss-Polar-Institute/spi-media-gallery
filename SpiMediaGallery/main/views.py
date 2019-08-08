@@ -106,7 +106,7 @@ def search_for_tag_ids(tag_ids):
 
     tags_list = ", ".join(tags_list) # Tag.objects.get(id=kwargs["tag_id"])
 
-    if len(query_media_for_tags) != 1:
+    if query_media_for_tags.count() != 1:
         photos_string = "Media"
     else:
         photos_string = "Medium"
@@ -120,6 +120,7 @@ def search_for_tag_ids(tag_ids):
 
 
 class Search(TemplateView):
+    # @print_sql_decorator(count_only=False)
     def get(self, request, *args, **kwargs):
         if "tags" in request.GET:
             list_of_tag_ids = request.GET.getlist('tags')
