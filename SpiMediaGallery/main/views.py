@@ -104,17 +104,19 @@ def search_for_tag_ids(tag_ids):
         query_media_for_tags = query_media_for_tags.filter(tags__id=int(tag_id))
         tags_list.append(Tag.objects.get(id=tag_id).tag)
 
-    tags_list = ", ".join(tags_list) # Tag.objects.get(id=kwargs["tag_id"])
+    tags_list = ", ".join(tags_list)
 
-    if query_media_for_tags.count() != 1:
+    query_media_for_tags_count = query_media_for_tags.count()
+
+    if query_media_for_tags_count != 1:
         photos_string = "Media"
     else:
         photos_string = "Medium"
 
     if len(tag_ids) != 1:
-        information["search_explanation"] = "{} {} with these tags: {}".format(query_media_for_tags.count(), photos_string, tags_list)
+        information["search_explanation"] = "{} {} with these tags: {}".format(query_media_for_tags_count, photos_string, tags_list)
     else:
-        information["search_explanation"] = "{} {} with this tag: {}".format(query_media_for_tags.count(), photos_string, tags_list)
+        information["search_explanation"] = "{} {} with this tag: {}".format(query_media_for_tags_count, photos_string, tags_list)
 
     return information, query_media_for_tags
 
