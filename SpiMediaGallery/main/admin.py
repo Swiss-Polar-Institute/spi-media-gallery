@@ -86,13 +86,19 @@ class MediumResizedAdmin(admin.ModelAdmin):
         if obj.file is None:
             return None
         else:
-            return obj.file.size
+            return main.utils.bytes_to_human_readable(obj.file.size)
 
 
 class FileAdmin(admin.ModelAdmin):
-    list_display = ('object_storage_key', 'md5', 'size', )
+    list_display = ('object_storage_key', 'md5', 'file_size', )
     ordering = ('object_storage_key', 'size', )
     search_fields = ('object_storage_key', 'md5', 'size', 'bucket', )
+
+    def file_size(self, obj):
+        if obj.size is None:
+            return None
+        else:
+            return main.utils.bytes_to_human_readable(obj.size)
 
 
 admin.site.register(main.models.Medium, MediumAdmin)

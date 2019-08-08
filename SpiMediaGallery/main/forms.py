@@ -27,11 +27,14 @@ class LocationEntryCoordinates(forms.ModelForm):
     class Meta(object):
         model = Medium
         exclude = []
-        fields = ['file', 'height', 'width', 'duration', 'datetime_taken', 'location',
+        fields = ['file', 'height', 'width', 'duration', 'datetime_taken', 'datetime_imported', 'location',
                        'latitude', 'longitude', 'tags', 'license', 'copyright']
 
     def __init__(self, *args, **kwargs):
-        position = kwargs['instance'].location
+        if 'instance' in kwargs and kwargs['instance'] is not None:
+            position = kwargs['instance'].location
+        else:
+            position = None
 
         super().__init__(*args, **kwargs)
 
