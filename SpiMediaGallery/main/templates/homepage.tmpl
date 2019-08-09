@@ -13,6 +13,24 @@
         {% endfor %}
         <p>
 
+        <ul>
+        {% for tag in list_of_tags %}
+            {% autoescape off %}
+            {{ tag.close_uls }}
+            {% endautoescape %}
+
+
+            {% autoescape off %}
+            {{ tag.open_uls }}
+            {% endautoescape %}
+
+            <li>{{ tag.tag }}
+        {% endfor %}
+        {% autoescape off %}
+        Orphaned:
+        {{ close_orphaned_uls }}
+        {% endautoescape %}
+        </ul>
         <h2>Select multiple tags</h2>
         Only media with all selected tags will be displayed.
 

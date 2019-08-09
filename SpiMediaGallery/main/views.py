@@ -36,11 +36,23 @@ class Homepage(TemplateView):
         context = super(Homepage, self).get_context_data(**kwargs)
 
         tags = []
+        last_indentation = 0
         for tag in Tag.objects.values('tag').distinct().order_by('tag'):
             t = {}
-            t['id'] = Tag.objects.filter(tag=tag['tag']).first().pk
+            tag_name = tag['tag']
+            tag_indentation = tag_name.count("/")
+
+            t['open_uls'] = "<ul>"*max(0, tag_indentation - last_indentation)
+            t['close_uls'] = "</ul>"*max(0, last_indentation - tag_indentation)
+            context['close_orphaned_uls'] = "</ul>"*max(0, tag_indentation - 0)
+            last_indentation = tag_indentation
+
+            if tag_name == "location":
+                print("here")
+
+            t['id'] = Tag.objects.filter(tag=tag_name).first().pk
             t['tag'] = tag['tag']
-            t['count'] = Medium.objects.filter(tags__tag=tag['tag']).count()
+            t['count'] = Medium.objects.filter(tags__tag=tag_name).count()
 
             tags.append(t)
 
