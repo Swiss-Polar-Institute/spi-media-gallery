@@ -12,7 +12,7 @@
         <p>
 
         <h2>Videos</h2>
-        <a href="{% url 'list_videos' %}">List with all the videos</a>
+        <a href="{% url 'list_videos' %}">List of all videos</a>
         <p>
         <h2>Navigate selecting one tag</h2>
         {% for tag in list_of_tags %}
@@ -20,7 +20,7 @@
         {% endfor %}
         <p>
         <h2>Select multiple tags</h2>
-        Only media having all the selected tags will be displayed.
+        Only media with all selected tags will be displayed.
 
         <form action="{% url 'search' %}" method="get">
             <table border="0">
@@ -43,7 +43,7 @@
             </div>
         </form>
         <p>
-        <h2>Search using ID</h2>
+        <h2>Search using media ID</h2>
         <form action="{% url 'search' %}" method="POST">
             {% csrf_token %}
 
