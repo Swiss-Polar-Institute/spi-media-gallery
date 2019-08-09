@@ -33,7 +33,7 @@ class Copyright(models.Model):
 
 
 class Tag(models.Model):
-    tag = models.CharField(max_length=256)
+    tag = models.CharField(max_length=255)
 
     def __str__(self):
         return self.tag
