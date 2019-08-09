@@ -1,8 +1,8 @@
 from django.shortcuts import render
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from django.views.generic import TemplateView, View
-from main.models import Medium, MediumResized, Tag
+from main.models import Medium, MediumResized, Tag, File
 from django.db.models import Sum
 from main.forms import MediumIdForm
 from django.core.exceptions import ObjectDoesNotExist
@@ -268,25 +268,23 @@ class TrackGeojson(View):
         return JsonResponse(json.load(track))
 
 
-#     path('get/file/<str:md5>', GetPhoto.as_view())
 class GetFile(View):
     def get(self, request, *args, **kwargs):
-        bucket_name = request.GET['bucket']
+        bucket_name = kwargs['bucket_name']
+        md5 = kwargs['md5']
 
-        if bucket_name == "media":
-            photo = Medium.objects.get(md5=kwargs['md5'])
-        elif bucket_name == "resized":
-            photo = MediumResized.objects.get(md5=kwargs['md5'])
-        else:
-            assert False
-
-        filename = request.GET['filename']
         content_type = request.GET['content_type']
         content_disposition_type = request.GET['content_disposition_type']
+        filename = request.GET['filename']
 
-        spi_s3 = SpiS3Utils(bucket_name)
+        try:
+            file = File.objects.get(md5=md5, bucket=bucket_name)
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound('File not found')
 
-        url = spi_s3.get_presigned_link(photo.object_storage_key, content_disposition_type, content_type, filename)
+        spi_s3 = SpiS3Utils(file.bucket_name())
+
+        url = spi_s3.get_presigned_link(file.object_storage_key, content_disposition_type, content_type, filename)
 
         r = requests.get(url=url, stream=True)
         r.raise_for_status()

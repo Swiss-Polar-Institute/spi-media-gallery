@@ -90,27 +90,15 @@ class SpiS3Utils(object):
 
 def link_for_medium(medium, content_disposition, filename):
     content_type = content_type_for_filename(filename)
-    # if medium_for_content_type.medium_type == Medium.PHOTO:
-    #     content_type = "image/jpeg"
-    # elif medium_for_content_type.medium_type == Medium.VIDEO:
-    #     content_type = "video/webm"
-
-    if medium.file.bucket == "O":
-        bucket_name = "original"
-    elif medium.file.bucket == "P":
-        bucket_name = "processed"
-    else:
-        assert False
 
     if settings.PROXY_TO_OBJECT_STORAGE:
         d = {"content_type": content_type,
              "content_disposition_type": content_disposition,
              "filename": filename,
-             "bucket": bucket_name
         }
 
-        return "{}?{}".format(reverse("get_file", args=[medium.md5]), urllib.parse.urlencode(d))
+        return "{}?{}".format(reverse("get_file", args=[medium.file.bucket, medium.file.md5]), urllib.parse.urlencode(d))
     else:
-        bucket = SpiS3Utils(bucket_name)
+        bucket = SpiS3Utils(medium.file.bucket_name())
 
         return bucket.get_presigned_link(medium.file.object_storage_key, content_type, content_disposition, filename)

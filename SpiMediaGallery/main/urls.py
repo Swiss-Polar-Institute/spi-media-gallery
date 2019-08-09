@@ -14,5 +14,5 @@ urlpatterns = [
     path('map/photos.geojson', PhotosGeojson.as_view()),
     path('map/', Map.as_view()),
     path('map/track.geojson', TrackGeojson.as_view()),
-    path('get/file/<str:md5>', GetFile.as_view(), name="get_file")
+    path('get/file/<str:bucket_name>/<str:md5>', GetFile.as_view(), name="get_file")
 ]
