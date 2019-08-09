@@ -7,18 +7,12 @@
 {% block body_contents %}
     <div class="container theme-showcase" role="main">
         {% include "_logo.tmpl" %} <H1>Welcome to the SPI Media Gallery</H1>
-        <h2>Random</h2>
-        {% include "_random_selection.tmpl" %}
-        <p>
-
-        <h2>Videos</h2>
-        <a href="{% url 'list_videos' %}">List of all videos</a>
-        <p>
         <h2>Navigate selecting one tag</h2>
         {% for tag in list_of_tags %}
         <a href="{% url 'search' %}?tags={{ tag.id }}">{{ tag.tag }}</a>{% if not forloop.last %}, {% endif %}
         {% endfor %}
         <p>
+
         <h2>Select multiple tags</h2>
         Only media with all selected tags will be displayed.
 
@@ -43,6 +37,7 @@
             </div>
         </form>
         <p>
+
         <h2>Search using media ID</h2>
         <form action="{% url 'search' %}" method="POST">
             {% csrf_token %}
@@ -53,6 +48,15 @@
             <input type="submit" value="Search">
         </form>
         <p>
+
+        <h2>Random</h2>
+        {% include "_random_selection.tmpl" %}
+        <p>
+
+        <h2>Videos</h2>
+        <a href="{% url 'list_videos' %}">List of all videos</a>
+        <p>
+
         <!--
         <h2>Search using the map</h2>
         <a href="/map">Map</a>
