@@ -33,6 +33,13 @@ class Copyright(models.Model):
         return self.holder
 
 
+class TagName(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
 class Tag(models.Model):
     XMP = "X"
     GENERATED = "G"
@@ -44,14 +51,19 @@ class Tag(models.Model):
         (MANUAL, "Manual")
     )
 
-    tag = models.CharField(max_length=100)
+    name = models.ForeignKey(TagName, on_delete=models.PROTECT)
     importer = models.CharField(max_length=1, choices=IMPORTER, null=False, blank=False)
 
     def __str__(self):
-        return "{} ({})".format(self.tag, self.importer)
+        return "{} -{}".format(self.name, self.importer_name())
+
+    def importer_name(self):
+        for importer in self.IMPORTER:
+            if importer[0] == self.importer:
+                return importer[1]
 
     class Meta:
-        unique_together = (('tag', 'importer'))
+        unique_together = (('name', 'importer'))
 
 
 class File(models.Model):

@@ -26,6 +26,7 @@
 {% autoescape off %} {{ tag.open_uls }} {% endautoescape %}
         <li>  <a href="{% url 'search' %}?tags={{ tag.id }}">{{ tag.shortname }}</a> ({{ tag.count }})
         {% endfor %}
+
         {% autoescape off %}
         {{ close_orphaned_uls }}
         {% endautoescape %}

@@ -110,7 +110,7 @@ class MediumForView(Medium):
         list_of_tags = []
 
         for tag in self.tags.all():
-            t = {'id': tag.id, 'tag': tag.tag}
+            t = {'id': tag.id, 'tag': tag.name.name}
             list_of_tags.append(t)
 
         list_of_tags = sorted(list_of_tags, key=lambda k: k['tag'])

@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views.generic import TemplateView, View
-from main.models import Medium, MediumResized, Tag, File
+from main.models import Medium, MediumResized, Tag, TagName, File
 from django.db.models import Sum
 from main.forms import MediumIdForm
 from django.core.exceptions import ObjectDoesNotExist
@@ -37,21 +37,21 @@ class Homepage(TemplateView):
 
         tags = []
         last_indentation = 0
-        for tag in Tag.objects.values('tag').distinct().order_by('tag'):
+        for tag in TagName.objects.order_by('name'):
             t = {}
-            tag_name = tag['tag']
+            tag_name = tag.name
             tag_indentation = tag_name.count("/")
 
             t['open_uls'] = "<ul>"*(tag_indentation - last_indentation)
             t['close_uls'] = "</ul>"*(last_indentation - tag_indentation)
 
-            context['close_orphaned_uls'] = tag_indentation - 0
-            
+            context['close_orphaned_uls'] = "</ul>" * tag_indentation
+
             last_indentation = tag_indentation
 
-            t['id'] = Tag.objects.filter(tag=tag_name).first().pk
-            t['tag'] = tag['tag']
-            t['count'] = Medium.objects.filter(tags__tag=tag_name).count()
+            t['id'] = Tag.objects.filter(name__name=tag_name).first().pk
+            t['tag'] = tag.name
+            t['count'] = Medium.objects.filter(tags__name__name=tag_name).count()
             t['shortname'] = tag_name.split("/")[-1]
 
             tags.append(t)
@@ -113,9 +113,9 @@ def search_for_tag_ids(tag_ids):
     tags_list = []
 
     for tag_id in tag_ids:
-        tag_name = Tag.objects.get(pk=tag_id).tag
+        tag_name = TagName.objects.get(pk=tag_id).name
 
-        query_media_for_tags = query_media_for_tags.filter(tags__tag=tag_name)
+        query_media_for_tags = query_media_for_tags.filter(tags__name__name=tag_name)
         tags_list.append(tag_name)
 
     tags_list = ", ".join(tags_list)

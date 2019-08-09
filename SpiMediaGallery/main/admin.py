@@ -14,12 +14,12 @@ class MediumAdmin(OSMGeoAdmin):
                 'duration', 'public', 'datetime_imported', )
     search_fields = ('file__object_storage_key', 'file__md5', )
     raw_id_fields = ('file', )
-    list_select_related = ('file',)
+    list_select_related = ('file', 'photographer', )
 
     form = LocationEntryCoordinates
 
     def tags_list(self, obj):
-        return ",".join([t.tag for t in obj.tags.all()])
+        return ",".join([str(t) for t in obj.tags.all()])
 
     def duration_mmss(self, obj):
         return main.utils.seconds_to_minutes_seconds(obj.duration)
@@ -56,9 +56,22 @@ class CopyrightAdmin(admin.ModelAdmin):
 
 
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('tag', 'importer', )
-    ordering = ('tag', 'importer', )
-    search_fields = ('tag', 'importer', )
+    list_display = ('tag_name', 'importer', )
+    ordering = ('name', 'importer', )
+    search_fields = ('tag__name', 'importer', )
+    list_select_related = ('name', )
+
+    def tag_name(self, obj):
+        if obj.name is not None:
+            return obj.name.name
+
+        else:
+            return ""
+
+class TagNameAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+    ordering = ('name', )
+    search_fields = ('name', )
 
 
 class MediumResizedAdmin(admin.ModelAdmin):
@@ -67,8 +80,8 @@ class MediumResizedAdmin(admin.ModelAdmin):
     ordering = ('file__object_storage_key', 'file__size', 'size_label', 'height', 'width', 'medium',
                 'datetime_resized', )
     search_fields = ('file__object_storage_key', 'file__md5', )
-    raw_id_fields = ('file',)
-    list_select_related = ('file', )
+    raw_id_fields = ('file', 'medium', )
+    list_select_related = ('file', 'medium', )
 
     def file_object_storage_key(self, obj):
         if obj.file is None:
@@ -103,6 +116,7 @@ class FileAdmin(admin.ModelAdmin):
 
 admin.site.register(main.models.Medium, MediumAdmin)
 admin.site.register(main.models.Tag, TagAdmin)
+admin.site.register(main.models.TagName, TagNameAdmin)
 admin.site.register(main.models.MediumResized, MediumResizedAdmin)
 admin.site.register(main.models.Photographer, PhotographerAdmin)
 admin.site.register(main.models.License, LicenseAdmin)

@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Medium, Tag, File
+from main.models import Medium, Tag, TagName, File
 from main.progress_report import ProgressReport
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -26,24 +26,30 @@ class GenerateTags(object):
 
         for medium in media:
             for tag in medium.tags.all():
-                tag_parts = tag.tag.split("/")
+                tag_parts = tag.name.name.split("/")
 
                 i = 1
                 while i < len(tag_parts):
                     new_part = "/".join(tag_parts[0:i])
 
                     try:
-                        medium.tags.get(tag=new_part)
+                        medium.tags.get(name__name=new_part)
                         i += 1
                         continue
                     except ObjectDoesNotExist:
                         pass
 
                     try:
-                        tag = Tag.objects.get(tag=new_part, importer=Tag.GENERATED)
+                        tag_name = TagName.objects.get(name=new_part)
+                    except ObjectDoesNotExist:
+                        tag_name = TagName(name=new_part)
+                        tag_name.save()
+
+                    try:
+                        tag = Tag.objects.get(name=tag_name, importer=Tag.GENERATED)
                     except ObjectDoesNotExist:
                         tag = Tag()
-                        tag.tag = new_part
+                        tag.name = tag_name
                         tag.importer = Tag.GENERATED
                         tag.save()
 
