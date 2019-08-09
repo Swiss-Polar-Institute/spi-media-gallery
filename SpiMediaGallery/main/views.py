@@ -42,17 +42,17 @@ class Homepage(TemplateView):
             tag_name = tag['tag']
             tag_indentation = tag_name.count("/")
 
-            t['open_uls'] = "<ul>"*max(0, tag_indentation - last_indentation)
-            t['close_uls'] = "</ul>"*max(0, last_indentation - tag_indentation)
-            context['close_orphaned_uls'] = "</ul>"*max(0, tag_indentation - 0)
-            last_indentation = tag_indentation
+            t['open_uls'] = "<ul>"*(tag_indentation - last_indentation)
+            t['close_uls'] = "</ul>"*(last_indentation - tag_indentation)
 
-            if tag_name == "location":
-                print("here")
+            context['close_orphaned_uls'] = tag_indentation - 0
+            
+            last_indentation = tag_indentation
 
             t['id'] = Tag.objects.filter(tag=tag_name).first().pk
             t['tag'] = tag['tag']
             t['count'] = Medium.objects.filter(tags__tag=tag_name).count()
+            t['shortname'] = tag_name.split("/")[-1]
 
             tags.append(t)
 

@@ -5,8 +5,6 @@ from django.dispatch import receiver
 
 from main.spi_s3_utils import SpiS3Utils
 
-import os
-
 
 class Photographer(models.Model):
     first_name = models.CharField(max_length=100)
@@ -116,6 +114,12 @@ class Medium(models.Model):
     medium_type = models.CharField(max_length=1, choices=MEDIUM_TYPES)
 
     duration = models.IntegerField(null=True, blank=True)
+
+    def latitude(self):
+        if self.location is None:
+            return None
+
+        return self.location.y
 
     def latitude(self):
         if self.location is None:

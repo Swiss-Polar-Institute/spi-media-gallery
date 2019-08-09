@@ -10,3 +10,18 @@
     padding: 15px;
     text-align: left;
 }
+
+.collapsibleList li{
+  list-style-image : url('/static/images/button.png');
+  cursor           : auto;
+}
+
+li.collapsibleListOpen{
+  list-style-image : url('/static/images/button-open.png');
+  cursor           : pointer;
+}
+
+li.collapsibleListClosed{
+  list-style-image : url('/static/images/button-closed.png');
+  cursor           : pointer;
+}

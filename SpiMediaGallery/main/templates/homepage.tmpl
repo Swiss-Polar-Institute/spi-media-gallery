@@ -2,32 +2,31 @@
 {% load static %}
 {% block title %}SPI Media Gallery{% endblock %}
 
-{% block body_attributes %}class="d-flex flex-column h-100"{% endblock %}
+{% block extra_head %}
+    <script src="{% static '/js/CollapsibleLists.js' %}"></script>
+{% endblock %}
+
+{% block body_attributes %}class="d-flex flex-column h-100" onload="CollapsibleLists.apply();" {% endblock %}
 
 {% block body_contents %}
     <div class="container theme-showcase" role="main">
         {% include "_logo.tmpl" %} <H1>Welcome to the SPI Media Gallery</H1>
         <h2>Navigate selecting one tag</h2>
+
+        <!--
         {% for tag in list_of_tags %}
         <a href="{% url 'search' %}?tags={{ tag.id }}">{{ tag.tag }}</a>{% if not forloop.last %}, {% endif %}
         {% endfor %}
         <p>
+        -->
 
-        <ul>
+        <ul class="collapsibleList">
         {% for tag in list_of_tags %}
-            {% autoescape off %}
-            {{ tag.close_uls }}
-            {% endautoescape %}
-
-
-            {% autoescape off %}
-            {{ tag.open_uls }}
-            {% endautoescape %}
-
-            <li>{{ tag.tag }}
+{% autoescape off %} {{ tag.close_uls }} {% endautoescape %}
+{% autoescape off %} {{ tag.open_uls }} {% endautoescape %}
+        <li>  <a href="{% url 'search' %}?tags={{ tag.id }}">{{ tag.shortname }}</a> ({{ tag.count }})
         {% endfor %}
         {% autoescape off %}
-        Orphaned:
         {{ close_orphaned_uls }}
         {% endautoescape %}
         </ul>
