@@ -2,9 +2,10 @@ from django.urls import path, re_path
 from main.views import Homepage, ListVideos, \
     ListVideosExportCsv, Display, Map, PhotosGeojson, TrackGeojson, GetFile, \
     DisplayRandom, Search, Stats
+from django.views.decorators.cache import cache_page
 
 urlpatterns = [
-    path('', Homepage.as_view()),
+    path('', cache_page(60 * 15)(Homepage.as_view())),
     re_path('media/random/(?P<type_of_medium>photo|video|medium)/', DisplayRandom.as_view(), name="display_random"),
     path('media/<int:media_id>', Display.as_view(), name="medium"),
     re_path('media/', Search.as_view(), name="search"),

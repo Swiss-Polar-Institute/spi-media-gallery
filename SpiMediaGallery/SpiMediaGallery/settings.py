@@ -138,7 +138,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CACHE_ENABLED = False
+CACHE_ENABLED = True
 
 if CACHE_ENABLED:
     CACHES = {
@@ -151,9 +151,9 @@ if CACHE_ENABLED:
             }
         }
     }
-
-    MIDDLEWARE.insert(0, 'django.middleware.cache.UpdateCacheMiddleware')
-    MIDDLEWARE.append('django.middleware.cache.FetchFromCacheMiddleware')
+    # To enable caching in all the website
+    # MIDDLEWARE.insert(0, 'django.middleware.cache.UpdateCacheMiddleware')
+    # MIDDLEWARE.append('django.middleware.cache.FetchFromCacheMiddleware')
 
 # It's in this place for convenience in the staging environment
 with open(secrets_file("spi_media_gallery_buckets.json")) as json_file:

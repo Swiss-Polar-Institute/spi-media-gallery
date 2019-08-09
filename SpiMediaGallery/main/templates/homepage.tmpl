@@ -22,8 +22,8 @@
 
         <ul class="collapsibleList">
         {% for tag in list_of_tags %}
-{% autoescape off %} {{ tag.close_uls }} {% endautoescape %}
-{% autoescape off %} {{ tag.open_uls }} {% endautoescape %}
+        {% autoescape off %}{{ tag.close_uls }}{% endautoescape %}
+        {% autoescape off %}{{ tag.open_uls }}{% endautoescape %}
         <li>  <a href="{% url 'search' %}?tags={{ tag.id }}">{{ tag.shortname }}</a> ({{ tag.count }})
         {% endfor %}
 

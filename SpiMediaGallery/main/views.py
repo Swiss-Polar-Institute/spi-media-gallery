@@ -28,7 +28,6 @@ import csv
 from main.spi_s3_utils import SpiS3Utils, link_for_medium
 import main.utils as utils
 
-
 class Homepage(TemplateView):
     template_name = "homepage.tmpl"
 
@@ -37,10 +36,19 @@ class Homepage(TemplateView):
 
         tags = []
         last_indentation = 0
+        name_to_id = self.create_dictionary_tag_name_to_id()
+
         for tag in TagName.objects.order_by('name'):
             t = {}
+
             tag_name = tag.name
             tag_indentation = tag_name.count("/")
+
+            t['id'] = name_to_id.get(tag_name, None)
+
+            if t['id'] is None:
+                # A tag exists now but not when the dictionary was created
+                continue
 
             t['open_uls'] = "<ul>"*(tag_indentation - last_indentation)
             t['close_uls'] = "</ul>"*(last_indentation - tag_indentation)
@@ -49,7 +57,6 @@ class Homepage(TemplateView):
 
             last_indentation = tag_indentation
 
-            t['id'] = Tag.objects.filter(name__name=tag_name).first().pk
             t['tag'] = tag.name
             t['count'] = Medium.objects.filter(tags__name__name=tag_name).count()
             t['shortname'] = tag_name.split("/")[-1]
@@ -65,6 +72,13 @@ class Homepage(TemplateView):
 
         return context
 
+    def create_dictionary_tag_name_to_id(self):
+        tag_name_to_id = {}
+
+        for tag_name in TagName.objects.all():
+            tag_name_to_id[tag_name.name] = tag_name.id
+
+        return tag_name_to_id
 
 def search_for_nearby(latitude, longitude, km):
     center_point = Point(longitude, latitude, srid=4326)
