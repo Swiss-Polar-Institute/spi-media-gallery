@@ -36,11 +36,11 @@ class Homepage(TemplateView):
         context = super(Homepage, self).get_context_data(**kwargs)
 
         tags = []
-        for tag in Tag.objects.order_by("tag"):
+        for tag in Tag.objects.values('tag').distinct().order_by('tag'):
             t = {}
-            t['id'] = tag.id
-            t['tag'] = tag.tag
-            t['count'] = Medium.objects.filter(tags__id=tag.id).count()
+            t['id'] = Tag.objects.filter(tag=tag['tag']).first().pk
+            t['tag'] = tag['tag']
+            t['count'] = Medium.objects.filter(tags__tag=tag['tag']).count()
 
             tags.append(t)
 
@@ -101,8 +101,10 @@ def search_for_tag_ids(tag_ids):
     tags_list = []
 
     for tag_id in tag_ids:
-        query_media_for_tags = query_media_for_tags.filter(tags__id=int(tag_id))
-        tags_list.append(Tag.objects.get(id=tag_id).tag)
+        tag_name = Tag.objects.get(pk=tag_id).tag
+
+        query_media_for_tags = query_media_for_tags.filter(tags__tag=tag_name)
+        tags_list.append(tag_name)
 
     tags_list = ", ".join(tags_list)
 

@@ -56,9 +56,9 @@ class CopyrightAdmin(admin.ModelAdmin):
 
 
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('tag', )
-    ordering = ('tag', )
-    search_fields = ('tag', )
+    list_display = ('tag', 'importer', )
+    ordering = ('tag', 'importer', )
+    search_fields = ('tag', 'importer', )
 
 
 class MediumResizedAdmin(admin.ModelAdmin):

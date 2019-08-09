@@ -31,7 +31,7 @@ class ImportSamplesTest(TestCase):
 
         self.assertEqual(medium_for_view.file_name(), "SPI-1.jpg")
 
-        self.assertEqual(medium_for_view.list_of_tags(), [{'id': 1, 'tag': 'landscape'}])
+        self.assertEqual(medium_for_view.list_of_tags(), [{'id': 1, 'tag': 'landscape'}, {'id': 3, 'tag': 'people/john_doe'}])
 
         self.assertEqual(medium_for_view.license_text(), "Creative Commons 4.0")
 

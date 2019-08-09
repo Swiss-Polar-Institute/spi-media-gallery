@@ -114,6 +114,7 @@ class TagImporter(object):
                 except ObjectDoesNotExist:
                     tag_model = Tag()
                     tag_model.tag = tag
+                    tag_model.importer = Tag.XMP
                     tag_model.save()
 
                 medium.tags.add(tag_model)

@@ -12,10 +12,17 @@
     pk: 1
     fields:
         tag: landscape
+        importer: X
 -   model: main.tag
     pk: 2
     fields:
         tag: helicopter
+        importer: X
+-   model: main.tag
+    pk: 3
+    fields:
+        tag: people/john_doe
+        importer: X
 -   model: main.file
     pk: 1
     fields:
@@ -40,3 +47,4 @@
         duration: null
         tags:
         - 1
+        - 3 

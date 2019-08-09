@@ -9,15 +9,18 @@ import os
 
 
 class Photographer(models.Model):
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
 
     def __str__(self):
         return "{} {}".format(self.first_name, self.last_name)
 
+    class Meta:
+        unique_together = (('first_name', 'last_name'))
+
 
 class License(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     public_text = models.TextField()
 
     def __str__(self):
@@ -25,7 +28,7 @@ class License(models.Model):
 
 
 class Copyright(models.Model):
-    holder = models.CharField(max_length=255)
+    holder = models.CharField(max_length=255, unique=True)
     public_text = models.TextField(help_text="Text displayed to the user for the copyright holder")
 
     def __str__(self):
@@ -33,10 +36,24 @@ class Copyright(models.Model):
 
 
 class Tag(models.Model):
-    tag = models.CharField(max_length=255)
+    XMP = "X"
+    GENERATED = "G"
+    MANUAL = "M"
+
+    IMPORTER = (
+        (XMP, "XMP"),
+        (GENERATED, "Generated"),
+        (MANUAL, "Manual")
+    )
+
+    tag = models.CharField(max_length=100)
+    importer = models.CharField(max_length=1, choices=IMPORTER, null=False, blank=False)
 
     def __str__(self):
-        return self.tag
+        return "{} ({})".format(self.tag, self.importer)
+
+    class Meta:
+        unique_together = (('tag', 'importer'))
 
 
 class File(models.Model):
@@ -51,7 +68,7 @@ class File(models.Model):
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(null=True, blank=True, db_index=True, max_length=32)
     size = models.BigIntegerField()
-    bucket = models.CharField(max_length=1, choices=BUCKET_NAMES, null=False, blank=True, default=None)
+    bucket = models.CharField(max_length=1, choices=BUCKET_NAMES, null=False, blank=False)
 
     def __str__(self):
         return self.object_storage_key
@@ -138,10 +155,6 @@ class MediumResized(models.Model):
     )
 
     file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
-
-    # object_storage_key = models.CharField(max_length=1024)
-    # md5 = models.CharField(max_length=32)
-    # file_size = models.BigIntegerField()
 
     datetime_resized = models.DateTimeField()
 
