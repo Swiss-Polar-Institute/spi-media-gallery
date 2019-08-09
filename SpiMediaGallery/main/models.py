@@ -49,7 +49,7 @@ class File(models.Model):
     )
 
     object_storage_key = models.CharField(max_length=1024)
-    md5 = models.CharField(null=True, blank=True, max_length=32)
+    md5 = models.CharField(null=True, blank=True, db_index=True, max_length=32)
     size = models.BigIntegerField()
     bucket = models.CharField(max_length=1, choices=BUCKET_NAMES, null=False, blank=True, default=None)
 
