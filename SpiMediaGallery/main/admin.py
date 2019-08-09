@@ -90,8 +90,8 @@ class MediumResizedAdmin(admin.ModelAdmin):
 
 
 class FileAdmin(admin.ModelAdmin):
-    list_display = ('object_storage_key', 'md5', 'file_size', )
-    ordering = ('object_storage_key', 'size', )
+    list_display = ('object_storage_key', 'md5', 'bucket', 'file_size', )
+    ordering = ('object_storage_key', 'size', 'bucket', )
     search_fields = ('object_storage_key', 'md5', 'size', 'bucket', )
 
     def file_size(self, obj):
