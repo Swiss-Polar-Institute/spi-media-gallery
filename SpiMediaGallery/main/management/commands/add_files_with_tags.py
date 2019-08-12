@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Medium, Tag, File
+from main.models import Medium, Tag, TagName, File
 from libxmp.utils import file_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
@@ -110,14 +110,19 @@ class TagImporter(object):
 
             for tag in tags:
                 try:
-                    tag_model = Tag.objects.get(tag=tag)
+                    tag_name = TagName.objects.get(name=tag)
                 except ObjectDoesNotExist:
-                    tag_model = Tag()
-                    tag_model.tag = tag
-                    tag_model.importer = Tag.XMP
-                    tag_model.save()
+                    tag_name = TagName()
+                    tag_name.name = tag
+                    tag_name.save()
 
-                medium.tags.add(tag_model)
+                try:
+                    tag = Tag.objects.get(name=tag_name, importer=Tag.XMP)
+                except ObjectDoesNotExist:
+                    tag = Tag(name=tag_name, importer=Tag.XMP)
+                    tag.save()
+
+                medium.tags.add(tag)
 
             if temporary_tags_file is not None:
                 os.remove(temporary_tags_file.name)
