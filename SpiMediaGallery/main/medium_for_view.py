@@ -97,6 +97,16 @@ class MediumForView(Medium):
 
         return "embed-responsive-16by9"
 
+    def thumbnail_type(self) -> str:
+        size_label = self._thumbnail_size()
+
+        thumbnail = self._medium_resized(size_label)
+
+        if thumbnail is None:
+            return "P"
+        else:
+            return self.medium_type
+
     def thumbnail_content_type(self) -> str:
         size_label = self._thumbnail_size()
 

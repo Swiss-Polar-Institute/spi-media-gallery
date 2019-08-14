@@ -13,7 +13,7 @@
 
                     <div class="card p-1 {{ medium.border_color }}">
 
-                    {% if medium.medium_type == "P" %}
+                    {% if medium.thumbnail_type == "P" %}
                         <a href="{{ medium.get_absolute_url }}"><img class="card-img-top" src="{{ medium.thumbnail_url }}" alt=""></a>
                     {% else %}
                         <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">

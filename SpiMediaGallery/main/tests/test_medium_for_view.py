@@ -3,6 +3,8 @@ from main.models import *
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
 from main.medium_for_view import MediumForView
+import datetime
+import pytz
 
 
 class ImportSamplesTest(TestCase):
@@ -52,3 +54,36 @@ class ImportSamplesTest(TestCase):
         medium_for_view.save()
 
         self.assertEqual(medium_for_view.photographer_name(), "John Doe")
+
+    def test_medium_thumbnail_type(self):
+        medium_for_view = MediumForView()
+
+        medium_for_view.medium_type = "P"
+        medium_for_view.datetime_imported = datetime.datetime.now().replace(tzinfo=pytz.utc)
+
+        self.assertEqual(medium_for_view.thumbnail_type(), "P")
+
+        medium_for_view.medium_type = "V"
+        medium_for_view.save()
+
+        # Resized file doesn't exist (e.g. it could no be resized), it returns a Photo because
+        # the thumbnail is going to be a JPEG placeholder
+        self.assertEqual(medium_for_view.thumbnail_type(), "P")
+
+        file = File()
+        file.object_storage_key = "test.webm"
+        file.bucket = File.PROCESSED
+        file.md5 = "6b985f9241fecb23fabb5206df731329"
+        file.size = 2420424
+        file.save()
+
+        resized = MediumResized()
+        resized.size_label = "S"
+        resized.datetime_resized = datetime.datetime.now().replace(tzinfo=pytz.UTC)
+        resized.width = 800
+        resized.height = 600
+        resized.file = file
+        resized.medium = medium_for_view
+        resized.save()
+
+        self.assertEqual(medium_for_view.thumbnail_type(), "V")
