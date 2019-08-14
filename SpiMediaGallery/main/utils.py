@@ -11,13 +11,13 @@ from django.urls import reverse
 from django.utils import timezone
 from django.conf import settings
 
-from typing import Dict, Union, List, Optional
+from typing import Dict, List, Optional
 
 from main.spi_s3_utils import SpiS3Utils
 from main.models import File, Medium
 
 
-def image_size_label_abbreviation_to_presentation(abbreviation):
+def image_size_label_abbreviation_to_presentation(abbreviation: str) -> Optional[str]:
     from main.models import MediumResized
 
     for size in MediumResized.SIZES_OF_MEDIA:
@@ -27,14 +27,14 @@ def image_size_label_abbreviation_to_presentation(abbreviation):
     assert False
 
 
-def hash_of_s3_object(s3_object):
+def hash_of_s3_object(s3_object) -> str:
     hash_md5 = hashlib.md5()
     for chunk in s3_object.get()["Body"].iter_chunks(100 * 1024 * 1024):
         hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
 
-def hash_of_file_path(file_path):
+def hash_of_file_path(file_path: str) -> str:
     hash_md5 = hashlib.md5()
 
     with open(file_path, "rb") as fp:
@@ -64,7 +64,7 @@ def resize_photo(input_file_path: int, width: int) -> str:
     return output_file_path.name
 
 
-def resize_video(input_file_path, width):
+def resize_video(input_file_path: str, width: int) -> Optional[str]:
     output_file_path = tempfile.NamedTemporaryFile(suffix=".webm", delete=False)
     output_file_path.close()
 

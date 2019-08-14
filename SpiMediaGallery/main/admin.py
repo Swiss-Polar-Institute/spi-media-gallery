@@ -68,6 +68,7 @@ class TagAdmin(admin.ModelAdmin):
         else:
             return ""
 
+
 class TagNameAdmin(admin.ModelAdmin):
     list_display = ('name', )
     ordering = ('name', )

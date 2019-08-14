@@ -231,7 +231,7 @@ class DisplayRandom(TemplateView):
         return redirect(reverse("medium", kwargs={"media_id": qs[0].pk}))
 
 
-def meters_to_degrees(meters:float) -> float:
+def meters_to_degrees(meters: float) -> float:
     return meters / 40000000.0 * 360.0
 
 

@@ -8,33 +8,33 @@ import termcolor
 
 
 class ProgressReport:
-    def __init__(self, total_steps, unit="steps", extra_information="", frequency_of_reports=1, steps_are_bytes=False):
-        self._frequency_of_reports = frequency_of_reports
-        self._total_steps = total_steps
-        self._unit = unit
-        self._current_step = 0
-        self._start_time = time.time()
-        self._steps_to_next_print_report = 0
-        self._last_printed_report = 0
-        self._extra_information = extra_information
-        self._steps_are_bytes = steps_are_bytes
+    def __init__(self, total_steps: int, unit: str = "steps", extra_information: str = "",
+                 frequency_of_reports: int = 1, steps_are_bytes: bool = False):
+        self._frequency_of_reports: int = frequency_of_reports
+        self._total_steps: int = total_steps
+        self._unit: str = unit
+        self._current_step: int = 0
+        self._start_time: float = time.time()
+        self._last_printed_report: float = 0
+        self._extra_information: str = extra_information
+        self._steps_are_bytes: int = steps_are_bytes
         progress_print("Progress Report - initialized - Total {}:".format(self._steps_to_human_readable(total_steps)))
 
-    def increment_step(self):
+    def increment_step(self) -> None:
         self._current_step += 1
 
-    def increment_and_print_if_needed(self):
+    def increment_and_print_if_needed(self) -> None:
         self.increment_step()
         self.print_report_if_needed()
 
-    def increment_steps(self, steps):
+    def increment_steps(self, steps: int) -> None:
         self._current_step += steps
 
-    def increment_steps_and_print_if_needed(self, steps):
+    def increment_steps_and_print_if_needed(self, steps: int) -> None:
         self.increment_steps(steps)
         self.print_report_if_needed()
 
-    def print_report_if_needed(self):
+    def print_report_if_needed(self) -> None:
         if (time.time() - self._last_printed_report) > self._frequency_of_reports:
             elapsed_time = time.time() - self._start_time
             speed = self._current_step / elapsed_time
@@ -59,14 +59,14 @@ class ProgressReport:
 
             return remaining_time
 
-    def _steps_to_human_readable(self, steps, format_output="{}"):
+    def _steps_to_human_readable(self, steps: int, format_output: str = "{}") -> str:
         if self._steps_are_bytes:
             return "{}".format(self._bytes_to_human_readable(steps))
         else:
             return (format_output+" {}").format(steps, self._unit)
 
     @staticmethod
-    def _seconds_to_human_readable(seconds):
+    def _seconds_to_human_readable(seconds: int) -> str:
         minutes = seconds / 60
 
         if minutes < 1:
@@ -83,16 +83,16 @@ class ProgressReport:
         return "{:.2f} days".format(days)
 
     @staticmethod
-    def _bytes_to_human_readable(num):
+    def _bytes_to_human_readable(num: int) -> str:
         if num is None:
             return "Unknown"
 
-        for unit in ['','KB','MB','GB','TB','PB','EB','ZB']:
+        for unit in ['','KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB']:
             if abs(num) < 1024.0:
                 return "{:.2f} {}".format(num, unit)
             num /= 1024.0
         return "%d %s" % (num, 'YB')
 
 
-def progress_print(string):
+def progress_print(string: str) -> None:
     print(termcolor.colored(string, "green", attrs=["bold"]))
