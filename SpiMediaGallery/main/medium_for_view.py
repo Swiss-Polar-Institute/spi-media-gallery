@@ -14,6 +14,9 @@ class MediumForViewManager(models.Manager):
 
 
 class MediumForView(Medium):
+    URL_SMALL_DO_NOT_EXIST = static("images/small-does-not-exist.jpg")
+    URL_THUMBNAIL_DO_NOT_EXIST = static("images/thumbnail-does-not-exist.jpg")
+
     objects = MediumForViewManager()
     def _thumbnail_size(self):
         if self.medium_type == Medium.PHOTO:
@@ -28,7 +31,7 @@ class MediumForView(Medium):
         medium_resized = self._medium_resized(size_label)
 
         if medium_resized is None:
-            return static("images/thumbnail-does-not-exist.jpg")
+            return self.URL_THUMBNAIL_DO_NOT_EXIST
 
         resized_extension = utils.file_extension(medium_resized.file.object_storage_key)
 
@@ -48,7 +51,7 @@ class MediumForView(Medium):
         resized = self._medium_resized(size_label)
 
         if resized is None:
-            return static("images/small-does-not-exist.jpg")
+            return self.URL_SMALL_DO_NOT_EXIST
 
         return link_for_medium(resized, "inline",
                                filename_for_resized_medium(self.pk, size_label, utils.file_extension(resized.file.object_storage_key)))
@@ -91,7 +94,14 @@ class MediumForView(Medium):
 
     def thumbnail_content_type(self):
         size_label = self._thumbnail_size()
-        return utils.content_type_for_filename(self._medium_resized(size_label).file.object_storage_key)
+
+        thumbnail = self._medium_resized(size_label)
+
+        if thumbnail is None:
+            # For some files the thumbnail could not be done or is not already done
+            return utils.content_type_for_filename(self.URL_THUMBNAIL_DO_NOT_EXIST)
+
+        return utils.content_type_for_filename(thumbnail.file.object_storage_key)
 
     def border_color(self):
         if self.medium_type == Medium.VIDEO:

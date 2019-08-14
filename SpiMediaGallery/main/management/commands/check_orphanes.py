@@ -5,8 +5,6 @@ from django.conf import settings
 
 from main import spi_s3_utils
 
-import time
-from main import utils
 
 class Command(BaseCommand):
     help = 'Finds orphaned files'
