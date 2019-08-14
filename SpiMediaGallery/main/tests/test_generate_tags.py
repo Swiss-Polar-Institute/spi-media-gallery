@@ -18,15 +18,15 @@ class GenerateTagsTest(TestCase):
         pass
 
     def test_generate_tags(self):
-        tags_qs = Medium.objects.get(id=1).tags
+        tags_qs = Medium.objects.get(id=1).tags.all()
 
-        self.assertTrue(tags_qs.get(tag="landscape", importer=Tag.XMP))
-        self.assertTrue(tags_qs.get(tag="people/john_doe", importer=Tag.XMP))
+        self.assertTrue(tags_qs.get(name__name="landscape", importer=Tag.XMP))
+        self.assertTrue(tags_qs.get(name__name="people/john_doe", importer=Tag.XMP))
 
         generator = GenerateTags()
         generator.generate_tags()
 
         tags_qs = Medium.objects.get(id=1).tags
-        self.assertTrue(tags_qs.get(tag="landscape", importer=Tag.XMP))
-        self.assertTrue(tags_qs.get(tag="people/john_doe", importer=Tag.XMP))
-        self.assertTrue(tags_qs.get(tag="people", importer=Tag.GENERATED))
+        self.assertTrue(tags_qs.get(name__name="landscape", importer=Tag.XMP))
+        self.assertTrue(tags_qs.get(name__name="people/john_doe", importer=Tag.XMP))
+        self.assertTrue(tags_qs.get(name__name="people", importer=Tag.GENERATED))

@@ -8,20 +8,32 @@
     fields:
         holder: EPFL
         public_text: Copyright EPFL
+-   model: main.tagname
+    pk: 1
+    fields:
+        name: landscape
+-   model: main.tagname
+    pk: 2
+    fields:
+        name: helicopter
+-   model: main.tagname
+    pk: 3
+    fields:
+        name: "people/john_doe"
 -   model: main.tag
     pk: 1
     fields:
-        tag: landscape
+        name: 1
         importer: X
 -   model: main.tag
     pk: 2
     fields:
-        tag: helicopter
+        name: 2
         importer: X
 -   model: main.tag
     pk: 3
     fields:
-        tag: people/john_doe
+        name: 3
         importer: X
 -   model: main.file
     pk: 1
