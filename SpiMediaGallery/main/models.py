@@ -34,6 +34,8 @@ class Copyright(models.Model):
 
 
 class TagName(models.Model):
+    objects = models.Manager()  # Helps Pycharm CE auto-completion
+
     name = models.CharField(max_length=255)
 
     def __str__(self):
@@ -67,6 +69,8 @@ class Tag(models.Model):
 
 
 class File(models.Model):
+    objects = models.Manager()  # Helps Pycharm CE auto-completion
+
     ORIGINAL = "O"
     PROCESSED = "P"
 
@@ -99,6 +103,8 @@ def delete_file(sender, instance, *args, **kwargs):
 
 
 class Medium(models.Model):
+    objects = models.Manager()  # Helps Pycharm CE auto-completion
+
     PHOTO = 'P'
     VIDEO = 'V'
 
@@ -133,12 +139,6 @@ class Medium(models.Model):
 
         return self.location.y
 
-    def latitude(self):
-        if self.location is None:
-            return None
-
-        return self.location.y
-
     def longitude(self):
         if self.location is None:
             return None
@@ -156,6 +156,8 @@ class Medium(models.Model):
 
 
 class MediumResized(models.Model):
+    objects = models.Manager()  # Helps Pycharm CE auto-completion
+
     THUMBNAIL = "T"
     SMALL = "S"
     MEDIUM = "M"

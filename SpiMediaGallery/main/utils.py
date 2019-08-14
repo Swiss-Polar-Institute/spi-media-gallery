@@ -5,8 +5,17 @@ import subprocess
 import tempfile
 import json
 import datetime
+import urllib
+
+from django.urls import reverse
 from django.utils import timezone
 from django.conf import settings
+
+from typing import Dict, Union, List, Optional
+
+from main.spi_s3_utils import SpiS3Utils
+from main.models import File, Medium
+
 
 def image_size_label_abbreviation_to_presentation(abbreviation):
     from main.models import MediumResized
@@ -35,7 +44,7 @@ def hash_of_file_path(file_path):
     return hash_md5.hexdigest()
 
 
-def resize_photo(input_file_path, width):
+def resize_photo(input_file_path: int, width: int) -> str:
     output_file_path = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
     output_file_path.close()
 
@@ -87,7 +96,7 @@ def resize_video(input_file_path, width):
     return output_file_path_name
 
 
-def bytes_to_human_readable(num):
+def bytes_to_human_readable(num: int) -> str:
     if num is None:
         return "Unknown"
 
@@ -98,14 +107,14 @@ def bytes_to_human_readable(num):
     return "%d %s" % (num, 'YB')
 
 
-def seconds_to_minutes_seconds(seconds):
+def seconds_to_minutes_seconds(seconds: float) -> str:
     if seconds is None:
         return "Unknown"
 
     return " {} min {} sec".format(seconds // 60, seconds % 60)
 
 
-def seconds_to_human_readable(seconds):
+def seconds_to_human_readable(seconds: float) -> str:
     if seconds is None:
         return "Unknown"
 
@@ -125,8 +134,8 @@ def seconds_to_human_readable(seconds):
     return "{:.2f} days".format(days)
 
 
-def content_type_for_filename(filename):
-    extension = os.path.splitext(filename)[1][1:].lower()
+def content_type_for_filename(filename: str) -> str:
+    extension: str = os.path.splitext(filename)[1][1:].lower()
 
     assert extension in (settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS)
 
@@ -150,11 +159,11 @@ def content_type_for_filename(filename):
     return extension_to_content_type[extension]
 
 
-def filename_for_resized_medium(medium_id, photo_resize_label, extension):
+def filename_for_resized_medium(medium_id: int, photo_resize_label: str, extension: str) -> str:
     return "SPI-{}-{}.{}".format(medium_id, photo_resize_label, extension)
 
 
-def filename_for_original_medium(medium):
+def filename_for_medium(medium: Medium) -> str:
     _, extension = os.path.splitext(medium.file.object_storage_key)
 
     extension = extension[1:]
@@ -162,14 +171,14 @@ def filename_for_original_medium(medium):
     return "SPI-{}.{}".format(medium.pk, extension)
 
 
-def human_readable_resolution_for_medium(medium):
+def human_readable_resolution_for_medium(medium: Medium) -> str:
     if medium.width is None or medium.height is None:
         return "Unknown resolution"
     else:
         return "{}x{}".format(medium.width, medium.height)
 
 
-def file_extension(file_name):
+def file_extension(file_name: str) -> str:
     _, extension = os.path.splitext(file_name)
 
     if len(extension) > 0:
@@ -178,7 +187,7 @@ def file_extension(file_name):
     return extension
 
 
-def convert_raw_to_ppm(file_name):
+def convert_raw_to_ppm(file_name: str) -> str:
     # dcraw might generate a non .ppm but a .pgm?
     output_file = tempfile.NamedTemporaryFile(suffix=".ppm", delete=False)
 
@@ -189,8 +198,8 @@ def convert_raw_to_ppm(file_name):
     return output_file.name
 
 
-def get_medium_information(image_filepath):
-    command = ["exiftool", "-json", image_filepath]
+def get_medium_information(image_filepath: str) -> Dict[str, str]:
+    command: List[str] = ["exiftool", "-json", image_filepath]
 
     run = subprocess.run(command, stdout=subprocess.PIPE)
     output = run.stdout
@@ -201,7 +210,7 @@ def get_medium_information(image_filepath):
     image_information['width'] = exif['ImageWidth']
     image_information['height'] = exif['ImageHeight']
 
-    date_field = None
+    date_field: Optional[datetime] = None
 
     if 'DateTimeOriginal' in exif:
         date_field = 'DateTimeOriginal'
@@ -235,3 +244,19 @@ def get_medium_information(image_filepath):
         image_information['datetime_taken'] = datetime_processed
 
     return image_information
+
+
+def link_for_medium(file: File, content_disposition: str, filename: str) -> str:
+    content_type = content_type_for_filename(filename)
+
+    if settings.PROXY_TO_OBJECT_STORAGE:
+        d = {"content_type": content_type,
+             "content_disposition_type": content_disposition,
+             "filename": filename,
+        }
+
+        return "{}?{}".format(reverse("get_file", args=[file.bucket, file.md5]), urllib.parse.urlencode(d))
+    else:
+        bucket = SpiS3Utils(file.bucket_name())
+
+        return bucket.get_presigned_link(file.object_storage_key, content_type, content_disposition, filename)

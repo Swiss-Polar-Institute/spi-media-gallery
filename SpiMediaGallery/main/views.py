@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views.generic import TemplateView, View
-from main.models import Medium, MediumResized, Tag, TagName, File
+from main.models import Medium, MediumResized, TagName, File
 from django.db.models import Sum
 from main.forms import MediumIdForm
 from django.core.exceptions import ObjectDoesNotExist
@@ -10,7 +10,7 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.conf import settings
 from main.medium_for_view import MediumForView
-from django.contrib.gis.geos import Point, Polygon
+from django.contrib.gis.geos import Point, Polygon, GEOSGeometry
 from django.urls import reverse
 
 from django.core.serializers import serialize
@@ -19,14 +19,15 @@ from django.core.paginator import Paginator
 
 import json
 import datetime
-import os
 import re
 import requests
-import urllib
 import csv
 
-from main.spi_s3_utils import SpiS3Utils, link_for_medium
+from main.spi_s3_utils import SpiS3Utils
 import main.utils as utils
+
+from typing import Dict, Tuple, Union, List
+
 
 class Homepage(TemplateView):
     template_name = "homepage.tmpl"
@@ -72,17 +73,19 @@ class Homepage(TemplateView):
 
         return context
 
-    def create_dictionary_tag_name_to_id(self):
+    def create_dictionary_tag_name_to_id(self) -> Dict[str, str]:
         tag_name_to_id = {}
 
         for tag_name in TagName.objects.all():
-            tag_name_to_id[tag_name.name] = tag_name.id
+            tag_name:TagName
+            tag_name_to_id[tag_name.name] = tag_name.pk
 
         return tag_name_to_id
 
-def search_for_nearby(latitude, longitude, km):
-    center_point = Point(longitude, latitude, srid=4326)
-    buffered = center_point.buffer(meters_to_degrees(km * 1000))
+
+def search_for_nearby(latitude: float, longitude: float, km: float) -> Tuple[Dict[str, str], object]:
+    center_point: Point = Point(longitude, latitude, srid=4326)
+    buffered: GEOSGeometry = center_point.buffer(meters_to_degrees(km * 1000))
 
     qs = MediumForView.objects.filter(location__within=buffered)
 
@@ -99,8 +102,8 @@ def search_for_nearby(latitude, longitude, km):
     return information, qs
 
 
-def search_in_box(north, south, east, west):
-    geom = Polygon.from_bbox((east, south, west, north))
+def search_in_box(north: float, south: float, east: float, west: float) -> Tuple[Dict[str, str], object]:
+    geom: Union[GEOSGeometry, Polygon] = Polygon.from_bbox((east, south, west, north))
 
     qs = MediumForView.objects.filter(location__contained=geom)
 
@@ -120,7 +123,7 @@ def search_in_box(north, south, east, west):
     return information, qs
 
 
-def search_for_tag_ids(tag_ids):
+def search_for_tag_ids(tag_ids: [List[int]]) -> Union[Dict[str, str], object]:
     information = {}
 
     query_media_for_tags = MediumForView.objects.order_by("datetime_taken")
@@ -216,7 +219,9 @@ class DisplayRandom(TemplateView):
         elif type_of_medium == "medium":
             qs = qs.all()
             error_no_medium = {"error_message": "No media available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
-            pass
+        else:
+            error_no_medium = {"error_message": "Invalid type of medium"}
+            qs = []
 
         if qs.count() == 0:
             return render(request, "error.tmpl", error_no_medium)
@@ -226,7 +231,7 @@ class DisplayRandom(TemplateView):
         return redirect(reverse("medium", kwargs={"media_id": qs[0].pk}))
 
 
-def meters_to_degrees(meters):
+def meters_to_degrees(meters:float) -> float:
     return meters / 40000000.0 * 360.0
 
 

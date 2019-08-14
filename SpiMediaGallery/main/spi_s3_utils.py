@@ -1,13 +1,11 @@
 import boto3
 from django.conf import settings
 import os
-from main.utils import content_type_for_filename
-import urllib
-from django.urls import reverse
+from typing import Set, Optional, List
 
 
 class SpiS3Utils(object):
-    def __init__(self, bucket_name):
+    def __init__(self, bucket_name: str) -> None:
         if bucket_name not in settings.BUCKETS_CONFIGURATION:
             raise ValueError("Bucket name {} not found. Possible bucket names: {}".format(bucket_name, ", ".join(settings.BUCKETS_CONFIGURATION.keys())))
 
@@ -25,7 +23,7 @@ class SpiS3Utils(object):
     def objects_in_bucket(self, prefix=""):
         return self.bucket().objects.filter(Prefix=prefix).all()
 
-    def get_set_of_keys(self, prefix=""):
+    def get_set_of_keys(self, prefix: str = "") -> Set[str]:
         keys = set()
 
         for o in self.objects_in_bucket(prefix):
@@ -42,7 +40,7 @@ class SpiS3Utils(object):
     def download_file(self, key, file_path):
         self.bucket().download_file(key, file_path)
 
-    def get_presigned_link(self, key, response_content_type, response_content_disposition, filename):
+    def get_presigned_link(self, key: str, response_content_type: str, response_content_disposition: str, filename: str) -> str:
         params = {'Bucket': self._bucket_configuration["name"],
                             'Key': key,
                             'ResponseContentType': response_content_type}
@@ -53,7 +51,7 @@ class SpiS3Utils(object):
         return self.resource().meta.client.generate_presigned_url('get_object',
                                                              Params=params)
 
-    def get_presigned_download_link(self, key, filename=None):
+    def get_presigned_download_link(self, key: str, filename: Optional[str] = None) -> str:
         if filename is None:
             filename = os.path.basename(key)
 
@@ -63,8 +61,8 @@ class SpiS3Utils(object):
                                                                      'ResponseContentDisposition': 'attachment; filename={}'.format(filename),
                                                                      'ResponseContentType' : 'application/image'})
 
-    def list_files(self, prefix, only_from_extensions=None):
-        files_set = set()
+    def list_files(self, prefix: str, only_from_extensions: Optional[List[str]] = None) -> Set[str]:
+        files_set: Set[str] = set()
         files = self.bucket().objects.filter(Prefix=prefix).all()
 
         for file in files:
@@ -83,22 +81,6 @@ class SpiS3Utils(object):
 
         return files_set
 
-    def delete(self, object_storage_key):
+    def delete(self, object_storage_key: str) -> None:
         file = self.resource().Object(self._bucket_configuration["name"], object_storage_key)
         file.delete()
-
-
-def link_for_medium(medium, content_disposition, filename):
-    content_type = content_type_for_filename(filename)
-
-    if settings.PROXY_TO_OBJECT_STORAGE:
-        d = {"content_type": content_type,
-             "content_disposition_type": content_disposition,
-             "filename": filename,
-        }
-
-        return "{}?{}".format(reverse("get_file", args=[medium.file.bucket, medium.file.md5]), urllib.parse.urlencode(d))
-    else:
-        bucket = SpiS3Utils(medium.file.bucket_name())
-
-        return bucket.get_presigned_link(medium.file.object_storage_key, content_type, content_disposition, filename)

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.core.management.base import BaseCommand, CommandError
 
 from main.models import Medium, MediumResized, File
@@ -18,6 +20,8 @@ from main.progress_report import ProgressReport
 
 import time
 from main import utils
+
+from typing import Optional, Dict, Any, List
 
 
 class Command(BaseCommand):
@@ -43,8 +47,8 @@ class Command(BaseCommand):
         resizer.resize_media()
 
 
-def get_information_from_video(video_file):
-    information = {}
+def get_information_from_video(video_file: str) -> Dict[str, Any]:
+    information: Dict[str, Any] = {}
 
     video_information = MediaInfo.parse(video_file)
 
@@ -65,7 +69,9 @@ def get_information_from_video(video_file):
 
 
 class Resizer(object):
-    def __init__(self, bucket_name_media, bucket_name_resizes, sizes_type, medium_type):
+    _medium_type: str
+
+    def __init__(self, bucket_name_media: str, bucket_name_resizes: str, sizes_type: List[str], medium_type: str) -> None:
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name_media)
         self._resizes_bucket = spi_s3_utils.SpiS3Utils(bucket_name_resizes)
         self._sizes_type = sizes_type
@@ -78,7 +84,7 @@ class Resizer(object):
             assert False
 
     @staticmethod
-    def _update_information_from_photo_if_needed(photo, photo_file):
+    def _update_information_from_photo_if_needed(photo: Medium, photo_file: str):
         # Returns False if information should have been updated but it failed
         if photo.width is None or photo.height is None or photo.datetime_taken is None:
             photo_information = utils.get_medium_information(photo_file)
@@ -92,7 +98,7 @@ class Resizer(object):
             photo.save()
 
     @staticmethod
-    def _update_information_from_video(video, video_file):
+    def _update_information_from_video(video: Medium, video_file: str):
         if video.width is None or video.height is None or video.duration is None or video.datetime_taken is None:
             information = get_information_from_video(video_file)
 
@@ -166,8 +172,8 @@ class Resizer(object):
                 progress_report.increment_steps_and_print_if_needed(medium.file.size)
 
     def _resize_media(self, medium, medium_file_name, sizes):
-        delete_file = None
-        file_converted = False
+        delete_file: Optional[bool] = None
+        file_converted: bool = False
 
         for size_label in sizes:
             existing = MediumResized.objects.filter(medium=medium).filter(size_label=size_label)
