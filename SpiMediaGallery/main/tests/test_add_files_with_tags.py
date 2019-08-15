@@ -25,18 +25,24 @@ class GenerateTagsTest(TestCase):
     def tearDown(self):
         pass
 
-    def test_add_files_with_tags(self):
+    @staticmethod
+    def _upload_fixture_files() -> None:
         spi_s3_utils = SpiS3Utils("original")
         spi_s3_utils_resource = spi_s3_utils.resource()
         spi_s3_utils_resource.create_bucket(Bucket="photos")
 
-        bucket_files_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../fixtures/buckets/original")
+        fixtures_buckets_original_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../fixtures/buckets/original")
 
-        files:[List[str]] = glob.glob(os.path.join(bucket_files_directory, "*"))
+        for root, dirs, files in os.walk(fixtures_buckets_original_directory):
+            for file in files:
+                full_path_file = os.path.join(root, file)
+                relative_directory_for_object_storage = root[len(fixtures_buckets_original_directory)+1:]
+                key = os.path.join(relative_directory_for_object_storage, file)
 
-        for file in files:
-            spi_s3_utils.upload_file(file, os.path.basename(file))
+                spi_s3_utils.upload_file(full_path_file, key)
 
+    def test_add_files_with_tags(self):
+        self._upload_fixture_files()
         self.assertEqual(Medium.objects.all().count(), 1)
 
         tag_import = TagImporter("original", "")
