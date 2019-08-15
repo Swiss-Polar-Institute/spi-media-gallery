@@ -5,19 +5,30 @@ from main.spi_s3_utils import SpiS3Utils
 
 from django.conf import settings
 import os
-import glob
-from typing import List
 from main.models import *
 
-@mock_s3
+# All the Boto S3 calls are mocked
+
+
 class GenerateTagsTest(TestCase):
     fixtures = ['test_basic_data.yaml']
+
+    def __init__(self, *args, **kwargs) -> None:
+        self._mock = mock_s3()
+        self._mock.start()
+
+        super(GenerateTagsTest, self).__init__(*args, **kwargs)
+
+        # mock_s3 only works with the default endpoint
+        settings.BUCKETS_CONFIGURATION["original"]["endpoint"] = None
+
+        self._spi_s3_utils = SpiS3Utils("original")
+        spi_s3_utils_resource = self._spi_s3_utils.resource()
+        spi_s3_utils_resource.create_bucket(Bucket="photos")
 
     @classmethod
     def setUpClass(cls):
         super(GenerateTagsTest, cls).setUpClass()
-        # mock_s3 only works with the default endpoint
-        settings.BUCKETS_CONFIGURATION["original"]["endpoint"] = None
 
     def setUp(self):
         pass
@@ -25,12 +36,7 @@ class GenerateTagsTest(TestCase):
     def tearDown(self):
         pass
 
-    @staticmethod
-    def _upload_fixture_files() -> None:
-        spi_s3_utils = SpiS3Utils("original")
-        spi_s3_utils_resource = spi_s3_utils.resource()
-        spi_s3_utils_resource.create_bucket(Bucket="photos")
-
+    def _upload_fixture_files(self) -> None:
         fixtures_buckets_original_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../fixtures/buckets/original")
 
         for root, dirs, files in os.walk(fixtures_buckets_original_directory):
@@ -39,7 +45,7 @@ class GenerateTagsTest(TestCase):
                 relative_directory_for_object_storage = root[len(fixtures_buckets_original_directory)+1:]
                 key = os.path.join(relative_directory_for_object_storage, file)
 
-                spi_s3_utils.upload_file(full_path_file, key)
+                self._spi_s3_utils.upload_file(full_path_file, key)
 
     def test_add_files_with_tags(self):
         self._upload_fixture_files()
@@ -63,3 +69,5 @@ class GenerateTagsTest(TestCase):
         for tag_to_exist in tags_to_exist:
             self.assertTrue(tag_to_exist in tags_names)
 
+    def test_modify_tags_for_file(self):
+        pass
