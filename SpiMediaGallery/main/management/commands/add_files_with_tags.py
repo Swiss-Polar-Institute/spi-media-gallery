@@ -34,7 +34,7 @@ class Command(BaseCommand):
 
 
 class TagImporter(object):
-    def __init__(self, bucket_name, prefix):
+    def __init__(self, bucket_name: str, prefix: str):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name)
         self._prefix = prefix
         self.all_keys: Optional[Set[str]] = None
