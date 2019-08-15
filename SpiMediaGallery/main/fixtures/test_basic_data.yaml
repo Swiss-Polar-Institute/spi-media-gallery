@@ -28,12 +28,12 @@
 -   model: main.tag
     pk: 2
     fields:
-        name: 2
+        name: 3
         importer: X
 -   model: main.tag
     pk: 3
     fields:
-        name: 3
+        name: 2
         importer: X
 -   model: main.file
     pk: 1
@@ -59,4 +59,4 @@
         duration: null
         tags:
         - 1
-        - 3 
+        - 2
