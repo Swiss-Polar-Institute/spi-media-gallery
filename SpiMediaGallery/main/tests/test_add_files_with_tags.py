@@ -55,6 +55,7 @@ class GenerateTagsTest(TestCase):
 
         self.assertEqual(tags.count(), 18)
 
+        # There are more only testing a few of them
         tags_to_exist = ["people/john_doe", "people"]
 
         tags_names = [tag.name.name for tag in tags]
