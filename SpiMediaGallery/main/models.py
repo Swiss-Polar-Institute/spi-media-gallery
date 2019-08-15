@@ -43,6 +43,8 @@ class TagName(models.Model):
 
 
 class Tag(models.Model):
+    objects = models.Manager()  # Helps Pycharm CE auto-completion
+
     XMP = "X"
     GENERATED = "G"
     MANUAL = "M"

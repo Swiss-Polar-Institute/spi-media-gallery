@@ -9,11 +9,13 @@ from django.conf import settings
 import os
 import tempfile
 import datetime
-import time
 
 from main import spi_s3_utils
 from main import utils
 from main.progress_report import ProgressReport
+from .generate_virtual_tags import generate_virtual_tags
+from typing import Optional, Set
+from django.db import transaction
 
 
 class Command(BaseCommand):
@@ -35,97 +37,100 @@ class TagImporter(object):
     def __init__(self, bucket_name, prefix):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name)
         self._prefix = prefix
+        self.all_keys: Optional[Set[str]] = None
+        self.valid_extensions = settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS
 
     def import_tags(self):
-        all_keys = self._media_bucket.get_set_of_keys(self._prefix)
+        self.all_keys = self._media_bucket.get_set_of_keys(self._prefix)
 
-        non_xmp_without_xmp_associated = 0
+        progress_report = ProgressReport(len(self.all_keys), extra_information="Adding files with tags")
 
-        progress_report = ProgressReport(len(all_keys), extra_information="Adding files with tags")
-
-        print("Total number of files to process:", len(all_keys))
-
-        photo_extensions = settings.PHOTO_EXTENSIONS
-        video_extensions = settings.VIDEO_EXTENSIONS
-
-        valid_extensions = photo_extensions | video_extensions
+        print("Total number of files to process:", len(self.all_keys))
 
         for s3_object in self._media_bucket.objects_in_bucket(self._prefix):
             progress_report.increment_and_print_if_needed()
 
-            file_extension = utils.file_extension(s3_object.key).lower()
+            self._process_s3_object(s3_object)
 
-            if file_extension not in valid_extensions:
-                continue
+    @transaction.atomic
+    def _process_s3_object(self, s3_object):
+        file_extension = utils.file_extension(s3_object.key).lower()
 
-            size_of_medium = s3_object.size
+        if file_extension not in self.valid_extensions:
+            return
 
-            xmp_file = s3_object.key + ".xmp"
+        size_of_medium = s3_object.size
 
-            tags = []
-            temporary_tags_file = None
+        xmp_file = s3_object.key + ".xmp"
 
-            if xmp_file in all_keys:
-                # xmp_file exists in the list of files, it will download + extract tags
+        tags = []
 
-                # Copies XMP into a file (libxmp seems to only be able to read
-                # from physical files)
-                xmp_object = self._media_bucket.get_object(xmp_file)
+        temporary_tags_file = None
 
-                temporary_tags_file = tempfile.NamedTemporaryFile(suffix=".xmp", delete=False)
-                temporary_tags_file.write(xmp_object.get()["Body"].read())
-                temporary_tags_file.close()
+        if xmp_file in self.all_keys:
+            # xmp_file exists in the list of files, it will download + extract tags
 
-                # Extracts tags
-                tags = self._extract_tags(temporary_tags_file.name)
+            # Copies XMP into a file (libxmp seems to only be able to read
+            # from physical files)
+            xmp_object = self._media_bucket.get_object(xmp_file)
 
+            temporary_tags_file = tempfile.NamedTemporaryFile(suffix=".xmp", delete=False)
+            temporary_tags_file.write(xmp_object.get()["Body"].read())
+            temporary_tags_file.close()
+
+            # Extracts tags
+            tags = self._extract_tags(temporary_tags_file.name)
+
+        medium: Medium
+
+        try:
+            medium = Medium.objects.get(file__object_storage_key=s3_object.key)
+        except ObjectDoesNotExist:
+            medium = Medium()
+
+            file = File()
+
+            file.object_storage_key = s3_object.key
+            file.md5 = None
+            file.size = size_of_medium
+            file.bucket = File.ORIGINAL
+            file.save()
+
+            medium.file = file
+
+            if file_extension in settings.PHOTO_EXTENSIONS:
+                medium.medium_type = Medium.PHOTO
+            elif file_extension in settings.VIDEO_EXTENSIONS:
+                medium.medium_type = Medium.VIDEO
             else:
-                # Non XMP file without an XMP associated
-                non_xmp_without_xmp_associated += 1
+                assert False
+
+            medium.datetime_imported = datetime.datetime.now(tz=timezone.utc)
+            medium.save()
+
+        # Delete existing tags of the Medium to import it again
+        medium.tags.clear()
+
+        for tag in tags:
+            try:
+                tag_name = TagName.objects.get(name=tag)
+            except ObjectDoesNotExist:
+                tag_name = TagName()
+                tag_name.name = tag
+                tag_name.save()
 
             try:
-                medium = Medium.objects.get(file__object_storage_key=s3_object.key)
+                tag = Tag.objects.get(name=tag_name, importer=Tag.XMP)
             except ObjectDoesNotExist:
-                medium = Medium()
+                tag = Tag(name=tag_name, importer=Tag.XMP)
+                tag.save()
 
-                file = File()
+            medium.tags.add(tag)
 
-                file.object_storage_key = s3_object.key
-                file.md5 = None
-                file.size = size_of_medium
-                file.bucket = File.ORIGINAL
-                file.save()
+        generate_virtual_tags(medium)
 
-                medium.file = file
-
-                if file_extension in photo_extensions:
-                    medium.medium_type = Medium.PHOTO
-                elif file_extension in video_extensions:
-                    medium.medium_type = Medium.VIDEO
-                else:
-                    assert False
-
-                medium.datetime_imported = datetime.datetime.now(tz=timezone.utc)
-                medium.save()
-
-            for tag in tags:
-                try:
-                    tag_name = TagName.objects.get(name=tag)
-                except ObjectDoesNotExist:
-                    tag_name = TagName()
-                    tag_name.name = tag
-                    tag_name.save()
-
-                try:
-                    tag = Tag.objects.get(name=tag_name, importer=Tag.XMP)
-                except ObjectDoesNotExist:
-                    tag = Tag(name=tag_name, importer=Tag.XMP)
-                    tag.save()
-
-                medium.tags.add(tag)
-
-            if temporary_tags_file is not None:
-                os.remove(temporary_tags_file.name)
+        if temporary_tags_file is not None:
+            os.remove(temporary_tags_file.name)
 
     @staticmethod
     def _extract_tags(file_path):
