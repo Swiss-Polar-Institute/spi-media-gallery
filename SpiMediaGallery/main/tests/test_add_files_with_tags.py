@@ -69,5 +69,20 @@ class GenerateTagsTest(TestCase):
         for tag_to_exist in tags_to_exist:
             self.assertTrue(tag_to_exist in tags_names)
 
-    def test_modify_tags_for_file(self):
-        pass
+
+        # Replaces the XMP file to verify that new tags and removed tags are not there anymore
+        full_path_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../fixtures", "IMG_4329-2.jpg.xmp")
+        self._spi_s3_utils.upload_file(full_path_file, "IMG_4329.jpg.xmp")
+
+        tag_import = TagImporter("original", "")
+        tag_import.import_tags()
+        m = Medium.objects.get(file__object_storage_key="IMG_4329.jpg")
+        new_tags = m.tags.all()
+
+        # There is one less tag in the new XMP and this tag generated many tags earlier
+        self.assertEqual(new_tags.count(), 11)
+
+        new_tags_names = [tag.name.name for tag in new_tags]
+
+        self.assertTrue("photographer/henry_lamar" in new_tags_names)
+        self.assertTrue("photographer/emma_wright" not in new_tags_names)
