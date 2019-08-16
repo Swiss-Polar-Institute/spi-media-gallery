@@ -5,13 +5,11 @@ from django.core.management.base import BaseCommand, CommandError
 from main.models import Medium, MediumResized, File
 from django.conf import settings
 import sys
-import subprocess
 from django.utils import timezone
 
 import datetime
 import tempfile
 import os
-import json
 from pymediainfo import MediaInfo
 from django.db.models import Sum
 
@@ -172,7 +170,7 @@ class Resizer(object):
                 progress_report.increment_steps_and_print_if_needed(medium.file.size)
 
     def _resize_media(self, medium, medium_file_name, sizes):
-        delete_file: Optional[bool] = None
+        delete_file: Optional[str] = None
         file_converted: bool = False
 
         for size_label in sizes:

@@ -76,13 +76,16 @@ class TagNameAdmin(admin.ModelAdmin):
 
 
 class MediumResizedAdmin(admin.ModelAdmin):
-    list_display = ('file_object_storage_key', 'file_md5', 'file_size', 'size_label', 'height', 'width', 'medium',
+    list_display = ('original_filename', 'file_object_storage_key', 'file_md5', 'file_size', 'size_label', 'height', 'width', 'medium',
                     'datetime_resized', )
-    ordering = ('file__object_storage_key', 'file__size', 'size_label', 'height', 'width', 'medium',
+    ordering = ('medium__file__object_storage_key', 'file__object_storage_key', 'file__size', 'size_label', 'height', 'width', 'medium',
                 'datetime_resized', )
-    search_fields = ('file__object_storage_key', 'file__md5', )
+    search_fields = ('medium__file__object_storage_key', 'file__object_storage_key', 'file__md5', )
     raw_id_fields = ('file', 'medium', )
     list_select_related = ('file', 'medium', )
+
+    def original_filename(self, obj):
+        return obj.medium.file.object_storage_key
 
     def file_object_storage_key(self, obj):
         if obj.file is None:
