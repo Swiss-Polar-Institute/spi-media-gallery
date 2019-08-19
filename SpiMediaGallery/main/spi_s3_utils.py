@@ -37,7 +37,12 @@ class SpiS3Utils(object):
     def upload_file(self, file_path, key):
         self.bucket().upload_file(file_path, key)
 
-    def download_file(self, key, file_path):
+    def download_file(self, key, file_path, create_directory=False):
+        if create_directory:
+            directory = os.path.dirname(file_path)
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
         self.bucket().download_file(key, file_path)
 
     def get_presigned_link(self, key: str, response_content_type: str, response_content_disposition: str, filename: str) -> str:

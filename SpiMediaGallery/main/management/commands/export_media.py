@@ -5,6 +5,7 @@ from django.conf import settings
 
 from main.spi_s3_utils import SpiS3Utils
 from main.medium_for_view import MediumForView
+from main.progress_report import ProgressReport
 import os
 import textwrap
 
@@ -37,11 +38,13 @@ class ExportMedia(object):
 
     def run(self):
         media = MediumForView.objects.filter(file__object_storage_key__startswith=self._prefix)
-        print(media.count())
+        progress_report = ProgressReport(media.count())
 
         os.makedirs(self._output_directory)
 
         for medium in media:
+            progress_report.increment_and_print_if_needed()
+
             medium_resized = medium._medium_resized(self._size)
 
             if medium_resized is None or medium_resized.file is None:
@@ -57,7 +60,7 @@ class ExportMedia(object):
             object_storage_key_relative_directory = medium.file.object_storage_key.lstrip("/")
             output_file = os.path.join(self._output_directory, object_storage_key_relative_directory)
 
-            self._resizes_bucket.download_file(medium_resized.file.object_storage_key, output_file)
+            self._resizes_bucket.download_file(medium_resized.file.object_storage_key, output_file, create_directory=True)
             self._generate_xmp(output_file + ".xmp", tags_list)
 
     @staticmethod
