@@ -82,7 +82,7 @@ class ExportMedia(object):
                     <x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="XMP Core 4.4.0-Exiv2">
                       <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
                         <rdf:Description rdf:about=""
-                            xmlns:digiKam="http://www.digikam.org/ns/1.0/"
+                            xmlns:digiKam="http://www.digikam.org/ns/1.0/">
                           <digiKam:TagsList>
                             <rdf:Seq>
                     {}
