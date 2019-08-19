@@ -1,7 +1,6 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from main.models import Medium, Photographer
-from django.conf import settings
 
 from main.progress_report import ProgressReport
 

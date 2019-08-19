@@ -37,8 +37,7 @@ class Command(BaseCommand):
 
         for size in sizes_type:
             if size not in "TSMLO":
-                print("Invalid size, needs to be T (Thumbnail), S (Small), M (Medium), L (Large) or O (Original)")
-                sys.exit(1)
+                raise CommandError("Invalid size, needs to be T (Thumbnail), S (Small), M (Medium), L (Large) or O (Original)")
 
         resizer = Resizer(bucket_name_media, bucket_name_resized, sizes_type, media_type)
 

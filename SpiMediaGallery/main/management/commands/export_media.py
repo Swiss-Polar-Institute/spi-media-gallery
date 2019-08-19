@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Medium, MediumResized, Tag
-from django.conf import settings
+from main.models import Tag
 
 from main.spi_s3_utils import SpiS3Utils
 from main.medium_for_view import MediumForView
@@ -37,10 +36,16 @@ class ExportMedia(object):
         self._resizes_bucket = SpiS3Utils("processed")
 
     def run(self):
+        if os.path.exists(self._output_directory):
+            raise CommandError("output_directory ({}) should not exist".format(self._output_directory))
+
+        try:
+            os.makedirs(self._output_directory)
+        except (PermissionError, FileExistsError) as e:
+            raise CommandError("Can't create {}".format(self._output_directory))
+
         media = MediumForView.objects.filter(file__object_storage_key__startswith=self._prefix)
         progress_report = ProgressReport(media.count())
-
-        os.makedirs(self._output_directory)
 
         for medium in media:
             progress_report.increment_and_print_if_needed()
@@ -62,6 +67,8 @@ class ExportMedia(object):
 
             self._resizes_bucket.download_file(medium_resized.file.object_storage_key, output_file, create_directory=True)
             self._generate_xmp(output_file + ".xmp", tags_list)
+
+        print("Output: {}".format(self._output_directory))
 
     @staticmethod
     def _generate_xmp(output_file, tags):

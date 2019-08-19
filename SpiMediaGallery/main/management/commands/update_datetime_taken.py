@@ -1,20 +1,11 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Medium, MediumResized, File
-from django.conf import settings
-import sys
-import subprocess
-from django.utils import timezone
+from main.models import Medium
 
-import datetime
 import tempfile
 import os
-import json
-from pymediainfo import MediaInfo
-from django.db.models import Sum
 
 from main import spi_s3_utils
-from main import utils
 from main.progress_report import ProgressReport
 
 import time
@@ -37,8 +28,7 @@ class UpdateTime(object):
         media = Medium.objects.filter(width__isnull=False).filter(datetime_taken__isnull=True)
 
         if len(media) == 0:
-            print("Nothing to be datetime_taken updated")
-            sys.exit(1)
+            CommandError("Nothing to be datetime_taken updated")
 
         progress_report = ProgressReport(len(media), unit="file",
                                          extra_information="Update datetime_taken")

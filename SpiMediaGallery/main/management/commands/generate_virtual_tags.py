@@ -1,6 +1,6 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
-from main.models import Medium, Tag, TagName, File
+from main.models import Medium, Tag, TagName
 from main.progress_report import ProgressReport
 from django.core.exceptions import ObjectDoesNotExist
 from typing import List

@@ -1,10 +1,8 @@
 # This can be incorporated (missing the duration at the moment) into update_datetime_taken
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from main.models import Medium
-from django.conf import settings
-import sys
 from django.utils import timezone
 
 import datetime
@@ -73,10 +71,6 @@ class UpdateDateTimeTaken(object):
 
     def update_media(self):
         videos_to_update = Medium.objects.filter(datetime_taken__isnull=True).filter(width__isnull=False).filter(medium_type=Medium.VIDEO)
-
-        if len(videos_to_update) == 0:
-            print("Nothing to be updated? Aborting")
-            sys.exit(1)
 
         total_bytes = videos_to_update.aggregate(Sum('file__size'))['file__size__sum']
 

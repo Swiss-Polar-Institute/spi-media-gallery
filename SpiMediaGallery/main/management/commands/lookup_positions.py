@@ -1,10 +1,6 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
-from main.models import Medium, MediumResized
-from django.conf import settings
-
-from main import spi_s3_utils
-from main import utils
+from main.models import Medium
 from main.progress_report import ProgressReport
 from main.datetime_to_position import DatetimeToPosition
 from django.contrib.gis.geos import Point

@@ -1,8 +1,6 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 import sqlite3
 from django.contrib.gis.geos import LineString, MultiLineString, Point
-
-from django.conf import settings
 
 
 class Command(BaseCommand):
