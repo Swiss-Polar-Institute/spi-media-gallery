@@ -3,6 +3,7 @@ from django import forms
 # from https://stackoverflow.com/questions/17021852/latitude-longitude-widget-for-pointfield/22309195#22309195
 
 from django import forms
+
 from main.models import Medium
 from django.contrib.gis.geos import Point
 
@@ -27,8 +28,9 @@ class LocationEntryCoordinates(forms.ModelForm):
     class Meta(object):
         model = Medium
         exclude = []
-        fields = ['file', 'medium_type', 'height', 'width', 'duration', 'datetime_taken', 'datetime_imported', 'location',
-                       'latitude', 'longitude', 'tags', 'license', 'copyright']
+        fields = ('file', 'medium_type', 'height', 'width', 'duration', 'datetime_taken',
+                  'datetime_imported', 'location', 'latitude', 'longitude', 'tags', 'license', 'copyright', )
+        readonly_fields = ('preview', )
 
     def __init__(self, *args, **kwargs):
         if 'instance' in kwargs and kwargs['instance'] is not None:

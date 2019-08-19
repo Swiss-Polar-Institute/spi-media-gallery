@@ -1,9 +1,12 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
+
 from main.forms import LocationEntryCoordinates
 from django.contrib.gis.admin.options import OSMGeoAdmin
 
 import main.models
 import main.utils
+from main.medium_for_view import MediumForView
 
 
 class MediumAdmin(OSMGeoAdmin):
@@ -15,6 +18,7 @@ class MediumAdmin(OSMGeoAdmin):
     search_fields = ('file__object_storage_key', 'file__md5', )
     raw_id_fields = ('file', )
     list_select_related = ('file', 'photographer', )
+    readonly_fields = ("preview", )
 
     form = LocationEntryCoordinates
 
@@ -110,6 +114,7 @@ class FileAdmin(admin.ModelAdmin):
     list_display = ('object_storage_key', 'md5', 'bucket', 'file_size', )
     ordering = ('object_storage_key', 'size', 'bucket', )
     search_fields = ('object_storage_key', 'md5', 'size', 'bucket', )
+    readonly_fields = ('download_file', )
 
     def file_size(self, obj):
         if obj.size is None:

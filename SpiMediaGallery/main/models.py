@@ -2,6 +2,7 @@
 from django.contrib.gis.db import models
 from django.urls import reverse
 from django.dispatch import receiver
+from django.utils.safestring import mark_safe
 
 from main.spi_s3_utils import SpiS3Utils
 
@@ -97,6 +98,12 @@ class File(models.Model):
         else:
             assert False
 
+    def download_file(self):
+        spi_s3_utils = SpiS3Utils(self.bucket_name())
+        url = spi_s3_utils.get_presigned_download_link(self.object_storage_key)
+
+        return mark_safe('<a href="{}">Download</a>'.format(url))
+
 
 @receiver(models.signals.post_delete, sender=File)
 def delete_file(sender, instance, *args, **kwargs):
@@ -146,6 +153,20 @@ class Medium(models.Model):
             return None
 
         return self.location.x
+
+    def preview(self):
+        from main.medium_for_view import MediumForView
+        medium_for_view: MediumForView = MediumForView.objects.get(id=self.pk)
+
+        if medium_for_view.medium_type == Medium.PHOTO:
+            return mark_safe('<img src="{}">'.format(medium_for_view.thumbnail_url()))
+        elif medium_for_view.medium_type == Medium.VIDEO:
+            return mark_safe("""<video>
+                <source src="{}"> type="{}"
+            </video>
+            """.format(medium_for_view.thumbnail_url(), medium_for_view.thumbnail_content_type()))
+        else:
+            assert False
 
     class Meta:
         verbose_name_plural = "Media"
