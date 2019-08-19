@@ -54,7 +54,7 @@ class ExportMedia(object):
             tags = medium_resized.medium.tags.all()
             tags_list = []
             for tag in tags:
-                if tag.importer == Tag.IMPORTER:
+                if tag.importer != Tag.GENERATED:
                     tags_list.append(tag.name)
 
             object_storage_key_relative_directory = medium.file.object_storage_key.lstrip("/")
