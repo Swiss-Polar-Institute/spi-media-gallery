@@ -57,16 +57,14 @@ class ProgressReport:
 
             self._last_printed_report = time.time()
 
-            return remaining_time
-
-    def _steps_to_human_readable(self, steps: int, format_output: str = "{}") -> str:
+    def _steps_to_human_readable(self, steps: float, format_output: str = "{}") -> str:
         if self._steps_are_bytes:
-            return "{}".format(self._bytes_to_human_readable(steps))
+            return "{}".format(self._bytes_to_human_readable(int(steps)))
         else:
             return (format_output+" {}").format(steps, self._unit)
 
     @staticmethod
-    def _seconds_to_human_readable(seconds: int) -> str:
+    def _seconds_to_human_readable(seconds: float) -> str:
         minutes = seconds / 60
 
         if minutes < 1:

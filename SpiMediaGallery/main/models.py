@@ -68,7 +68,7 @@ class Tag(models.Model):
                 return importer[1]
 
     class Meta:
-        unique_together = (('name', 'importer'))
+        unique_together = (('name', 'importer'), )
 
 
 class File(models.Model):
@@ -124,10 +124,10 @@ class Medium(models.Model):
 
     file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
 
-    location = models.PointField(null=True, blank=True)
+    location = models.PointField(null=True, blank=True, help_text="Location where the photo/video was taken")
 
-    height = models.IntegerField(null=True, blank=True)
-    width = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True, help_text="Height of the image/video")
+    width = models.IntegerField(null=True, blank=True, help_text="Width of the image/video")
     datetime_taken = models.DateTimeField(null=True, blank=True)
     datetime_imported = models.DateTimeField()
 
@@ -140,7 +140,7 @@ class Medium(models.Model):
 
     medium_type = models.CharField(max_length=1, choices=MEDIUM_TYPES)
 
-    duration = models.IntegerField(null=True, blank=True)
+    duration = models.IntegerField(null=True, blank=True, help_text="Duration of the videos, None for photos")
 
     def latitude(self):
         if self.location is None:
@@ -183,7 +183,7 @@ class MediumResized(models.Model):
 
     THUMBNAIL = "T"
     SMALL = "S"
-    MEDIUM = "M"
+    MEDIUM = "M"    # Currently used
     LARGE = "L"
     ORIGINAL = "O"
 
@@ -201,9 +201,9 @@ class MediumResized(models.Model):
 
     size_label = models.CharField(max_length=1, choices=SIZES_OF_MEDIA)
 
-    height = models.IntegerField()
-    width = models.IntegerField()
-    medium = models.ForeignKey(Medium, on_delete=models.PROTECT)
+    height = models.IntegerField(help_text="Height of this resized medium")
+    width = models.IntegerField(help_text="Width of this resized medium")
+    medium = models.ForeignKey(Medium, on_delete=models.PROTECT, help_text="Medium that this Resized is from")
 
     class Meta:
         verbose_name_plural = "MediaResized"
