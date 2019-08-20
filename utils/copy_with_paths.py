@@ -11,6 +11,9 @@ FILE_EXTENSION = "xmp"
 
 
 def copy_files(source, destination):
+    source = os.path.abspath(source)
+    destination = os.path.abspath(destination)
+
     if os.path.exists(destination):
         sys.stderr.write("Destination exists ({}). Aborting, please use a destination that doesn't exist\n".format(destination))
         sys.exit(1)
