@@ -1,13 +1,15 @@
-import boto3
-from django.conf import settings
 import os
 from typing import Set, Optional, List
+
+import boto3
+from django.conf import settings
 
 
 class SpiS3Utils(object):
     def __init__(self, bucket_name: str) -> None:
         if bucket_name not in settings.BUCKETS_CONFIGURATION:
-            raise ValueError("Bucket name {} not found. Possible bucket names: {}".format(bucket_name, ", ".join(settings.BUCKETS_CONFIGURATION.keys())))
+            raise ValueError("Bucket name {} not found. Possible bucket names: {}".format(bucket_name, ", ".join(
+                settings.BUCKETS_CONFIGURATION.keys())))
 
         self._bucket_configuration = settings.BUCKETS_CONFIGURATION[bucket_name]
 
@@ -45,26 +47,28 @@ class SpiS3Utils(object):
 
         self.bucket().download_file(key, file_path)
 
-    def get_presigned_link(self, key: str, response_content_type: str, response_content_disposition: str, filename: str) -> str:
+    def get_presigned_link(self, key: str, response_content_type: str, response_content_disposition: str,
+                           filename: str) -> str:
         params = {'Bucket': self._bucket_configuration["name"],
-                            'Key': key,
-                            'ResponseContentType': response_content_type}
+                  'Key': key,
+                  'ResponseContentType': response_content_type}
 
         if filename is not None:
             params['ResponseContentDisposition'] = "{}; filename={}".format(response_content_disposition, filename)
 
         return self.resource().meta.client.generate_presigned_url('get_object',
-                                                             Params=params)
+                                                                  Params=params)
 
     def get_presigned_download_link(self, key: str, filename: Optional[str] = None) -> str:
         if filename is None:
             filename = os.path.basename(key)
 
         return self.resource().meta.client.generate_presigned_url('get_object',
-                                                             Params={'Bucket': self._bucket_configuration["name"],
-                                                                     'Key': key,
-                                                                     'ResponseContentDisposition': 'attachment; filename={}'.format(filename),
-                                                                     'ResponseContentType' : 'application/image'})
+                                                                  Params={'Bucket': self._bucket_configuration["name"],
+                                                                          'Key': key,
+                                                                          'ResponseContentDisposition': 'attachment; filename={}'.format(
+                                                                              filename),
+                                                                          'ResponseContentType': 'application/image'})
 
     def list_files(self, prefix: str, only_from_extensions: Optional[List[str]] = None) -> Set[str]:
         files_set: Set[str] = set()

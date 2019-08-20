@@ -1,13 +1,15 @@
-from django.core.management.base import BaseCommand
 import sqlite3
+
 from django.contrib.gis.geos import LineString, MultiLineString, Point
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
     help = 'Reads sqlite3 file with the positions and generates a GeoJSON file'
 
     def add_arguments(self, parser):
-        parser.add_argument('sqlite3file', type=str, help="Needs to have a table named `gps` with at least the fields `date_time`, `latitude` and `longitude`")
+        parser.add_argument('sqlite3file', type=str,
+                            help="Needs to have a table named `gps` with at least the fields `date_time`, `latitude` and `longitude`")
         parser.add_argument('output_file', type=str, help="New GeoJSON file")
 
     def handle(self, *args, **options):
@@ -40,7 +42,7 @@ class Sqlite3toGeojson(object):
             if previous_point is not None:
                 distance = current_point.distance(previous_point)
 
-                if distance > 10:   # units: degrees
+                if distance > 10:  # units: degrees
                     if len(locations) > 1:
                         multi_line_string.append(LineString(locations))
                     locations = []

@@ -1,28 +1,28 @@
-from django.core.management.base import BaseCommand
-
-from main.models import Medium, Tag, TagName, File
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils import timezone
-from django.conf import settings
-from main.xmp_utils import XmpUtils
-
+import datetime
 import os
 import tempfile
-import datetime
+from typing import Optional, Set
+
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.management.base import BaseCommand
+from django.db import transaction
+from django.utils import timezone
 
 from main import spi_s3_utils
 from main import utils
+from main.models import Medium, Tag, TagName, File
 from main.progress_report import ProgressReport
+from main.xmp_utils import XmpUtils
 from .generate_virtual_tags import generate_virtual_tags
-from typing import Optional, Set
-from django.db import transaction
 
 
 class Command(BaseCommand):
     help = 'Updates photo tagging'
 
     def add_arguments(self, parser):
-        parser.add_argument('--prefix', type=str, default="", help="Prefix of the bucket to import files (e.g. a directory)")
+        parser.add_argument('--prefix', type=str, default="",
+                            help="Prefix of the bucket to import files (e.g. a directory)")
 
     def handle(self, *args, **options):
         bucket_name = "original"

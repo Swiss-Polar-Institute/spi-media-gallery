@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.simple_tag(takes_context=True)
 def param_replace(context, **kwargs):
     # https://www.caktusgroup.com/blog/2018/10/18/filtering-and-pagination-django/

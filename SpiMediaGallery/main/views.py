@@ -1,32 +1,28 @@
-from django.shortcuts import render
-
-from django.http import HttpResponse, HttpResponseNotFound
-from django.views.generic import TemplateView, View
-from main.models import Medium, MediumResized, TagName, File
-from django.db.models import Sum
-from main.forms import MediumIdForm
-from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import redirect
-from django.http import JsonResponse
-from django.conf import settings
-from main.medium_for_view import MediumForView
-from django.contrib.gis.geos import Point, Polygon, GEOSGeometry
-from django.urls import reverse
-
-from django.core.serializers import serialize
-
-from django.core.paginator import Paginator
-
-import json
-import datetime
-import re
-import requests
 import csv
-
-from main.spi_s3_utils import SpiS3Utils
-import main.utils as utils
-
+import datetime
+import json
+import re
 from typing import Dict, Tuple, Union, List
+
+import requests
+from django.conf import settings
+from django.contrib.gis.geos import Point, Polygon, GEOSGeometry
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
+from django.core.serializers import serialize
+from django.db.models import Sum
+from django.http import HttpResponse, HttpResponseNotFound
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.shortcuts import render
+from django.urls import reverse
+from django.views.generic import TemplateView, View
+
+import main.utils as utils
+from main.forms import MediumIdForm
+from main.medium_for_view import MediumForView
+from main.models import Medium, MediumResized, TagName, File
+from main.spi_s3_utils import SpiS3Utils
 
 
 class Homepage(TemplateView):
@@ -51,8 +47,8 @@ class Homepage(TemplateView):
                 # A tag exists now but not when the dictionary was created
                 continue
 
-            t['open_uls'] = "<ul>"*(tag_indentation - last_indentation)
-            t['close_uls'] = "</ul>"*(last_indentation - tag_indentation)
+            t['open_uls'] = "<ul>" * (tag_indentation - last_indentation)
+            t['close_uls'] = "</ul>" * (last_indentation - tag_indentation)
 
             context['close_orphaned_uls'] = "</ul>" * tag_indentation
 
@@ -66,8 +62,8 @@ class Homepage(TemplateView):
 
         context['list_of_tags'] = tags
 
-        context['list_of_tags_first_half'] = tags[:int(1+len(tags)/2)]
-        context['list_of_tags_second_half'] = tags[int(1+len(tags)/2):]
+        context['list_of_tags_first_half'] = tags[:int(1 + len(tags) / 2)]
+        context['list_of_tags_second_half'] = tags[int(1 + len(tags) / 2):]
 
         context['form_search_medium_id'] = MediumIdForm
 
@@ -77,7 +73,7 @@ class Homepage(TemplateView):
         tag_name_to_id = {}
 
         for tag_name in TagName.objects.all():
-            tag_name:TagName
+            tag_name: TagName
             tag_name_to_id[tag_name.name] = tag_name.pk
 
         return tag_name_to_id
@@ -145,9 +141,11 @@ def search_for_tag_ids(tag_ids: [List[int]]) -> Union[Dict[str, str], object]:
         photos_string = "Medium"
 
     if len(tag_ids) != 1:
-        information["search_explanation"] = "{} {} with these tags: {}".format(query_media_for_tags_count, photos_string, tags_list)
+        information["search_explanation"] = "{} {} with these tags: {}".format(query_media_for_tags_count,
+                                                                               photos_string, tags_list)
     else:
-        information["search_explanation"] = "{} {} with this tag: {}".format(query_media_for_tags_count, photos_string, tags_list)
+        information["search_explanation"] = "{} {} with this tag: {}".format(query_media_for_tags_count, photos_string,
+                                                                             tags_list)
 
     return information, query_media_for_tags
 
@@ -212,13 +210,16 @@ class DisplayRandom(TemplateView):
 
         if type_of_medium == "photo":
             qs = qs.filter(medium_type=Medium.PHOTO)
-            error_no_medium = {"error_message": "No photos available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
+            error_no_medium = {"error_message": "No photos available in this installation. Please contact {}".format(
+                settings.SITE_ADMINISTRATOR)}
         elif type_of_medium == "video":
             qs = qs.filter(medium_type=Medium.VIDEO)
-            error_no_medium = {"error_message": "No videos available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
+            error_no_medium = {"error_message": "No videos available in this installation. Please contact {}".format(
+                settings.SITE_ADMINISTRATOR)}
         elif type_of_medium == "medium":
             qs = qs.all()
-            error_no_medium = {"error_message": "No media available in this installation. Please contact {}".format(settings.SITE_ADMINISTRATOR)}
+            error_no_medium = {"error_message": "No media available in this installation. Please contact {}".format(
+                settings.SITE_ADMINISTRATOR)}
         else:
             error_no_medium = {"error_message": "Invalid type of medium"}
             qs = []
@@ -255,7 +256,8 @@ class ListVideosExportCsv(TemplateView):
     def get(self, request, *args, **kwargs):
         response = HttpResponse(content_type='text/csv')
 
-        response['Content-Disposition'] = 'attachment; filename="spi_search_videos-{}.csv"'.format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+        response['Content-Disposition'] = 'attachment; filename="spi_search_videos-{}.csv"'.format(
+            datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
         videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).order_by("file__object_storage_key")
 
@@ -264,7 +266,8 @@ class ListVideosExportCsv(TemplateView):
 
         for video in videos_qs:
             absolute_link_to_medium_page = request.build_absolute_uri(reverse("medium", kwargs={"media_id": video.pk}))
-            writer.writerow([video.pk, video.file.object_storage_key, video.duration_in_minutes_seconds(), absolute_link_to_medium_page])
+            writer.writerow([video.pk, video.file.object_storage_key, video.duration_in_minutes_seconds(),
+                             absolute_link_to_medium_page])
 
         return response
 
@@ -336,13 +339,17 @@ class Stats(TemplateView):
         total_number_photos = Medium.objects.filter(medium_type=Medium.PHOTO).count()
         total_number_videos = Medium.objects.filter(medium_type=Medium.VIDEO).count()
 
-        total_number_photos_resized = MediumResized.objects.filter(size_label="T").filter(medium__medium_type=Medium.PHOTO).count()
-        total_number_videos_resized = MediumResized.objects.filter(size_label="L").filter(medium__medium_type=Medium.VIDEO).count()
+        total_number_photos_resized = MediumResized.objects.filter(size_label="T").filter(
+            medium__medium_type=Medium.PHOTO).count()
+        total_number_videos_resized = MediumResized.objects.filter(size_label="L").filter(
+            medium__medium_type=Medium.VIDEO).count()
 
         size_of_photos = Medium.objects.filter(medium_type=Medium.PHOTO).aggregate(Sum('file__size'))['file__size__sum']
         size_of_videos = Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('file__size'))['file__size__sum']
-        size_of_videos_resized = MediumResized.objects.filter(size_label="L").filter(medium__medium_type="V").aggregate(Sum('medium__file__size'))['medium__file__size__sum']
-        size_of_photos_resized = MediumResized.objects.filter(size_label="S").filter(medium__medium_type="P").aggregate(Sum('medium__file__size'))['medium__file__size__sum']
+        size_of_videos_resized = MediumResized.objects.filter(size_label="L").filter(medium__medium_type="V").aggregate(
+            Sum('medium__file__size'))['medium__file__size__sum']
+        size_of_photos_resized = MediumResized.objects.filter(size_label="S").filter(medium__medium_type="P").aggregate(
+            Sum('medium__file__size'))['medium__file__size__sum']
 
         if size_of_videos_resized is None:
             size_of_videos_resized = 0
@@ -354,8 +361,8 @@ class Stats(TemplateView):
         else:
             size_of_photos_resized = int(size_of_photos_resized)
 
-
-        duration_of_videos = utils.seconds_to_human_readable(Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('duration'))['duration__sum'])
+        duration_of_videos = utils.seconds_to_human_readable(
+            Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('duration'))['duration__sum'])
 
         context['total_number_photos'] = total_number_photos
         context['total_number_videos'] = total_number_videos

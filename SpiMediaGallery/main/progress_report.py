@@ -1,5 +1,6 @@
 import datetime
 import time
+
 import termcolor
 
 
@@ -44,15 +45,18 @@ class ProgressReport:
             eta = time.time() + remaining_time
 
             progress_print("PROGRESS: {}".format(self._extra_information))
-            progress_print("Processed {} of {}. Elapsed time: {}. Remaining time: {}. ETA: {}.".format(self._steps_to_human_readable(self._current_step),
-                                                                                      self._steps_to_human_readable(self._total_steps),
-                                                                                      self._seconds_to_human_readable(elapsed_time),
-                                                                                      self._seconds_to_human_readable(remaining_time),
-                                                                                      datetime.datetime.fromtimestamp(eta).replace(tzinfo=datetime.timezone.utc).strftime("%a %Y-%m-%d %H:%M:%S UTC")))
+            progress_print("Processed {} of {}. Elapsed time: {}. Remaining time: {}. ETA: {}.".format(
+                self._steps_to_human_readable(self._current_step),
+                self._steps_to_human_readable(self._total_steps),
+                self._seconds_to_human_readable(elapsed_time),
+                self._seconds_to_human_readable(remaining_time),
+                datetime.datetime.fromtimestamp(eta).replace(tzinfo=datetime.timezone.utc).strftime(
+                    "%a %Y-%m-%d %H:%M:%S UTC")))
 
-            speed_per_minute = speed*60
+            speed_per_minute = speed * 60
 
-            progress_print("Speed: {}/minute Percentage: {:.2f}%".format(self._steps_to_human_readable(speed_per_minute, format_output="{:.2f}"), percentage_complete))
+            progress_print("Speed: {}/minute Percentage: {:.2f}%".format(
+                self._steps_to_human_readable(speed_per_minute, format_output="{:.2f}"), percentage_complete))
             print()
 
             self._last_printed_report = time.time()
@@ -61,7 +65,7 @@ class ProgressReport:
         if self._steps_are_bytes:
             return "{}".format(self._bytes_to_human_readable(int(steps)))
         else:
-            return (format_output+" {}").format(steps, self._unit)
+            return (format_output + " {}").format(steps, self._unit)
 
     @staticmethod
     def _seconds_to_human_readable(seconds: float) -> str:
@@ -85,7 +89,7 @@ class ProgressReport:
         if num is None:
             return "Unknown"
 
-        for unit in ['','KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB']:
+        for unit in ['', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB']:
             if abs(num) < 1024.0:
                 return "{:.2f} {}".format(num, unit)
             num /= 1024.0

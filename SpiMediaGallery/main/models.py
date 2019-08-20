@@ -1,7 +1,7 @@
 # from django.db import models
 from django.contrib.gis.db import models
-from django.urls import reverse
 from django.dispatch import receiver
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from main.spi_s3_utils import SpiS3Utils
@@ -68,7 +68,7 @@ class Tag(models.Model):
                 return importer[1]
 
     class Meta:
-        unique_together = (('name', 'importer'), )
+        unique_together = (('name', 'importer'),)
 
 
 class File(models.Model):
@@ -183,7 +183,7 @@ class MediumResized(models.Model):
 
     THUMBNAIL = "T"
     SMALL = "S"
-    MEDIUM = "M"    # Currently used
+    MEDIUM = "M"  # Currently used
     LARGE = "L"
     ORIGINAL = "O"
 

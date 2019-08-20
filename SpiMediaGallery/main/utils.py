@@ -1,20 +1,19 @@
-import hashlib
-import os
-import sys
-import subprocess
-import tempfile
-import json
 import datetime
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import tempfile
 import urllib
-
-from django.urls import reverse
-from django.utils import timezone
-from django.conf import settings
-
 from typing import Dict, List, Optional
 
-from main.spi_s3_utils import SpiS3Utils
+from django.conf import settings
+from django.urls import reverse
+from django.utils import timezone
+
 from main.models import File, Medium
+from main.spi_s3_utils import SpiS3Utils
 
 
 def image_size_label_abbreviation_to_presentation(abbreviation: str) -> Optional[str]:
@@ -76,8 +75,9 @@ def resize_video(input_file_path: str, width: int) -> Optional[str]:
                    "-threads", "0",
                    "-vcodec", "vp8", "-crf", "27", "-preset", "veryfast", "-c:a", "libvorbis",
                    "-vf", "scale={}".format(size),
-                   "-auto-alt-ref", "0",    # Fixes error: "Transparency encoding with auto_alt_ref does not work", "Error initializing output stream 0:0 -- Error while opening encoder for output stream #0:0 - maybe incorrect parameters such as bit_rate, rate, width or height"
-                   "-max_muxing_queue_size", "4096", # Fixes error: "Too many packets buffered for output stream 0:1."
+                   "-auto-alt-ref", "0",
+                   # Fixes error: "Transparency encoding with auto_alt_ref does not work", "Error initializing output stream 0:0 -- Error while opening encoder for output stream #0:0 - maybe incorrect parameters such as bit_rate, rate, width or height"
+                   "-max_muxing_queue_size", "4096",  # Fixes error: "Too many packets buffered for output stream 0:1."
                    output_file_path.name]
 
         try:
@@ -100,7 +100,7 @@ def bytes_to_human_readable(num: int) -> str:
     if num is None:
         return "Unknown"
 
-    for unit in ['','KB','MB','GB','TB','PB','EB','ZB']:
+    for unit in ['', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB']:
         if abs(num) < 1024.0:
             return "{:.2f} {}".format(num, unit)
         num /= 1024.0
@@ -253,7 +253,7 @@ def link_for_medium(file: File, content_disposition: str, filename: str) -> str:
         d = {"content_type": content_type,
              "content_disposition_type": content_disposition,
              "filename": filename,
-        }
+             }
 
         return "{}?{}".format(reverse("get_file", args=[file.bucket, file.md5]), urllib.parse.urlencode(d))
     else:

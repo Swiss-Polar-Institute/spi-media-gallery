@@ -1,28 +1,27 @@
 # This can be incorporated (missing the duration at the moment) into update_datetime_taken
 
-from django.core.management.base import BaseCommand
-
-from main.models import Medium
-from django.utils import timezone
-
 import datetime
-import tempfile
 import os
-from pymediainfo import MediaInfo
+import tempfile
+import time
+
+from django.core.management.base import BaseCommand
 from django.db.models import Sum
+from django.utils import timezone
+from pymediainfo import MediaInfo
 
 from main import spi_s3_utils
-from main.progress_report import ProgressReport
-
-import time
 from main import utils
+from main.models import Medium
+from main.progress_report import ProgressReport
 
 
 class Command(BaseCommand):
     help = 'Updates date time taken'
 
     def add_arguments(self, parser):
-        parser.add_argument('bucket_name_media', type=str, help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
+        parser.add_argument('bucket_name_media', type=str,
+                            help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
 
     def handle(self, *args, **options):
         bucket_name_media = options["bucket_name_media"]
@@ -70,7 +69,8 @@ class UpdateDateTimeTaken(object):
             video.save()
 
     def update_media(self):
-        videos_to_update = Medium.objects.filter(datetime_taken__isnull=True).filter(width__isnull=False).filter(medium_type=Medium.VIDEO)
+        videos_to_update = Medium.objects.filter(datetime_taken__isnull=True).filter(width__isnull=False).filter(
+            medium_type=Medium.VIDEO)
 
         total_bytes = videos_to_update.aggregate(Sum('file__size'))['file__size__sum']
 
@@ -88,11 +88,12 @@ class UpdateDateTimeTaken(object):
 
             assert os.stat(media_file.name).st_size == video.file.size
 
-            download_speed = (video.file.size / 1024 / 1024) / download_time        # MB/s
-            print("Download Stats: Total size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(utils.bytes_to_human_readable(video.file.size),
-                                                                                      utils.seconds_to_human_readable(download_time),
-                                                                                      download_speed,
-                                                                                      video.object_storage_key))
+            download_speed = (video.file.size / 1024 / 1024) / download_time  # MB/s
+            print("Download Stats: Total size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(
+                utils.bytes_to_human_readable(video.file.size),
+                utils.seconds_to_human_readable(download_time),
+                download_speed,
+                video.object_storage_key))
 
             self._update_information_from_video(video, media_file.name)
 

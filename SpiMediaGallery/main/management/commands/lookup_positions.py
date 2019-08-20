@@ -1,9 +1,9 @@
+from django.contrib.gis.geos import Point
 from django.core.management.base import BaseCommand
 
+from main.datetime_to_position import DatetimeToPosition
 from main.models import Medium
 from main.progress_report import ProgressReport
-from main.datetime_to_position import DatetimeToPosition
-from django.contrib.gis.geos import Point
 
 
 class Command(BaseCommand):
@@ -22,7 +22,8 @@ class MediaLocationLookup(object):
     def lookup(self):
         media_to_geolocate = Medium.objects.filter(location=None).exclude(datetime_taken__isnull=True)
 
-        progress_report = ProgressReport(len(media_to_geolocate), extra_information="Adding location information to media")
+        progress_report = ProgressReport(len(media_to_geolocate),
+                                         extra_information="Adding location information to media")
 
         datetime_to_position = DatetimeToPosition()
 

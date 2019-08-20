@@ -1,6 +1,7 @@
-from libxmp.utils import file_to_dict
 import textwrap
 from typing import Set
+
+from libxmp.utils import file_to_dict
 
 
 class XmpUtils:

@@ -1,17 +1,19 @@
-from main.models import Medium, MediumResized
 import math
+from typing import List, Dict, Any, Optional
+
 from django.contrib.staticfiles.templatetags.staticfiles import static
-from main import utils
-from main.utils import filename_for_resized_medium, filename_for_medium, human_readable_resolution_for_medium, \
-    link_for_medium
 from django.db import models
 
-from typing import List, Dict, Any, Optional
+from main import utils
+from main.models import Medium, MediumResized
+from main.utils import filename_for_resized_medium, filename_for_medium, human_readable_resolution_for_medium, \
+    link_for_medium
 
 
 class MediumForViewManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().prefetch_related('mediumresized_set').prefetch_related('mediumresized_set__file').select_related('file')
+        return super().get_queryset().prefetch_related('mediumresized_set').prefetch_related(
+            'mediumresized_set__file').select_related('file')
 
 
 class MediumForView(Medium):
@@ -59,7 +61,8 @@ class MediumForView(Medium):
             return self.URL_SMALL_DO_NOT_EXIST
 
         return link_for_medium(resized.file, "inline",
-                               filename_for_resized_medium(self.pk, size_label, utils.file_extension(resized.file.object_storage_key)))
+                               filename_for_resized_medium(self.pk, size_label,
+                                                           utils.file_extension(resized.file.object_storage_key)))
 
     def file_size_original(self) -> str:
         return utils.bytes_to_human_readable(self.file.size)
@@ -92,7 +95,7 @@ class MediumForView(Medium):
         return utils.seconds_to_minutes_seconds(self.duration)
 
     def video_embed_responsive_ratio(self) -> str:
-        if self.width is not None and self.height is not None and math.isclose(self.width / self.height, 16/9):
+        if self.width is not None and self.height is not None and math.isclose(self.width / self.height, 16 / 9):
             return "embed-responsive-16by9"
 
         return "embed-responsive-16by9"
@@ -159,7 +162,8 @@ class MediumForView(Medium):
 
             size_information['resolution'] = human_readable_resolution_for_medium(medium_resized)
 
-            filename = filename_for_resized_medium(self.pk, medium_resized.size_label, utils.file_extension(medium_resized.file.object_storage_key))
+            filename = filename_for_resized_medium(self.pk, medium_resized.size_label,
+                                                   utils.file_extension(medium_resized.file.object_storage_key))
 
             size_information['image_link'] = link_for_medium(medium_resized.file, "inline", filename)
 
@@ -199,4 +203,3 @@ class MediumForView(Medium):
 
     class Meta:
         proxy = True
-

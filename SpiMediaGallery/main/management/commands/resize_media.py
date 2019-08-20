@@ -1,25 +1,21 @@
-from datetime import datetime
-
-from django.core.management.base import BaseCommand, CommandError
-
-from main.models import Medium, MediumResized, File
-from django.conf import settings
-import sys
-from django.utils import timezone
-
 import datetime
-import tempfile
 import os
-from pymediainfo import MediaInfo
+import sys
+import tempfile
+import time
+from datetime import datetime
+from typing import Optional, Dict, Any, List
+
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Sum
+from django.utils import timezone
+from pymediainfo import MediaInfo
 
 from main import spi_s3_utils
-from main.progress_report import ProgressReport
-
-import time
 from main import utils
-
-from typing import Optional, Dict, Any, List
+from main.models import Medium, MediumResized, File
+from main.progress_report import ProgressReport
 
 
 class Command(BaseCommand):
@@ -27,7 +23,8 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('media_type', type=str, choices=["Photos", "Videos"], help="Resizes Photos or Videos")
-        parser.add_argument('sizes_type', nargs="+", type=str, help="Type of resizing (T for thumbnail, S for small, M for medium, L for large, O for original). Original changes the format to JPEG, potential rotation")
+        parser.add_argument('sizes_type', nargs="+", type=str,
+                            help="Type of resizing (T for thumbnail, S for small, M for medium, L for large, O for original). Original changes the format to JPEG, potential rotation")
 
     def handle(self, *args, **options):
         bucket_name_media = "original"
@@ -37,7 +34,8 @@ class Command(BaseCommand):
 
         for size in sizes_type:
             if size not in "TSMLO":
-                raise CommandError("Invalid size, needs to be T (Thumbnail), S (Small), M (Medium), L (Large) or O (Original)")
+                raise CommandError(
+                    "Invalid size, needs to be T (Thumbnail), S (Small), M (Medium), L (Large) or O (Original)")
 
         resizer = Resizer(bucket_name_media, bucket_name_resized, sizes_type, media_type)
 
@@ -68,7 +66,8 @@ def get_information_from_video(video_file: str) -> Dict[str, Any]:
 class Resizer(object):
     _medium_type: str
 
-    def __init__(self, bucket_name_media: str, bucket_name_resizes: str, sizes_type: List[str], medium_type: str) -> None:
+    def __init__(self, bucket_name_media: str, bucket_name_resizes: str, sizes_type: List[str],
+                 medium_type: str) -> None:
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name_media)
         self._resizes_bucket = spi_s3_utils.SpiS3Utils(bucket_name_resizes)
         self._sizes_type = sizes_type
@@ -109,7 +108,8 @@ class Resizer(object):
     def resize_media(self):
         already_resized = None
         for size_type in self._sizes_type:
-            qs = MediumResized.objects.values_list('medium', flat=True).filter(size_label=size_type).filter(medium__medium_type=self._medium_type)
+            qs = MediumResized.objects.values_list('medium', flat=True).filter(size_label=size_type).filter(
+                medium__medium_type=self._medium_type)
 
             if already_resized is None:
                 already_resized = qs
@@ -146,11 +146,12 @@ class Resizer(object):
             assert os.stat(media_file.name).st_size == medium.file.size
 
             if verbose:
-                speed = (medium.file.size / 1024 / 1024) / download_time        # MB/s
-                print("Download Stats. Size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(utils.bytes_to_human_readable(medium.file.size),
-                                                                                          utils.seconds_to_human_readable(download_time),
-                                                                                          speed,
-                                                                                          medium.file.object_storage_key))
+                speed = (medium.file.size / 1024 / 1024) / download_time  # MB/s
+                print("Download Stats. Size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(
+                    utils.bytes_to_human_readable(medium.file.size),
+                    utils.seconds_to_human_readable(download_time),
+                    speed,
+                    medium.file.object_storage_key))
 
             if medium.file.md5 is None:
                 md5_media_file = utils.hash_of_file_path(media_file.name)
@@ -213,7 +214,7 @@ class Resizer(object):
             elif medium.medium_type == Medium.VIDEO:
                 self._update_information_from_video(medium, medium_file_name)
 
-                assert size_label != "O" # Not supported to resize to the original size for videos
+                assert size_label != "O"  # Not supported to resize to the original size for videos
 
                 start_time = time.time()
                 resized_medium_file = utils.resize_video(medium_file_name, resized_width)
@@ -230,9 +231,10 @@ class Resizer(object):
                     speed = information['duration'] / duration_convert
 
                     print("Conversion took: {} Speed: {:.2f}x".format(utils.seconds_to_human_readable(duration_convert),
-                                                                    speed))
+                                                                      speed))
                 else:
-                    print("Conversion took: {} Speed: unknown, duration of video not known".format(utils.seconds_to_human_readable(duration_convert)))
+                    print("Conversion took: {} Speed: unknown, duration of video not known".format(
+                        utils.seconds_to_human_readable(duration_convert)))
 
                 if 'width' in information and 'height' in information:
                     resized_medium.width = information['width']
@@ -246,7 +248,7 @@ class Resizer(object):
 
             # Upload medium to bucket
             resized_key = os.path.join(settings.RESIZED_PREFIX,
-                                         md5_resized_file + "-{}.{}".format(size_label, resized_file_extension))
+                                       md5_resized_file + "-{}.{}".format(size_label, resized_file_extension))
 
             self._resizes_bucket.upload_file(resized_medium_file, resized_key)
             file_size = os.stat(resized_medium_file).st_size

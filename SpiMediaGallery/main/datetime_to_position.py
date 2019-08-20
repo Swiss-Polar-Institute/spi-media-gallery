@@ -1,5 +1,5 @@
 import sqlite3
-import os
+
 from django.conf import settings
 
 

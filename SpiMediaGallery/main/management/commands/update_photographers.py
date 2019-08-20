@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
 
 from main.models import Medium, Photographer
-
 from main.progress_report import ProgressReport
 
 
@@ -21,7 +20,8 @@ class PhotographerUpdater(object):
     def update(self):
         photos_without_photographer = Medium.objects.filter(photographer__isnull=True)
 
-        progress_report = ProgressReport(len(photos_without_photographer), extra_information="Updating photographer of photos")
+        progress_report = ProgressReport(len(photos_without_photographer),
+                                         extra_information="Updating photographer of photos")
 
         for photo in photos_without_photographer:
             progress_report.increment_and_print_if_needed()

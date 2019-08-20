@@ -1,12 +1,12 @@
+import os
+
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import Tag
-
-from main.spi_s3_utils import SpiS3Utils
 from main.medium_for_view import MediumForView
+from main.models import Tag
 from main.progress_report import ProgressReport
+from main.spi_s3_utils import SpiS3Utils
 from main.xmp_utils import XmpUtils
-import os
 
 
 class Command(BaseCommand):
@@ -14,8 +14,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('prefix', type=str, help="Prefix - can be ''")
-        parser.add_argument('output_directory', type=str, help="Output of the resized media with the XMP associated files")
-        parser.add_argument('size', type=str, choices=["S", "L", "O"], help="Size (Small, Large, Original files) to be exported")
+        parser.add_argument('output_directory', type=str,
+                            help="Output of the resized media with the XMP associated files")
+        parser.add_argument('size', type=str, choices=["S", "L", "O"],
+                            help="Size (Small, Large, Original files) to be exported")
 
     def handle(self, *args, **options):
         prefix = options["prefix"]
@@ -65,7 +67,8 @@ class ExportMedia(object):
             object_storage_key_relative_directory = medium.file.object_storage_key.lstrip("/")
             output_file = os.path.join(self._output_directory, object_storage_key_relative_directory)
 
-            self._resizes_bucket.download_file(medium_resized.file.object_storage_key, output_file, create_directory=True)
+            self._resizes_bucket.download_file(medium_resized.file.object_storage_key, output_file,
+                                               create_directory=True)
             XmpUtils.generate_xmp(output_file + ".xmp", tags_list)
 
         print("Output: {}".format(self._output_directory))
