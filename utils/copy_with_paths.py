@@ -15,6 +15,8 @@ def copy_files(source, destination):
         sys.stderr.write("Destination exists ({}). Aborting, please use a destination that doesn't exist\n".format(destination))
         sys.exit(1)
 
+    source_list = pathlib.Path(source).parts[1:]
+
     count = 0
     for root, dirs, files in os.walk(source):
         for file in files:
@@ -26,10 +28,11 @@ def copy_files(source, destination):
             # On Windows it removes the drive (c:/)
             # On Linux/Mac it removes the initial (/)
 
-            path_list = pathlib.Path(root).parts[1:]
-            path = os.path.join(*path_list)
+            this_path_list = pathlib.Path(root).parts[1:]
+            this_path_list = this_path_list[len(source_list):]
 
-            destination_directory = os.path.join(destination, path)
+            destination_directory = os.path.join(destination, *this_path_list)
+
             destination_file = os.path.join(destination_directory, file)
             source_file = os.path.join(root, file)
 
