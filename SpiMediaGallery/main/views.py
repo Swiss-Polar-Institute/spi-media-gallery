@@ -11,7 +11,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.db.models import Sum
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -273,14 +273,14 @@ class ListVideosExportCsv(TemplateView):
 
 
 class Display(TemplateView):
-    template_name = 'display.tmpl'
+    def get(self, request, *args, **kwargs):
+        try:
+            medium = MediumForView.objects.get(id=kwargs['media_id'])
+        except ObjectDoesNotExist:
+            error = {'error_message': 'Media not found'}
+            return render(request, 'error.tmpl', error, status=404)
 
-    def get_context_data(self, **kwargs):
-        context = super(Display, self).get_context_data(**kwargs)
-
-        context['medium'] = MediumForView.objects.get(id=kwargs['media_id'])
-
-        return context
+        return render(request, 'display.tmpl', {'medium': medium})
 
 
 class Map(TemplateView):
