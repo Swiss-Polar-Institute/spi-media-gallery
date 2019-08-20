@@ -1,7 +1,10 @@
+import os
+import tempfile
+
 from django.test import TestCase
 
 from main.xmp_utils import XmpUtils
-import tempfile
+
 
 class XmpUtilsTest(TestCase):
     @classmethod
@@ -17,6 +20,7 @@ class XmpUtilsTest(TestCase):
     def test_read_write_tags(self):
         temporary_file = tempfile.NamedTemporaryFile(suffix=".xmp", delete=False)
         temporary_file.close()
+        os.remove(temporary_file.name)
 
         tags = {'people', 'people/john_doe', 'vessel', 'penguin'}
 

@@ -1,10 +1,11 @@
-from django.test import TestCase
-from main.models import *
+import datetime
+
+import pytz
 from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.test import TestCase
 
 from main.medium_for_view import MediumForView
-import datetime
-import pytz
+from main.models import *
 
 
 class ImportSamplesTest(TestCase):
@@ -33,7 +34,8 @@ class ImportSamplesTest(TestCase):
 
         self.assertEqual(medium_for_view.file_name(), "SPI-1.jpg")
 
-        self.assertEqual(medium_for_view.list_of_tags(), [{'id': 1, 'tag': 'landscape'}, {'id': 3, 'tag': 'people/john_doe'}])
+        self.assertEqual(medium_for_view.list_of_tags(),
+                         [{'id': 1, 'tag': 'landscape'}, {'id': 3, 'tag': 'people/john_doe'}])
 
         self.assertEqual(medium_for_view.license_text(), "Creative Commons 4.0")
 

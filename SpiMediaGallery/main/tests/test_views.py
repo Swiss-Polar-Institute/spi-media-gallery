@@ -1,10 +1,6 @@
-from django.test import TestCase
-from main.models import *
-from django.contrib.staticfiles.templatetags.staticfiles import static
-
-from main.views import Homepage
-
 from django.test import Client
+from django.test import TestCase
+
 
 class ViewsTest(TestCase):
     fixtures = ['test_basic_data.yaml']

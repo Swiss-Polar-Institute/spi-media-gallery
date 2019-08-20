@@ -1,11 +1,12 @@
-from moto import mock_s3
-from django.test import TestCase
-from main.management.commands.add_files_with_tags import TagImporter
-from main.spi_s3_utils import SpiS3Utils
+import os
 
 from django.conf import settings
-import os
+from django.test import TestCase
+from moto import mock_s3
+
+from main.management.commands.add_files_with_tags import TagImporter
 from main.models import *
+
 
 # All the Boto S3 calls are mocked
 
@@ -37,12 +38,13 @@ class GenerateTagsTest(TestCase):
         pass
 
     def _upload_fixture_files(self) -> None:
-        fixtures_buckets_original_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../fixtures/buckets/original")
+        fixtures_buckets_original_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                           "../fixtures/buckets/original")
 
         for root, dirs, files in os.walk(fixtures_buckets_original_directory):
             for file in files:
                 full_path_file = os.path.join(root, file)
-                relative_directory_for_object_storage = root[len(fixtures_buckets_original_directory)+1:]
+                relative_directory_for_object_storage = root[len(fixtures_buckets_original_directory) + 1:]
                 key = os.path.join(relative_directory_for_object_storage, file)
 
                 self._spi_s3_utils.upload_file(full_path_file, key)
@@ -68,7 +70,6 @@ class GenerateTagsTest(TestCase):
 
         for tag_to_exist in tags_to_exist:
             self.assertTrue(tag_to_exist in tags_names)
-
 
         # Replaces the XMP file to verify that new tags and removed tags are not there anymore
         full_path_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../fixtures", "IMG_4329-2.jpg.xmp")
