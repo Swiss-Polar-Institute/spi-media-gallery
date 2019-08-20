@@ -15,7 +15,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('prefix', type=str, help='Prefix - can be ''')
         parser.add_argument('output_directory', type=str,
-                            help='Output of the resized media with the XMP associated files')
+                            help='Output of the resized media with the XMP associated files. This directory gets '
+                                 'created')
         parser.add_argument('size', type=str, choices=['S', 'L', 'O'],
                             help='Size (Small, Large, Original files) to be exported')
 
@@ -39,7 +40,7 @@ class ExportMedia(object):
 
     def run(self):
         if os.path.exists(self._output_directory):
-            raise CommandError('output_directory ({}) should not exist'.format(self._output_directory))
+            raise CommandError('Output directory {} should not exist'.format(self._output_directory))
 
         try:
             os.makedirs(self._output_directory)
@@ -59,16 +60,16 @@ class ExportMedia(object):
                 continue
 
             tags = medium_resized.medium.tags.all()
-            tags_list = []
+            tags_set = set()
             for tag in tags:
                 if tag.importer != Tag.GENERATED:
-                    tags_list.append(tag.name)
+                    tags_set.add(tag.name)
 
             object_storage_key_relative_directory = medium.file.object_storage_key.lstrip('/')
             output_file = os.path.join(self._output_directory, object_storage_key_relative_directory)
 
             self._resizes_bucket.download_file(medium_resized.file.object_storage_key, output_file,
                                                create_directory=True)
-            XmpUtils.generate_xmp(output_file + '.xmp', tags_list)
+            XmpUtils.generate_xmp(output_file + '.xmp', tags_set)
 
         print('Output: {}'.format(self._output_directory))

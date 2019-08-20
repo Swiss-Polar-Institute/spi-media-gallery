@@ -220,6 +220,5 @@ SITE_ADMINISTRATOR = "Carles Pina"
 
 try:
     from local_settings import *
-    print("Imported local_settings.py")
 except ImportError:
     pass

@@ -1,5 +1,4 @@
 import datetime
-import os
 import tempfile
 from typing import Optional, Set
 
@@ -18,34 +17,35 @@ from .generate_virtual_tags import generate_virtual_tags
 
 
 class Command(BaseCommand):
-    help = 'Updates photo tagging'
+    help = 'From the "original" bucket: list the files (photos or videos), adds them into the database (only the name '\
+           ' and file size since it is not downloading the files. It downloads the associated .xmp file and attach ' \
+           'the  digiKam tags into the medium. Note that it generates virtual tags: e.g. if a tag is ' \
+           '"people/john_doe" it will also add "people" '
 
     def add_arguments(self, parser):
         parser.add_argument('--prefix', type=str, default='',
-                            help='Prefix of the bucket to import files (e.g. a directory)')
+                            help='Prefix of the files to be imported.')
 
     def handle(self, *args, **options):
         bucket_name = 'original'
         prefix = options['prefix']
 
-        tag_importer = TagImporter(bucket_name, prefix)
+        media_importer = MediaImporter(bucket_name, prefix)
 
-        tag_importer.import_tags()
+        media_importer.import_media()
 
 
-class TagImporter(object):
+class MediaImporter(object):
     def __init__(self, bucket_name: str, prefix: str):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name)
         self._prefix = prefix
-        self.all_keys: Optional[Set[str]] = None
-        self.valid_extensions = settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS
+        self._all_keys: Optional[Set[str]] = None
+        self._valid_extensions = settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS
 
-    def import_tags(self):
-        self.all_keys = self._media_bucket.get_set_of_keys(self._prefix)
+    def import_media(self):
+        self._all_keys = self._media_bucket.get_set_of_keys(self._prefix)
 
-        progress_report = ProgressReport(len(self.all_keys), extra_information='Adding files with tags')
-
-        print('Total number of files to process:', len(self.all_keys))
+        progress_report = ProgressReport(len(self._all_keys), extra_information='Adding files with tags')
 
         for s3_object in self._media_bucket.objects_in_bucket(self._prefix):
             progress_report.increment_and_print_if_needed()
@@ -56,23 +56,27 @@ class TagImporter(object):
     def _process_s3_object(self, s3_object):
         file_extension = utils.file_extension(s3_object.key).lower()
 
-        if file_extension not in self.valid_extensions:
+        if file_extension not in self._valid_extensions:
             return
 
         size_of_medium = s3_object.size
 
         xmp_file = s3_object.key + '.xmp'
 
-        tags = []
+        tags = self._download_xmp_read_tags(xmp_file)
+        medium = self._create_or_found_medium(s3_object.key, size_of_medium)
+        self._set_tags(medium, tags)
+        generate_virtual_tags(medium)
 
-        temporary_tags_file = None
+    def _download_xmp_read_tags(self, xmp_key):
+        tags = {}
 
-        if xmp_file in self.all_keys:
+        if xmp_key in self._all_keys:
             # xmp_file exists in the list of files, it will download + extract tags
 
             # Copies XMP into a file (libxmp seems to only be able to read
             # from physical files)
-            xmp_object = self._media_bucket.get_object(xmp_file)
+            xmp_object = self._media_bucket.get_object(xmp_key)
 
             temporary_tags_file = tempfile.NamedTemporaryFile(suffix='.xmp', delete=False)
             temporary_tags_file.write(xmp_object.get()['Body'].read())
@@ -81,16 +85,23 @@ class TagImporter(object):
             # Extracts tags
             tags = XmpUtils.read_tags(temporary_tags_file.name)
 
+        return tags
+
+    @staticmethod
+    def _create_or_found_medium(s3_object_key, size_of_medium):
         medium: Medium
 
         try:
-            medium = Medium.objects.get(file__object_storage_key=s3_object.key)
+            medium = Medium.objects.get(file__object_storage_key=s3_object_key)
+            assert medium.file
+
         except ObjectDoesNotExist:
+            file_extension = utils.file_extension(s3_object_key).lower()
             medium = Medium()
 
             file = File()
 
-            file.object_storage_key = s3_object.key
+            file.object_storage_key = s3_object_key
             file.md5 = None
             file.size = size_of_medium
             file.bucket = File.ORIGINAL
@@ -108,10 +119,15 @@ class TagImporter(object):
             medium.datetime_imported = datetime.datetime.now(tz=timezone.utc)
             medium.save()
 
+        return medium
+
+    @staticmethod
+    def _set_tags(medium, tags):
         # Delete existing tags of the Medium to import it again
         medium.tags.clear()
 
         for tag in tags:
+            # Find or create the tag_name
             try:
                 tag_name = TagName.objects.get(name=tag)
             except ObjectDoesNotExist:
@@ -119,6 +135,7 @@ class TagImporter(object):
                 tag_name.name = tag
                 tag_name.save()
 
+            # Find or create the tag_name tag with XMP
             try:
                 tag = Tag.objects.get(name=tag_name, importer=Tag.XMP)
             except ObjectDoesNotExist:
@@ -126,8 +143,3 @@ class TagImporter(object):
                 tag.save()
 
             medium.tags.add(tag)
-
-        generate_virtual_tags(medium)
-
-        if temporary_tags_file is not None:
-            os.remove(temporary_tags_file.name)

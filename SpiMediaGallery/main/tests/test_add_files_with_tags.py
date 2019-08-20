@@ -4,7 +4,7 @@ from django.conf import settings
 from django.test import TestCase
 from moto import mock_s3
 
-from main.management.commands.add_files_with_tags import TagImporter
+from main.management.commands.add_files_with_tags import MediaImporter
 from main.models import *
 
 
@@ -53,8 +53,8 @@ class GenerateTagsTest(TestCase):
         self._upload_fixture_files()
         self.assertEqual(Medium.objects.all().count(), 1)
 
-        tag_import = TagImporter("original", "")
-        tag_import.import_tags()
+        tag_import = MediaImporter("original", "")
+        tag_import.import_media()
 
         self.assertEqual(Medium.objects.all().count(), 2)
 
@@ -75,8 +75,8 @@ class GenerateTagsTest(TestCase):
         full_path_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../fixtures", "IMG_4329-2.jpg.xmp")
         self._spi_s3_utils.upload_file(full_path_file, "IMG_4329.jpg.xmp")
 
-        tag_import = TagImporter("original", "")
-        tag_import.import_tags()
+        tag_import = MediaImporter("original", "")
+        tag_import.import_media()
         m = Medium.objects.get(file__object_storage_key="IMG_4329.jpg")
         new_tags = m.tags.all()
 
