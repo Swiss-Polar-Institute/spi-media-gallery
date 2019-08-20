@@ -189,7 +189,7 @@ class MediumResized(models.Model):
 
     THUMBNAIL = 'T'
     SMALL = 'S'
-    MEDIUM = 'M'  # Currently used
+    MEDIUM = 'M'  # Currently unused
     LARGE = 'L'
     ORIGINAL = 'O'
 
