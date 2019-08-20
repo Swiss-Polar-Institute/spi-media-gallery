@@ -6,35 +6,30 @@ from main.models import Medium, MediumResized
 
 
 class Command(BaseCommand):
-    help = 'Finds orphaned files'
+    help = 'Finds files in the buckets not referenced by the database and files in the database that do not exist ' \
+           'in the buckets. Check files for the recognized extensions only'
 
     def add_arguments(self, parser):
-        parser.add_argument('bucket_name_media', type=str,
-                            help='Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION')
-        parser.add_argument('bucket_name_resized', type=str,
-                            help='Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION')
+        pass
 
     def handle(self, *args, **options):
-        bucket_name_media = options['bucket_name_media']
-        bucket_name_resized = options['bucket_name_resized']
-
-        check_orphanes = CheckOrphanes(bucket_name_media, bucket_name_resized)
-
+        check_orphanes = CheckOrphanes()
         check_orphanes.run()
 
 
-class CheckOrphanes(object):
-    def __init__(self, bucket_name_media, bucket_name_resizes):
-        self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name_media)
-        self._resizes_bucket = spi_s3_utils.SpiS3Utils(bucket_name_resizes)
+class CheckOrphanes:
+    def __init__(self):
+        self._media_bucket = spi_s3_utils.SpiS3Utils('original')
+        self._processed_bucket = spi_s3_utils.SpiS3Utils('processed')
 
+    @staticmethod
     def _database_files(self, qs):
-        s = set()
+        file_keys = set()
 
         for row in qs:
-            s.add(row.file.object_storage_key)
+            file_keys.add(row.file.object_storage_key)
 
-        return s
+        return file_keys
 
     def run(self):
         valid_extensions = settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS
@@ -46,8 +41,8 @@ class CheckOrphanes(object):
         files_database_media = self._database_files(Medium.objects.all())
 
         print('Collecting files from Resized bucket')
-        files_bucket_resized = self._resizes_bucket.list_files(settings.RESIZED_PREFIX + '/',
-                                                               only_from_extensions=valid_extensions)
+        files_bucket_resized = self._processed_bucket.list_files(settings.RESIZED_PREFIX + '/',
+                                                                 only_from_extensions=valid_extensions)
 
         print('Collecting files from Resized database')
         files_database_resized = self._database_files(MediumResized.objects.all())

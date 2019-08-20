@@ -33,6 +33,10 @@ class GenerateTags(object):
 
 
 def generate_virtual_tags(medium: Medium):
+    """For each tag of :param medium checks that the parent tag exists. If it does not exist creates it
+    with the tag.type == Tag.GENERATED. E.g. if "people/john_doe" is a tag in :param medium creates
+    "people" (type is generated)
+    """
     for tag in medium.tags.all():
         tag_parts: List[str] = tag.name.name.split("/")
 
@@ -43,16 +47,19 @@ def generate_virtual_tags(medium: Medium):
             try:
                 medium.tags.get(name__name=new_part)
                 i += 1
+                # A tag already exists, nothing to do
                 continue
             except ObjectDoesNotExist:
                 pass
 
+            # Checks if TagName exists or creates it
             try:
                 tag_name = TagName.objects.get(name=new_part)
             except ObjectDoesNotExist:
                 tag_name = TagName(name=new_part)
                 tag_name.save()
 
+            # Creates Tag (with tag_name, generated) or finds it
             try:
                 tag = Tag.objects.get(name=tag_name, importer=Tag.GENERATED)
             except ObjectDoesNotExist:

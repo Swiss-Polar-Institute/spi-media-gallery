@@ -13,12 +13,12 @@ class Command(BaseCommand):
     help = 'Exports resized media with generated XMP files'
 
     def add_arguments(self, parser):
-        parser.add_argument('prefix', type=str, help='Prefix - can be ''')
         parser.add_argument('output_directory', type=str,
                             help='Output of the resized media with the XMP associated files. This directory gets '
                                  'created')
         parser.add_argument('size', type=str, choices=['S', 'L', 'O'],
                             help='Size (Small, Large, Original files) to be exported')
+        parser.add_argument('--prefix', type=str, default='', help='Prefix to filter for')
 
     def handle(self, *args, **options):
         prefix = options['prefix']
@@ -56,7 +56,7 @@ class ExportMedia(object):
             medium_resized = medium._medium_resized(self._size)
 
             if medium_resized is None or medium_resized.file is None:
-                print('Medium without the resized file')
+                print('Medium without the resized file: {}'.format(medium.pk))
                 continue
 
             tags = medium_resized.medium.tags.all()
