@@ -7,7 +7,7 @@ import errno
 import pathlib
 import sys
 
-FILE_EXTENSION = "jpg"
+FILE_EXTENSION = "xmp"
 
 
 def copy_files(source, destination):
