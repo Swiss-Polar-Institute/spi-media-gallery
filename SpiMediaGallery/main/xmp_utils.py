@@ -1,10 +1,11 @@
 from libxmp.utils import file_to_dict
 import textwrap
+from typing import Set
 
 
 class XmpUtils:
     @staticmethod
-    def read_tags(file_path):
+    def read_tags(file_path: str) -> Set[str]:
         tags = set()
 
         xmp = file_to_dict(file_path)
@@ -21,7 +22,7 @@ class XmpUtils:
         return tags
 
     @staticmethod
-    def generate_xmp(output_file, tags):
+    def generate_xmp(output_file: str, tags: Set[str]) -> None:
         # libxmp Python library seems to not be able to create a *new* XMP file, only
         # to open, read and modify files
         # xml Python library could do this but with some problems for the root node;
