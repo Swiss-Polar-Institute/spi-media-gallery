@@ -1,10 +1,10 @@
 from django.core.management.base import BaseCommand
 
 from main.models import Medium, Tag, TagName, File
-from libxmp.utils import file_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.conf import settings
+from main.xmp_utils import XmpUtils
 
 import os
 import tempfile
@@ -79,7 +79,7 @@ class TagImporter(object):
             temporary_tags_file.close()
 
             # Extracts tags
-            tags = self._extract_tags(temporary_tags_file.name)
+            tags = XmpUtils.read_tags(temporary_tags_file.name)
 
         medium: Medium
 
@@ -131,20 +131,3 @@ class TagImporter(object):
 
         if temporary_tags_file is not None:
             os.remove(temporary_tags_file.name)
-
-    @staticmethod
-    def _extract_tags(file_path):
-        tags = set()
-
-        xmp = file_to_dict(file_path)
-
-        if "http://www.digikam.org/ns/1.0/" in xmp:
-            for tag_section in xmp['http://www.digikam.org/ns/1.0/']:
-                if len(tag_section) == 0:
-                    continue
-
-                tag = tag_section[1]
-                if tag != "":
-                    tags.add(tag)
-
-        return tags
