@@ -21,12 +21,12 @@ class Command(BaseCommand):
     help = 'Updates photo tagging'
 
     def add_arguments(self, parser):
-        parser.add_argument('--prefix', type=str, default="",
-                            help="Prefix of the bucket to import files (e.g. a directory)")
+        parser.add_argument('--prefix', type=str, default='',
+                            help='Prefix of the bucket to import files (e.g. a directory)')
 
     def handle(self, *args, **options):
-        bucket_name = "original"
-        prefix = options["prefix"]
+        bucket_name = 'original'
+        prefix = options['prefix']
 
         tag_importer = TagImporter(bucket_name, prefix)
 
@@ -43,9 +43,9 @@ class TagImporter(object):
     def import_tags(self):
         self.all_keys = self._media_bucket.get_set_of_keys(self._prefix)
 
-        progress_report = ProgressReport(len(self.all_keys), extra_information="Adding files with tags")
+        progress_report = ProgressReport(len(self.all_keys), extra_information='Adding files with tags')
 
-        print("Total number of files to process:", len(self.all_keys))
+        print('Total number of files to process:', len(self.all_keys))
 
         for s3_object in self._media_bucket.objects_in_bucket(self._prefix):
             progress_report.increment_and_print_if_needed()
@@ -61,7 +61,7 @@ class TagImporter(object):
 
         size_of_medium = s3_object.size
 
-        xmp_file = s3_object.key + ".xmp"
+        xmp_file = s3_object.key + '.xmp'
 
         tags = []
 
@@ -74,8 +74,8 @@ class TagImporter(object):
             # from physical files)
             xmp_object = self._media_bucket.get_object(xmp_file)
 
-            temporary_tags_file = tempfile.NamedTemporaryFile(suffix=".xmp", delete=False)
-            temporary_tags_file.write(xmp_object.get()["Body"].read())
+            temporary_tags_file = tempfile.NamedTemporaryFile(suffix='.xmp', delete=False)
+            temporary_tags_file.write(xmp_object.get()['Body'].read())
             temporary_tags_file.close()
 
             # Extracts tags

@@ -19,21 +19,21 @@ class Command(BaseCommand):
 
 class UpdateTime(object):
     def __init__(self):
-        self._media_bucket = spi_s3_utils.SpiS3Utils("original")
+        self._media_bucket = spi_s3_utils.SpiS3Utils('original')
 
     def update_time(self):
         media = Medium.objects.filter(width__isnull=False).filter(datetime_taken__isnull=True)
 
         if len(media) == 0:
-            CommandError("Nothing to be datetime_taken updated")
+            CommandError('Nothing to be datetime_taken updated')
 
-        progress_report = ProgressReport(len(media), unit="file",
-                                         extra_information="Update datetime_taken")
+        progress_report = ProgressReport(len(media), unit='file',
+                                         extra_information='Update datetime_taken')
 
         for medium in media:
             # Download Media file from the bucket
             suffix = utils.file_extension(medium.file.object_storage_key)
-            local_media_file = tempfile.NamedTemporaryFile(suffix="." + suffix, delete=False)
+            local_media_file = tempfile.NamedTemporaryFile(suffix='.' + suffix, delete=False)
             local_media_file.close()
             self._media_bucket.bucket().download_file(medium.file.object_storage_key, local_media_file.name)
 
@@ -46,7 +46,7 @@ class UpdateTime(object):
 
                 medium.save()
 
-            print("Finished: medium.id: {}".format(medium.id))
+            print('Finished: medium.id: {}'.format(medium.id))
 
             os.remove(local_media_file.name)
 

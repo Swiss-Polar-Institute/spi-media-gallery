@@ -7,7 +7,7 @@ from main.models import Medium
 
 
 class MediumIdForm(forms.Form):
-    medium_id = forms.CharField(label="Media ID", max_length=255, help_text="Example: SPI-010.jpg, 10, SPI-010.crw")
+    medium_id = forms.CharField(label='Media ID', max_length=255, help_text='Example: SPI-010.jpg, 10, SPI-010.crw')
 
 
 class LocationEntryCoordinates(forms.ModelForm):

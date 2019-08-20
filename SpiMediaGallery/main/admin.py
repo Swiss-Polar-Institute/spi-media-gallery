@@ -15,12 +15,12 @@ class MediumAdmin(OSMGeoAdmin):
     search_fields = ('file__object_storage_key', 'file__md5',)
     raw_id_fields = ('file',)
     list_select_related = ('file', 'photographer',)
-    readonly_fields = ("preview",)
+    readonly_fields = ('preview',)
 
     form = LocationEntryCoordinates
 
     def tags_list(self, obj):
-        return ",".join([str(t) for t in obj.tags.all()])
+        return ','.join([str(t) for t in obj.tags.all()])
 
     def duration_mmss(self, obj):
         return main.utils.seconds_to_minutes_seconds(obj.duration)
@@ -67,7 +67,7 @@ class TagAdmin(admin.ModelAdmin):
             return obj.name.name
 
         else:
-            return ""
+            return ''
 
 
 class TagNameAdmin(admin.ModelAdmin):
@@ -78,12 +78,13 @@ class TagNameAdmin(admin.ModelAdmin):
 
 class MediumResizedAdmin(admin.ModelAdmin):
     list_display = (
-    'original_filename', 'file_object_storage_key', 'file_md5', 'file_size', 'size_label', 'height', 'width', 'medium',
-    'datetime_resized',)
+        'original_filename', 'file_object_storage_key', 'file_md5', 'file_size', 'size_label', 'height', 'width',
+        'medium',
+        'datetime_resized',)
     ordering = (
-    'medium__file__object_storage_key', 'file__object_storage_key', 'file__size', 'size_label', 'height', 'width',
-    'medium',
-    'datetime_resized',)
+        'medium__file__object_storage_key', 'file__object_storage_key', 'file__size', 'size_label', 'height', 'width',
+        'medium',
+        'datetime_resized',)
     search_fields = ('medium__file__object_storage_key', 'file__object_storage_key', 'file__md5',)
     raw_id_fields = ('file', 'medium',)
     list_select_related = ('file', 'medium',)

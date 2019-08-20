@@ -9,12 +9,12 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('sqlite3file', type=str,
-                            help="Needs to have a table named `gps` with at least the fields `date_time`, `latitude` and `longitude`")
-        parser.add_argument('output_file', type=str, help="New GeoJSON file")
+                            help='Needs to have a table named `gps` with at least the fields `date_time`, `latitude` and `longitude`')
+        parser.add_argument('output_file', type=str, help='New GeoJSON file')
 
     def handle(self, *args, **options):
-        sqlite3_filepath = options["sqlite3file"]
-        output_filepath = options["output_file"]
+        sqlite3_filepath = options['sqlite3file']
+        output_filepath = options['output_file']
 
         generator = Sqlite3toGeojson(sqlite3_filepath, output_filepath)
 
@@ -53,7 +53,7 @@ class Sqlite3toGeojson(object):
         if len(locations) > 1:
             multi_line_string.append(LineString(locations))
 
-        with open(self._output_filepath, "w") as f:
+        with open(self._output_filepath, 'w') as f:
             f.write(multi_line_string.geojson)
 
-        print("Result saved in {}".format(self._output_filepath))
+        print('Result saved in {}'.format(self._output_filepath))

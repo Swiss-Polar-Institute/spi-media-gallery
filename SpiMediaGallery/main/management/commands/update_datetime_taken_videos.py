@@ -21,10 +21,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('bucket_name_media', type=str,
-                            help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION")
+                            help='Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION')
 
     def handle(self, *args, **options):
-        bucket_name_media = options["bucket_name_media"]
+        bucket_name_media = options['bucket_name_media']
 
         updater = UpdateDateTimeTaken(bucket_name_media)
 
@@ -37,12 +37,12 @@ def get_information_from_video(video_file):
     video_information = MediaInfo.parse(video_file)
 
     for track in video_information.tracks:
-        if track.track_type == "Video":
+        if track.track_type == 'Video':
             information['width'] = track.width
             information['height'] = track.height
             information['duration'] = float(track.duration) / 1000
             if track.encoded_date is not None:
-                dt = datetime.datetime.strptime(track.encoded_date, "UTC %Y-%m-%d %H:%M:%S")
+                dt = datetime.datetime.strptime(track.encoded_date, 'UTC %Y-%m-%d %H:%M:%S')
                 dt = dt.replace(tzinfo=timezone.utc)
                 information['date_encoded'] = dt
 
@@ -75,7 +75,7 @@ class UpdateDateTimeTaken(object):
         total_bytes = videos_to_update.aggregate(Sum('file__size'))['file__size__sum']
 
         progress_report = ProgressReport(total_bytes,
-                                         extra_information="Updating medium",
+                                         extra_information='Updating medium',
                                          steps_are_bytes=True)
 
         for video in videos_to_update:
@@ -89,7 +89,7 @@ class UpdateDateTimeTaken(object):
             assert os.stat(media_file.name).st_size == video.file.size
 
             download_speed = (video.file.size / 1024 / 1024) / download_time  # MB/s
-            print("Download Stats: Total size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(
+            print('Download Stats: Total size: {} Time: {} Speed: {:.2f} MB/s File: {}'.format(
                 utils.bytes_to_human_readable(video.file.size),
                 utils.seconds_to_human_readable(download_time),
                 download_speed,

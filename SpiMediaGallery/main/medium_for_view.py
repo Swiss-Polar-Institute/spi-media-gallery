@@ -17,8 +17,8 @@ class MediumForViewManager(models.Manager):
 
 
 class MediumForView(Medium):
-    URL_SMALL_DO_NOT_EXIST = static("images/small-does-not-exist.jpg")
-    URL_THUMBNAIL_DO_NOT_EXIST = static("images/thumbnail-does-not-exist.jpg")
+    URL_SMALL_DO_NOT_EXIST = static('images/small-does-not-exist.jpg')
+    URL_THUMBNAIL_DO_NOT_EXIST = static('images/thumbnail-does-not-exist.jpg')
 
     objects = MediumForViewManager()
 
@@ -42,11 +42,11 @@ class MediumForView(Medium):
 
         resized_extension = utils.file_extension(medium_resized.file.object_storage_key)
 
-        return link_for_medium(medium_resized.file, "inline",
+        return link_for_medium(medium_resized.file, 'inline',
                                filename_for_resized_medium(self.pk, size_label, resized_extension))
 
     def original_file_attachment_url(self) -> str:
-        return link_for_medium(self.file, "attachment", filename_for_medium(self))
+        return link_for_medium(self.file, 'attachment', filename_for_medium(self))
 
     def small_resolution_url(self) -> str:
         return self._url(MediumResized.SMALL)
@@ -60,7 +60,7 @@ class MediumForView(Medium):
         if resized is None:
             return self.URL_SMALL_DO_NOT_EXIST
 
-        return link_for_medium(resized.file, "inline",
+        return link_for_medium(resized.file, 'inline',
                                filename_for_resized_medium(self.pk, size_label,
                                                            utils.file_extension(resized.file.object_storage_key)))
 
@@ -96,9 +96,9 @@ class MediumForView(Medium):
 
     def video_embed_responsive_ratio(self) -> str:
         if self.width is not None and self.height is not None and math.isclose(self.width / self.height, 16 / 9):
-            return "embed-responsive-16by9"
+            return 'embed-responsive-16by9'
 
-        return "embed-responsive-16by9"
+        return 'embed-responsive-16by9'
 
     def thumbnail_type(self) -> str:
         size_label = self._thumbnail_size()
@@ -106,7 +106,7 @@ class MediumForView(Medium):
         thumbnail = self._medium_resized(size_label)
 
         if thumbnail is None:
-            return "P"
+            return 'P'
         else:
             return self.medium_type
 
@@ -123,16 +123,16 @@ class MediumForView(Medium):
 
     def border_color(self) -> str:
         if self.medium_type == Medium.VIDEO:
-            return "border-dark"
+            return 'border-dark'
 
     def resolution_for_original(self) -> str:
         if self.width is None or self.height is None:
-            return "Unknown"
+            return 'Unknown'
 
-        return "{}x{}".format(self.width, self.height)
+        return '{}x{}'.format(self.width, self.height)
 
     def file_name(self) -> str:
-        return "SPI-{}.{}".format(self.pk, utils.file_extension(self.file.object_storage_key))
+        return 'SPI-{}.{}'.format(self.pk, utils.file_extension(self.file.object_storage_key))
 
     def list_of_tags(self) -> List[Dict[str, Any]]:
         list_of_tags = []
@@ -165,7 +165,7 @@ class MediumForView(Medium):
             filename = filename_for_resized_medium(self.pk, medium_resized.size_label,
                                                    utils.file_extension(medium_resized.file.object_storage_key))
 
-            size_information['image_link'] = link_for_medium(medium_resized.file, "inline", filename)
+            size_information['image_link'] = link_for_medium(medium_resized.file, 'inline', filename)
 
             sizes_presentation.append(size_information)
 
@@ -173,21 +173,21 @@ class MediumForView(Medium):
 
     def copyright_text(self) -> str:
         if self.copyright is None:
-            return "Unknown"
+            return 'Unknown'
         else:
             return self.copyright.public_text
 
     def license_text(self) -> str:
         if self.license is None:
-            return "Unknown"
+            return 'Unknown'
         else:
             return self.license.public_text
 
     def photographer_name(self) -> str:
         if self.photographer is None:
-            return "Unknown"
+            return 'Unknown'
         else:
-            return "{} {}".format(self.photographer.first_name, self.photographer.last_name)
+            return '{} {}'.format(self.photographer.first_name, self.photographer.last_name)
 
     def is_photo(self) -> bool:
         return self.medium_type == self.PHOTO

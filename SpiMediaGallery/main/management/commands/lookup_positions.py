@@ -23,7 +23,7 @@ class MediaLocationLookup(object):
         media_to_geolocate = Medium.objects.filter(location=None).exclude(datetime_taken__isnull=True)
 
         progress_report = ProgressReport(len(media_to_geolocate),
-                                         extra_information="Adding location information to media")
+                                         extra_information='Adding location information to media')
 
         datetime_to_position = DatetimeToPosition()
 
@@ -35,7 +35,7 @@ class MediaLocationLookup(object):
             location = datetime_to_position.lookup_datetime_datetime(datetime_taken)
 
             if location is None:
-                print("No location for: {}".format(datetime_taken))
+                print('No location for: {}'.format(datetime_taken))
             else:
                 photo.location = Point(location[1], location[0])
                 photo.save()

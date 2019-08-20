@@ -26,7 +26,7 @@ from main.spi_s3_utils import SpiS3Utils
 
 
 class Homepage(TemplateView):
-    template_name = "homepage.tmpl"
+    template_name = 'homepage.tmpl'
 
     def get_context_data(self, **kwargs):
         context = super(Homepage, self).get_context_data(**kwargs)
@@ -39,7 +39,7 @@ class Homepage(TemplateView):
             t = {}
 
             tag_name = tag.name
-            tag_indentation = tag_name.count("/")
+            tag_indentation = tag_name.count('/')
 
             t['id'] = name_to_id.get(tag_name, None)
 
@@ -47,16 +47,16 @@ class Homepage(TemplateView):
                 # A tag exists now but not when the dictionary was created
                 continue
 
-            t['open_uls'] = "<ul>" * (tag_indentation - last_indentation)
-            t['close_uls'] = "</ul>" * (last_indentation - tag_indentation)
+            t['open_uls'] = '<ul>' * (tag_indentation - last_indentation)
+            t['close_uls'] = '</ul>' * (last_indentation - tag_indentation)
 
-            context['close_orphaned_uls'] = "</ul>" * tag_indentation
+            context['close_orphaned_uls'] = '</ul>' * tag_indentation
 
             last_indentation = tag_indentation
 
             t['tag'] = tag.name
             t['count'] = Medium.objects.filter(tags__name__name=tag_name).count()
-            t['shortname'] = tag_name.split("/")[-1]
+            t['shortname'] = tag_name.split('/')[-1]
 
             tags.append(t)
 
@@ -86,12 +86,12 @@ def search_for_nearby(latitude: float, longitude: float, km: float) -> Tuple[Dic
     qs = MediumForView.objects.filter(location__within=buffered)
 
     if qs.count() != 1:
-        photos_string = "media"
+        photos_string = 'media'
     else:
-        photos_string = "medium"
+        photos_string = 'medium'
 
     information = {}
-    information["search_explanation"] = "{} {} in a radius of {} Km from latitude: {:.2f} longitude: {:.2f}".format(
+    information['search_explanation'] = '{} {} in a radius of {} Km from latitude: {:.2f} longitude: {:.2f}'.format(
         qs.count(),
         photos_string, km, latitude, longitude)
 
@@ -104,13 +104,13 @@ def search_in_box(north: float, south: float, east: float, west: float) -> Tuple
     qs = MediumForView.objects.filter(location__contained=geom)
 
     if qs.count() != 1:
-        photos_string = "media"
+        photos_string = 'media'
     else:
-        photos_string = "medium"
+        photos_string = 'medium'
 
     information = {}
 
-    information["search_explanation"] = "{} {} taken in area {:.2f} {:.2f} {:.2f} {:.2f}".format(
+    information['search_explanation'] = '{} {} taken in area {:.2f} {:.2f} {:.2f} {:.2f}'.format(
         qs.count(),
         photos_string,
         north, east,
@@ -122,7 +122,7 @@ def search_in_box(north: float, south: float, east: float, west: float) -> Tuple
 def search_for_tag_ids(tag_ids: [List[int]]) -> Union[Dict[str, str], object]:
     information = {}
 
-    query_media_for_tags = MediumForView.objects.order_by("datetime_taken")
+    query_media_for_tags = MediumForView.objects.order_by('datetime_taken')
     tags_list = []
 
     for tag_id in tag_ids:
@@ -131,20 +131,20 @@ def search_for_tag_ids(tag_ids: [List[int]]) -> Union[Dict[str, str], object]:
         query_media_for_tags = query_media_for_tags.filter(tags__name__name=tag_name)
         tags_list.append(tag_name)
 
-    tags_list = ", ".join(tags_list)
+    tags_list = ', '.join(tags_list)
 
     query_media_for_tags_count = query_media_for_tags.count()
 
     if query_media_for_tags_count != 1:
-        photos_string = "Media"
+        photos_string = 'Media'
     else:
-        photos_string = "Medium"
+        photos_string = 'Medium'
 
     if len(tag_ids) != 1:
-        information["search_explanation"] = "{} {} with these tags: {}".format(query_media_for_tags_count,
+        information['search_explanation'] = '{} {} with these tags: {}'.format(query_media_for_tags_count,
                                                                                photos_string, tags_list)
     else:
-        information["search_explanation"] = "{} {} with this tag: {}".format(query_media_for_tags_count, photos_string,
+        information['search_explanation'] = '{} {} with this tag: {}'.format(query_media_for_tags_count, photos_string,
                                                                              tags_list)
 
     return information, query_media_for_tags
@@ -153,42 +153,42 @@ def search_for_tag_ids(tag_ids: [List[int]]) -> Union[Dict[str, str], object]:
 class Search(TemplateView):
     # @print_sql_decorator(count_only=False)
     def get(self, request, *args, **kwargs):
-        if "tags" in request.GET:
+        if 'tags' in request.GET:
             list_of_tag_ids = request.GET.getlist('tags')
             information, qs = search_for_tag_ids(list_of_tag_ids)
 
-        elif "latitude" in request.GET and "longitude" in request.GET and "km" in request.GET:
-            latitude = float(request.GET["latitude"])
-            longitude = float(request.GET["longitude"])
-            km = float(request.GET["km"])
+        elif 'latitude' in request.GET and 'longitude' in request.GET and 'km' in request.GET:
+            latitude = float(request.GET['latitude'])
+            longitude = float(request.GET['longitude'])
+            km = float(request.GET['km'])
 
             information, qs = search_for_nearby(latitude, longitude, km)
 
-        elif "north" in request.GET and "south" in request.GET and "east" in request.GET and "west" in request.GET:
-            north = float(request.GET["north"])
-            south = float(request.GET["south"])
-            east = float(request.GET["east"])
-            west = float(request.GET["west"])
+        elif 'north' in request.GET and 'south' in request.GET and 'east' in request.GET and 'west' in request.GET:
+            north = float(request.GET['north'])
+            south = float(request.GET['south'])
+            east = float(request.GET['east'])
+            west = float(request.GET['west'])
 
             information, qs = search_in_box(north, south, east, west)
 
         else:
-            error = {"error_message": "Invalid parameters received"}
-            return render(request, "error.tmpl", error)
+            error = {'error_message': 'Invalid parameters received'}
+            return render(request, 'error.tmpl', error)
 
         paginator = Paginator(qs, 100)
-        page_number = request.GET.get("page")
+        page_number = request.GET.get('page')
         photos = paginator.get_page(page_number)
-        information["media"] = photos
+        information['media'] = photos
 
-        return render(request, "search.tmpl", information)
+        return render(request, 'search.tmpl', information)
 
     def post(self, request, *args, **kwargs):
-        medium_id = request.POST["medium_id"]
+        medium_id = request.POST['medium_id']
 
-        medium_id = medium_id.split(".")[0]
+        medium_id = medium_id.split('.')[0]
 
-        medium_id = int(re.findall("\d+", medium_id)[0])
+        medium_id = int(re.findall('\d+', medium_id)[0])
 
         try:
             medium = Medium.objects.get(id=medium_id)
@@ -197,39 +197,39 @@ class Search(TemplateView):
             template_information['medium_id_not_found'] = medium_id
             template_information['form_search_medium_id'] = MediumIdForm
 
-            return render(request, "error_medium_id_not_found.tmpl", template_information)
+            return render(request, 'error_medium_id_not_found.tmpl', template_information)
 
-        return redirect(reverse("medium", kwargs={"media_id": medium.pk}))
+        return redirect(reverse('medium', kwargs={'media_id': medium.pk}))
 
 
 class DisplayRandom(TemplateView):
     def get(self, request, *args, **kwargs):
-        type_of_medium = kwargs["type_of_medium"]
+        type_of_medium = kwargs['type_of_medium']
 
         qs = Medium.objects
 
-        if type_of_medium == "photo":
+        if type_of_medium == 'photo':
             qs = qs.filter(medium_type=Medium.PHOTO)
-            error_no_medium = {"error_message": "No photos available in this installation. Please contact {}".format(
+            error_no_medium = {'error_message': 'No photos available in this installation. Please contact {}'.format(
                 settings.SITE_ADMINISTRATOR)}
-        elif type_of_medium == "video":
+        elif type_of_medium == 'video':
             qs = qs.filter(medium_type=Medium.VIDEO)
-            error_no_medium = {"error_message": "No videos available in this installation. Please contact {}".format(
+            error_no_medium = {'error_message': 'No videos available in this installation. Please contact {}'.format(
                 settings.SITE_ADMINISTRATOR)}
-        elif type_of_medium == "medium":
+        elif type_of_medium == 'medium':
             qs = qs.all()
-            error_no_medium = {"error_message": "No media available in this installation. Please contact {}".format(
+            error_no_medium = {'error_message': 'No media available in this installation. Please contact {}'.format(
                 settings.SITE_ADMINISTRATOR)}
         else:
-            error_no_medium = {"error_message": "Invalid type of medium"}
+            error_no_medium = {'error_message': 'Invalid type of medium'}
             qs = []
 
         if qs.count() == 0:
-            return render(request, "error.tmpl", error_no_medium)
+            return render(request, 'error.tmpl', error_no_medium)
 
-        qs = qs.order_by("?")
+        qs = qs.order_by('?')
 
-        return redirect(reverse("medium", kwargs={"media_id": qs[0].pk}))
+        return redirect(reverse('medium', kwargs={'media_id': qs[0].pk}))
 
 
 def meters_to_degrees(meters: float) -> float:
@@ -240,32 +240,32 @@ class ListVideos(TemplateView):
     def get(self, request, *args, **kwargs):
         information = {}
 
-        information["search_explanation"] = "Videos"
+        information['search_explanation'] = 'Videos'
 
-        videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).order_by("file__object_storage_key")
+        videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).order_by('file__object_storage_key')
 
         paginator = Paginator(videos_qs, 100)
         page_number = request.GET.get('page')
         videos = paginator.get_page(page_number)
         information['media'] = videos
 
-        return render(request, "list_videos.tmpl", information)
+        return render(request, 'list_videos.tmpl', information)
 
 
 class ListVideosExportCsv(TemplateView):
     def get(self, request, *args, **kwargs):
         response = HttpResponse(content_type='text/csv')
 
-        response['Content-Disposition'] = 'attachment; filename="spi_search_videos-{}.csv"'.format(
-            datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+        response['Content-Disposition'] = "attachment; filename='spi_search_videos-{}.csv'".format(
+            datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
 
-        videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).order_by("file__object_storage_key")
+        videos_qs = MediumForView.objects.filter(medium_type=Medium.VIDEO).order_by('file__object_storage_key')
 
         writer = csv.writer(response)
-        writer.writerow(["ID", "Name", "Duration", "Link"])
+        writer.writerow(['ID', 'Name', 'Duration', 'Link'])
 
         for video in videos_qs:
-            absolute_link_to_medium_page = request.build_absolute_uri(reverse("medium", kwargs={"media_id": video.pk}))
+            absolute_link_to_medium_page = request.build_absolute_uri(reverse('medium', kwargs={'media_id': video.pk}))
             writer.writerow([video.pk, video.file.object_storage_key, video.duration_in_minutes_seconds(),
                              absolute_link_to_medium_page])
 
@@ -273,7 +273,7 @@ class ListVideosExportCsv(TemplateView):
 
 
 class Display(TemplateView):
-    template_name = "display.tmpl"
+    template_name = 'display.tmpl'
 
     def get_context_data(self, **kwargs):
         context = super(Display, self).get_context_data(**kwargs)
@@ -284,7 +284,7 @@ class Display(TemplateView):
 
 
 class Map(TemplateView):
-    template_name = "map.tmpl"
+    template_name = 'map.tmpl'
 
     def get_context_data(self, **kwargs):
         context = super(TemplateView, self).get_context_data(**kwargs)
@@ -294,13 +294,13 @@ class Map(TemplateView):
 
 class PhotosGeojson(View):
     def get(self, request):
-        serialized = serialize('geojson', Medium.objects.all(), geometry_field="location", fields=('pk',))
+        serialized = serialize('geojson', Medium.objects.all(), geometry_field='location', fields=('pk',))
         return JsonResponse(json.loads(serialized))
 
 
 class TrackGeojson(View):
     def get(self, request_):
-        track = open(settings.TRACK_MAP_FILEPATH, "r")
+        track = open(settings.TRACK_MAP_FILEPATH, 'r')
         return JsonResponse(json.load(track))
 
 
@@ -326,12 +326,12 @@ class GetFile(View):
         r.raise_for_status()
 
         response = HttpResponse(r.raw, content_type=content_type)
-        response["Content-Disposition"] = "{}; filename={}".format(content_disposition_type, filename)
+        response['Content-Disposition'] = '{}; filename={}'.format(content_disposition_type, filename)
         return response
 
 
 class Stats(TemplateView):
-    template_name = "stats.tmpl"
+    template_name = 'stats.tmpl'
 
     def get_context_data(self, **kwargs):
         context = super(TemplateView, self).get_context_data(**kwargs)
@@ -339,16 +339,16 @@ class Stats(TemplateView):
         total_number_photos = Medium.objects.filter(medium_type=Medium.PHOTO).count()
         total_number_videos = Medium.objects.filter(medium_type=Medium.VIDEO).count()
 
-        total_number_photos_resized = MediumResized.objects.filter(size_label="T").filter(
+        total_number_photos_resized = MediumResized.objects.filter(size_label='T').filter(
             medium__medium_type=Medium.PHOTO).count()
-        total_number_videos_resized = MediumResized.objects.filter(size_label="L").filter(
+        total_number_videos_resized = MediumResized.objects.filter(size_label='L').filter(
             medium__medium_type=Medium.VIDEO).count()
 
         size_of_photos = Medium.objects.filter(medium_type=Medium.PHOTO).aggregate(Sum('file__size'))['file__size__sum']
         size_of_videos = Medium.objects.filter(medium_type=Medium.VIDEO).aggregate(Sum('file__size'))['file__size__sum']
-        size_of_videos_resized = MediumResized.objects.filter(size_label="L").filter(medium__medium_type="V").aggregate(
+        size_of_videos_resized = MediumResized.objects.filter(size_label='L').filter(medium__medium_type='V').aggregate(
             Sum('medium__file__size'))['medium__file__size__sum']
-        size_of_photos_resized = MediumResized.objects.filter(size_label="S").filter(medium__medium_type="P").aggregate(
+        size_of_photos_resized = MediumResized.objects.filter(size_label='S').filter(medium__medium_type='P').aggregate(
             Sum('medium__file__size'))['medium__file__size__sum']
 
         if size_of_videos_resized is None:

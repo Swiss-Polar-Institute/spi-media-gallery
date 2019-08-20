@@ -21,7 +21,7 @@ class PhotographerUpdater(object):
         photos_without_photographer = Medium.objects.filter(photographer__isnull=True)
 
         progress_report = ProgressReport(len(photos_without_photographer),
-                                         extra_information="Updating photographer of photos")
+                                         extra_information='Updating photographer of photos')
 
         for photo in photos_without_photographer:
             progress_report.increment_and_print_if_needed()
@@ -29,7 +29,7 @@ class PhotographerUpdater(object):
             photographer_str = self._get_photographer_string(photo.tags.all())
 
             if photographer_str is None:
-                print("Photo without photographer tag:", photo.object_storage_key)
+                print('Photo without photographer tag:', photo.object_storage_key)
                 continue
 
             photographer = self._get_photographer(photographer_str)
@@ -39,14 +39,14 @@ class PhotographerUpdater(object):
 
     @staticmethod
     def _get_photographer(string):
-        first_name, last_name = string.split("_")
+        first_name, last_name = string.split('_')
         photographer = Photographer.objects.filter(first_name=first_name).filter(last_name=last_name)
         assert len(photographer) == 1
         return photographer[0]
 
     @staticmethod
     def _get_photographer_string(tags):
-        prefix = "photographer/"
+        prefix = 'photographer/'
         for tag in tags:
             if tag.tag.startswith(prefix):
                 return tag.tag[len(prefix):]
