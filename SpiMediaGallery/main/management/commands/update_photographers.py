@@ -19,8 +19,9 @@ class PhotographerUpdater(object):
 
     def update(self):
         photos_without_photographer = Medium.objects.filter(photographer__isnull=True)
+        photos_without_photographer_count = photos_without_photographer.count()
 
-        progress_report = ProgressReport(len(photos_without_photographer),
+        progress_report = ProgressReport(photos_without_photographer_count,
                                          extra_information='Updating photographer of photos')
 
         for photo in photos_without_photographer:

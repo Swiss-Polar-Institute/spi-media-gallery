@@ -23,7 +23,7 @@ class MediaLocationLookup(object):
     def lookup(self):
         media_to_geolocate = Medium.objects.filter(location=None).exclude(datetime_taken__isnull=True)
 
-        progress_report = ProgressReport(len(media_to_geolocate),
+        progress_report = ProgressReport(media_to_geolocate.count(),
                                          extra_information='Adding location information to media')
 
         datetime_to_position = DatetimeToPosition()

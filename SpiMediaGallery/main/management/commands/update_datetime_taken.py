@@ -24,10 +24,12 @@ class UpdateTime(object):
     def update_time(self):
         media = Medium.objects.filter(width__isnull=False).filter(datetime_taken__isnull=True)
 
-        if len(media) == 0:
+        media_count = media.count()
+
+        if media_count == 0:
             CommandError('Nothing to be datetime_taken updated')
 
-        progress_report = ProgressReport(len(media), unit='file',
+        progress_report = ProgressReport(media_count, unit='file',
                                          extra_information='Update datetime_taken')
 
         for medium in media:

@@ -131,12 +131,14 @@ class Resizer(object):
 
         verbose = self._medium_type == Medium.VIDEO
 
-        if len(media_to_be_resized) == 0:
+        media_to_be_resized_count = media_to_be_resized.count()
+
+        if media_to_be_resized_count == 0:
             print('Nothing to be resized? Aborting')
             sys.exit(1)
 
         if self._medium_type == Medium.PHOTO:
-            total_steps = len(media_to_be_resized)
+            total_steps = media_to_be_resized_count
             progress_report_unit = 'photos'
         else:
             total_steps = media_to_be_resized.aggregate(Sum('file__size'))['file__size__sum']
