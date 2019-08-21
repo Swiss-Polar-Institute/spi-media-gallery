@@ -1,4 +1,3 @@
-import datetime
 import os
 import sys
 import tempfile
@@ -54,7 +53,7 @@ def get_information_from_video(video_file: str) -> Dict[str, Any]:
             information['height'] = track.height
             information['duration'] = float(track.duration) / 1000
             if track.encoded_date is not None:
-                dt = datetime.datetime.strptime(track.encoded_date, 'UTC %Y-%m-%d %H:%M:%S')
+                dt = datetime.strptime(track.encoded_date, 'UTC %Y-%m-%d %H:%M:%S')
                 dt = dt.replace(tzinfo=timezone.utc)
                 information['date_encoded'] = dt
 
@@ -280,7 +279,7 @@ class Resizer(object):
             resized_medium.file = file
             resized_medium.size_label = size_label
             resized_medium.medium = medium
-            resized_medium.datetime_resized = datetime.datetime.now(tz=timezone.utc)
+            resized_medium.datetime_resized = datetime.now(tz=timezone.utc)
             resized_medium.save()
 
         if delete_file is not None:
