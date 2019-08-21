@@ -42,3 +42,18 @@ class ViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'SPI-1.jpg')
         self.assertContains(response, 'Copyright EPFL')
+
+    def test_search_invalid_parameters(self):
+        c = Client()
+
+        response = c.get('/media/?invalid_parameter=1')
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_search(self):
+        c = Client()
+
+        response = c.get('/media/?tags=1')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '1 Medium with this tag')

@@ -174,7 +174,7 @@ class Search(TemplateView):
 
         else:
             error = {'error_message': 'Invalid parameters received'}
-            return render(request, 'error.tmpl', error)
+            return render(request, 'error.tmpl', error, status=400)
 
         paginator = Paginator(qs, 100)
         page_number = request.GET.get('page')
