@@ -168,8 +168,8 @@ with open(secrets_file("spi_media_gallery_buckets.json")) as json_file:
         "access_key": "minio",
         "secret_key": "minio123"
     },
-    "thumbnails": {
-        "name": "thumbnails",
+    "processed": {
+        "name": "processed",
         "endpoint": "http://localhost:9000",
         "access_key": "minio",
         "secret_key": "minio123"

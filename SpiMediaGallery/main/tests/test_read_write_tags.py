@@ -19,7 +19,7 @@ class XmpUtilsTest(TestCase):
 
     def test_read_write_tags(self):
         # Creates XMP file with certain tags
-        temporary_file = tempfile.NamedTemporaryFile(suffix=".xmp", delete=False)
+        temporary_file = tempfile.NamedTemporaryFile(suffix='.xmp', delete=False)
         temporary_file.close()
         os.remove(temporary_file.name)
 
