@@ -90,6 +90,12 @@ class ResizeMediaTest(TestCase):
         self.assertEqual(MediumResized.objects.count(), 0)
         self.assertEqual(len(self._spi_s3_utils_processed.list_files('')), 0)
 
+        medium = Medium.objects.filter(medium_type=Medium.VIDEO)[0]
+        self.assertEqual(medium.file.md5, None)
+        self.assertEqual(medium.duration, None)
+        self.assertEqual(medium.height, None)
+        self.assertEqual(medium.width, None)
+
         resizer = Resizer('original', 'processed', ['S', 'L'], 'Videos')
         resizer.resize_media()
 
@@ -101,6 +107,10 @@ class ResizeMediaTest(TestCase):
         self.assertEqual(medium.file.md5, 'c116966f4d3da98b7ff03bf1abf238df')
         self.assertEqual(medium.file.size, 561627)
         self.assertEqual(medium.file.bucket, File.ORIGINAL)
+        self.assertEqual(medium.width, 1920)
+        self.assertEqual(medium.height, 1080)
+        self.assertEqual(medium.duration, 1)
+        self.assertEqual(medium.datetime_taken, None)   # Example video has no datetime
 
         small = MediumResized.objects.get(medium=medium, size_label="S")
         self.assertEqual(small.width, 640)

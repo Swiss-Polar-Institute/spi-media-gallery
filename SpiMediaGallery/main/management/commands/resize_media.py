@@ -126,6 +126,7 @@ class Resizer(object):
                 already_resized = qs
             else:
                 already_resized |= qs
+
         media_to_be_resized = Medium.objects.filter(medium_type=self._medium_type).exclude(id__in=already_resized)
 
         verbose = self._medium_type == Medium.VIDEO
@@ -182,17 +183,19 @@ class Resizer(object):
             else:
                 progress_report.increment_steps_and_print_if_needed(medium.file.size)
 
-    def _resize_medium(self, medium, medium_file_name, sizes):
-        delete_file: Optional[str] = None
-        file_converted: bool = False
+    def _resize_medium(self, medium, medium_file_name, sizes: List[str]):
+        file_to_delete: Optional[str] = None
+        file_pre_processed: bool = False
 
         for size_label in sizes:
             existing = MediumResized.objects.filter(medium=medium).filter(size_label=size_label)
 
             if len(existing) > 0:
+                # It already exists, skip...
                 continue
 
             if medium.file.size == 0:
+                # File with size 0, skip...
                 print('File {} size is 0, skipping'.format(medium.file.object_storage_key))
                 continue
 
@@ -208,10 +211,10 @@ class Resizer(object):
 
                 file_extension = utils.file_extension(medium_file_name).lower()
 
-                if (file_extension == 'arw' or file_extension == 'nef') and not file_converted:
+                if (file_extension in settings.PHOTO_PRE_PROCESS_DCRAW) and not file_pre_processed:
                     temporary_intermediate_file = utils.convert_raw_to_ppm(medium_file_name)
-                    file_converted = True
-                    delete_file = temporary_intermediate_file
+                    file_pre_processed = True
+                    file_to_delete = temporary_intermediate_file
                     medium_file_name = temporary_intermediate_file
 
                 resized_medium_file = utils.resize_photo(medium_file_name, resized_width)
@@ -282,5 +285,5 @@ class Resizer(object):
             resized_medium.datetime_resized = datetime.now(tz=timezone.utc)
             resized_medium.save()
 
-        if delete_file is not None:
-            os.remove(delete_file)
+        if file_to_delete is not None:
+            os.remove(file_to_delete)
