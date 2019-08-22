@@ -97,11 +97,19 @@ class ResizeMediaTest(TestCase):
         self.assertEqual(len(self._spi_s3_utils_processed.list_files('')), 2)
 
         medium = Medium.objects.filter(medium_type=Medium.VIDEO)[0]
+        self.assertEqual(medium.file.object_storage_key, 'MVI_0689_1.MOV')
+        self.assertEqual(medium.file.md5, 'c116966f4d3da98b7ff03bf1abf238df')
+        self.assertEqual(medium.file.size, 561627)
+        self.assertEqual(medium.file.bucket, File.ORIGINAL)
 
         small = MediumResized.objects.get(medium=medium, size_label="S")
         self.assertEqual(small.width, 640)
         self.assertEqual(small.height, 360)
+        self.assertGreater(small.file.size, 30000)
+        self.assertEqual(small.file.bucket, File.PROCESSED)
 
         large = MediumResized.objects.get(medium=medium, size_label="L")
         self.assertEqual(large.width, 1920)
         self.assertEqual(large.height, 1080)
+        self.assertGreater(large.file.size, 100000)
+        self.assertEqual(large.file.bucket, File.PROCESSED)

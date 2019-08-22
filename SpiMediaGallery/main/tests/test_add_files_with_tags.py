@@ -59,6 +59,7 @@ class GenerateTagsTest(TestCase):
         self.assertEqual(Medium.objects.all().count(), 3)
 
         m = Medium.objects.get(file__object_storage_key='IMG_4329.jpg')
+        m.file.bucket = File.PROCESSED
         tags = m.tags.all()
 
         self.assertEqual(tags.count(), 18)
