@@ -183,14 +183,22 @@ class Resizer(object):
             else:
                 progress_report.increment_steps_and_print_if_needed(medium.file.size)
 
-    def _resize_medium(self, medium, medium_file_name, sizes: List[str]):
+    def _resize_medium(self, medium, medium_local_file, sizes: List[str]):
         file_to_delete: Optional[str] = None
-        file_pre_processed: bool = False
+
+        file_resizer = ResizeMedium(medium, medium_local_file)
+
+        if medium.medium_type == medium.PHOTO:
+            self._update_information_from_photo_if_needed(medium, medium_local_file)
+        elif medium.medium_type == medium.VIDEO:
+            self._update_information_from_video(medium, medium_local_file)
+        else:
+            assert False
 
         for size_label in sizes:
             existing = MediumResized.objects.filter(medium=medium).filter(size_label=size_label)
 
-            if len(existing) > 0:
+            if existing.count() > 0:
                 # It already exists, skip...
                 continue
 
@@ -199,79 +207,25 @@ class Resizer(object):
                 print('File {} size is 0, skipping'.format(medium.file.object_storage_key))
                 continue
 
-            resized_medium = MediumResized()
+            file_resized, width, height = file_resizer.resize(size_label)
 
-            if size_label == 'O':
-                resized_width = None
-            else:
-                resized_width = settings.IMAGE_LABEL_TO_SIZES[size_label][0]
+            if file_resized is None:
+                print("Problem resizing file:", medium, "to:", size_label)
+                continue
 
-            if medium.medium_type == Medium.PHOTO:
-                self._update_information_from_photo_if_needed(medium, medium_file_name)
-
-                file_extension = utils.file_extension(medium_file_name).lower()
-
-                if (file_extension in settings.PHOTO_PRE_PROCESS_DCRAW) and not file_pre_processed:
-                    temporary_intermediate_file = utils.convert_raw_to_ppm(medium_file_name)
-                    file_pre_processed = True
-                    file_to_delete = temporary_intermediate_file
-                    medium_file_name = temporary_intermediate_file
-
-                resized_medium_file = utils.resize_photo(medium_file_name, resized_width)
-
-                if os.stat(resized_medium_file).st_size == 0:
-                    print('File {} resized output size is 0, skipping it'.format(medium.file.object_storage_key))
-                    continue
-
-                resized_image_information = utils.get_medium_information(resized_medium_file)
-                resized_medium.width = resized_image_information['width']
-                resized_medium.height = resized_image_information['height']
-
-            elif medium.medium_type == Medium.VIDEO:
-                self._update_information_from_video(medium, medium_file_name)
-
-                assert size_label != 'O'  # Not supported to resize to the original size for videos
-
-                start_time = time.time()
-                resized_medium_file = utils.resize_video(medium_file_name, resized_width)
-
-                if resized_medium_file is None:
-                    print('File {} cannot be encoded'.format(medium_file_name))
-                    continue
-
-                duration_convert = time.time() - start_time
-
-                information = get_information_from_video(resized_medium_file)
-
-                if 'duration' in information:
-                    speed = information['duration'] / duration_convert
-
-                    print('Conversion took: {} Speed: {:.2f}x'.format(utils.seconds_to_human_readable(duration_convert),
-                                                                      speed))
-                else:
-                    print('Conversion took: {} Speed: unknown, duration of video not known'.format(
-                        utils.seconds_to_human_readable(duration_convert)))
-
-                if 'width' in information and 'height' in information:
-                    resized_medium.width = information['width']
-                    resized_medium.height = information['height']
-
-            else:
-                assert False
-
-            md5_resized_file = utils.hash_of_file_path(resized_medium_file)
-            resized_file_extension = utils.file_extension(resized_medium_file).lower()
+            md5_resized_file = utils.hash_of_file_path(file_resized)
+            resized_file_extension = utils.file_extension(file_resized).lower()
 
             # Upload medium to bucket
             resized_key = os.path.join(settings.RESIZED_PREFIX,
                                        md5_resized_file + '-{}.{}'.format(size_label, resized_file_extension))
 
-            self._resizes_bucket.upload_file(resized_medium_file, resized_key)
-            file_size = os.stat(resized_medium_file).st_size
+            self._resizes_bucket.upload_file(file_resized, resized_key)
+            file_size = os.stat(file_resized).st_size
 
-            os.remove(resized_medium_file)
+            os.remove(file_resized)
 
-            # Update database
+            # Adds new file in the database
             file = File()
             file.object_storage_key = resized_key
             file.md5 = md5_resized_file
@@ -279,11 +233,84 @@ class Resizer(object):
             file.bucket = File.PROCESSED
             file.save()
 
+            # And the new resized medium
+            resized_medium = MediumResized()
             resized_medium.file = file
             resized_medium.size_label = size_label
+            resized_medium.height = height
+            resized_medium.width = width
             resized_medium.medium = medium
             resized_medium.datetime_resized = datetime.now(tz=timezone.utc)
             resized_medium.save()
 
         if file_to_delete is not None:
             os.remove(file_to_delete)
+
+
+class ResizeMedium:
+    def __init__(self, medium, medium_local_file):
+        self._medium = medium
+        self._medium_local_file = medium_local_file
+        self._file_pre_processed = None
+
+    def __del__(self):
+        if self._file_pre_processed is not None:
+            os.remove(self._file_pre_processed)
+
+    def resize(self, size_label: str):
+        medium_type = self._medium.medium_type
+
+        width = settings.IMAGE_LABEL_TO_SIZES[size_label][0]
+
+        if medium_type == Medium.PHOTO:
+            return self._resize_photo(width)
+        elif medium_type == Medium.VIDEO:
+            return self._resize_video(width)
+        else:
+            assert False
+
+    def _resize_photo(self, width_wanted: int):
+        file_extension = utils.file_extension(self._medium_local_file).lower()
+
+        if (file_extension in settings.PHOTO_PRE_PROCESS_DCRAW) and self._file_pre_processed is None:
+            self._file_pre_processed = utils.convert_raw_to_ppm(self._medium_local_file)
+
+        if self._file_pre_processed is not None:
+            file_to_resize = self._file_pre_processed
+        else:
+            file_to_resize = self._medium_local_file
+
+        resized_medium_file = utils.resize_photo(file_to_resize, width_wanted)
+        if os.stat(resized_medium_file).st_size == 0:
+            print('File {} resized output size is 0, skipping it'.format(self._medium.file.object_storage_key))
+            return None, None, None
+
+        resized_image_information = utils.get_medium_information(resized_medium_file)
+        width_wanted = resized_image_information['width']
+        height = resized_image_information['height']
+        return resized_medium_file, width_wanted, height
+
+    def _resize_video(self, width_wanted: int):
+        start_time = time.time()
+        resized_medium_file = utils.resize_video(self._medium_local_file, width_wanted)
+        if resized_medium_file is None:
+            print('File {} cannot be encoded'.format(self._medium_local_file))
+            return None, None, None
+
+        duration_convert = time.time() - start_time
+        information = get_information_from_video(resized_medium_file)
+        if 'duration' in information:
+            speed = information['duration'] / duration_convert
+
+            print('Conversion took: {} Speed: {:.2f}x'.format(utils.seconds_to_human_readable(duration_convert),
+                                                              speed))
+        else:
+            print('Conversion took: {} Speed: unknown, duration of video not known'.format(
+                utils.seconds_to_human_readable(duration_convert)))
+
+        width_wanted = height = None
+        if 'width' in information and 'height' in information:
+            width_wanted = information['width']
+            height = information['height']
+
+        return resized_medium_file, width_wanted, height

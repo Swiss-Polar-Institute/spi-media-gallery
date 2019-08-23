@@ -1,4 +1,5 @@
 import datetime
+import os
 import tempfile
 from typing import Optional, Set
 
@@ -84,6 +85,8 @@ class MediaImporter(object):
 
             # Extracts tags
             tags = XmpUtils.read_tags(temporary_tags_file.name)
+
+            os.unlink(temporary_tags_file.name)
 
         return tags
 

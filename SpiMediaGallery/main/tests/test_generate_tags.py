@@ -30,3 +30,4 @@ class GenerateTagsTest(TestCase):
         self.assertTrue(tags_qs.get(name__name='landscape', importer=Tag.XMP))
         self.assertTrue(tags_qs.get(name__name='people/john_doe', importer=Tag.XMP))
         self.assertTrue(tags_qs.get(name__name='people', importer=Tag.GENERATED))
+

@@ -32,3 +32,5 @@ class XmpUtilsTest(TestCase):
 
         # asserts that the original tags and read tags are the same
         self.assertEquals(tags, read_tags)
+
+        os.unlink(temporary_file.name)
