@@ -6,7 +6,7 @@ from typing import Optional, Set
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import transaction, OperationalError
 from django.utils import timezone
 
 from main import spi_s3_utils
@@ -121,6 +121,10 @@ class MediaImporter(object):
 
             medium.datetime_imported = datetime.datetime.now(tz=timezone.utc)
             medium.save()
+
+        except OperationalError as error:
+            print("Failed: ", s3_object_key)
+            raise error
 
         return medium
 
