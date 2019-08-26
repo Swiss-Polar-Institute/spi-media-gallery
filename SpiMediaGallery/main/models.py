@@ -5,6 +5,8 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 
+from botocore.exceptions import ClientError
+
 from .spi_s3_utils import SpiS3Utils
 
 
@@ -115,7 +117,11 @@ class File(models.Model):
 @receiver(models.signals.post_delete, sender=File)
 def delete_file(sender, instance, *args, **kwargs):
     spi_s3_utils = SpiS3Utils(instance.bucket_name())
-    spi_s3_utils.delete(instance.object_storage_key)
+    try:
+        spi_s3_utils.delete(instance.object_storage_key)
+    except ClientError.AccessDenied:
+        # Boto3 raises AccessDenied if the file is not there
+        pass
 
 
 class Medium(models.Model):
