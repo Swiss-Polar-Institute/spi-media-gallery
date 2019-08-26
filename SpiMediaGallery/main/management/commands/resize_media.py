@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 
+from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Sum
@@ -154,7 +155,12 @@ class Resizer(object):
             media_file = tempfile.NamedTemporaryFile(suffix='.' + suffix, delete=False)
             media_file.close()
             start_download = time.time()
-            self._media_bucket.bucket().download_file(medium.file.object_storage_key, media_file.name)
+            try:
+                self._media_bucket.bucket().download_file(medium.file.object_storage_key, media_file.name)
+            except ClientError:
+                print('Cannot download: {}'.format(medium.file.object_storage_key))
+                continue
+
             download_time = time.time() - start_download
 
             assert os.stat(media_file.name).st_size == medium.file.size
