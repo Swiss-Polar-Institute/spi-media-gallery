@@ -4,8 +4,8 @@ import pytz
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.test import TestCase
 
-from main.medium_for_view import MediumForView
-from main.models import *
+from ..medium_for_view import MediumForView
+from ..models import *
 
 
 class ImportSamplesTest(TestCase):

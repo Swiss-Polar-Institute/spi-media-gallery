@@ -4,10 +4,8 @@ from typing import List, Dict, Any, Optional
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.db import models
 
-from main import utils
-from main.models import Medium, MediumResized
-from main.utils import filename_for_resized_medium, filename_for_medium, human_readable_resolution_for_medium, \
-    link_for_medium
+from . import utils
+from .models import Medium, MediumResized
 
 
 class MediumForViewManager(models.Manager):
@@ -42,11 +40,11 @@ class MediumForView(Medium):
 
         resized_extension = utils.file_extension(medium_resized.file.object_storage_key)
 
-        return link_for_medium(medium_resized.file, 'inline',
-                               filename_for_resized_medium(self.pk, size_label, resized_extension))
+        return utils.link_for_medium(medium_resized.file, 'inline',
+                               utils.filename_for_resized_medium(self.pk, size_label, resized_extension))
 
     def original_file_attachment_url(self) -> str:
-        return link_for_medium(self.file, 'attachment', filename_for_medium(self))
+        return utils.link_for_medium(self.file, 'attachment', utils.filename_for_medium(self))
 
     def small_resolution_url(self) -> str:
         return self._url(MediumResized.SMALL)
@@ -60,8 +58,8 @@ class MediumForView(Medium):
         if resized is None:
             return self.URL_SMALL_DO_NOT_EXIST
 
-        return link_for_medium(resized.file, 'inline',
-                               filename_for_resized_medium(self.pk, size_label,
+        return utils.link_for_medium(resized.file, 'inline',
+                               utils.filename_for_resized_medium(self.pk, size_label,
                                                            utils.file_extension(resized.file.object_storage_key)))
 
     def file_size_original(self) -> str:
@@ -160,12 +158,12 @@ class MediumForView(Medium):
             size_information['size'] = utils.bytes_to_human_readable(medium_resized.file.size)
             size_information['width'] = medium_resized.width
 
-            size_information['resolution'] = human_readable_resolution_for_medium(medium_resized)
+            size_information['resolution'] = utils.human_readable_resolution_for_medium(medium_resized)
 
-            filename = filename_for_resized_medium(self.pk, medium_resized.size_label,
+            filename = utils.filename_for_resized_medium(self.pk, medium_resized.size_label,
                                                    utils.file_extension(medium_resized.file.object_storage_key))
 
-            size_information['image_link'] = link_for_medium(medium_resized.file, 'inline', filename)
+            size_information['image_link'] = utils.link_for_medium(medium_resized.file, 'inline', filename)
 
             sizes_presentation.append(size_information)
 

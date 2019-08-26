@@ -1,9 +1,9 @@
 from django.contrib.gis.geos import Point
 from django.core.management.base import BaseCommand
 
-from main.datetime_to_position import DatetimeToPosition
-from main.models import Medium
-from main.progress_report import ProgressReport
+from ...datetime_to_position import DatetimeToPosition
+from ...models import Medium
+from ...progress_report import ProgressReport
 
 
 class Command(BaseCommand):

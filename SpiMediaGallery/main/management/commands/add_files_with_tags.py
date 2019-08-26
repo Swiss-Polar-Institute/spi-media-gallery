@@ -9,16 +9,16 @@ from django.core.management.base import BaseCommand
 from django.db import transaction, OperationalError
 from django.utils import timezone
 
-from main import spi_s3_utils
-from main import utils
-from main.models import Medium, Tag, TagName, File
-from main.progress_report import ProgressReport
-from main.xmp_utils import XmpUtils
 from .generate_virtual_tags import generate_virtual_tags
+from ... import spi_s3_utils
+from ... import utils
+from ...models import Medium, Tag, TagName, File
+from ...progress_report import ProgressReport
+from ...xmp_utils import XmpUtils
 
 
 class Command(BaseCommand):
-    help = 'From the "original" bucket: list the files (photos or videos), adds them into the database (only the name '\
+    help = 'From the "original" bucket: list the files (photos or videos), adds them into the database (only the name ' \
            ' and file size since it is not downloading the files. It downloads the associated .xmp file and attach ' \
            'the  digiKam tags into the medium. Note that it generates virtual tags: e.g. if a tag is ' \
            '"people/john_doe" it will also add "people" '

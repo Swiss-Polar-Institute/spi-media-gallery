@@ -3,7 +3,7 @@
 from django import forms
 from django.contrib.gis.geos import Point
 
-from main.models import Medium
+from .models import Medium
 
 
 class MediumIdForm(forms.Form):

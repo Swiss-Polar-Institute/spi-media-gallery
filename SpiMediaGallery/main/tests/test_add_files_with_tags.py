@@ -4,8 +4,8 @@ from django.conf import settings
 from django.test import TestCase
 from moto import mock_s3
 
-from main.management.commands.add_files_with_tags import MediaImporter
-from main.models import *
+from ..management.commands.add_files_with_tags import MediaImporter
+from ..models import *
 
 
 # All the Boto S3 calls are mocked

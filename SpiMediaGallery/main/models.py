@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 
-from main.spi_s3_utils import SpiS3Utils
+from .spi_s3_utils import SpiS3Utils
 
 
 class Photographer(models.Model):

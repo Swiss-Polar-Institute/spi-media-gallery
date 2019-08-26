@@ -12,8 +12,8 @@ from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 
-from main.models import File, Medium
-from main.spi_s3_utils import SpiS3Utils
+from .models import File, Medium
+from .spi_s3_utils import SpiS3Utils
 
 
 def image_size_label_abbreviation_to_presentation(abbreviation: str) -> Optional[str]:

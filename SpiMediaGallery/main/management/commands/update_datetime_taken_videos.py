@@ -10,10 +10,10 @@ from django.db.models import Sum
 from django.utils import timezone
 from pymediainfo import MediaInfo
 
-from main import spi_s3_utils
-from main import utils
-from main.models import Medium
-from main.progress_report import ProgressReport
+from ... import spi_s3_utils
+from ... import utils
+from ...models import Medium
+from ...progress_report import ProgressReport
 
 
 class Command(BaseCommand):

@@ -3,7 +3,7 @@ import tempfile
 
 from django.test import TestCase
 
-from main.xmp_utils import XmpUtils
+from ..xmp_utils import XmpUtils
 
 
 class XmpUtilsTest(TestCase):

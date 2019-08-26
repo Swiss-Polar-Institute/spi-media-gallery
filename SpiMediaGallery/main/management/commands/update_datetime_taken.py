@@ -3,10 +3,10 @@ import tempfile
 
 from django.core.management.base import BaseCommand, CommandError
 
-from main import spi_s3_utils
-from main import utils
-from main.models import Medium
-from main.progress_report import ProgressReport
+from ... import spi_s3_utils
+from ... import utils
+from ...models import Medium
+from ...progress_report import ProgressReport
 
 
 class Command(BaseCommand):

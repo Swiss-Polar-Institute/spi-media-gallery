@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
-from main.models import Medium, Photographer
-from main.progress_report import ProgressReport
+from ...models import Medium, Photographer
+from ...progress_report import ProgressReport
 
 
 class Command(BaseCommand):

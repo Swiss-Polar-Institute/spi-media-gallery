@@ -2,11 +2,11 @@ import os
 
 from django.core.management.base import BaseCommand, CommandError
 
-from main.medium_for_view import MediumForView
-from main.models import Tag
-from main.progress_report import ProgressReport
-from main.spi_s3_utils import SpiS3Utils
-from main.xmp_utils import XmpUtils
+from ...medium_for_view import MediumForView
+from ...models import Tag
+from ...progress_report import ProgressReport
+from ...spi_s3_utils import SpiS3Utils
+from ...xmp_utils import XmpUtils
 
 
 class Command(BaseCommand):

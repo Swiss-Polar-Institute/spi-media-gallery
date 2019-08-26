@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.gis.admin.options import OSMGeoAdmin
 
-import main.models
-import main.utils
+from .models import Medium, Tag, TagName, MediumResized, Photographer, License, Copyright, File
+from .utils import seconds_to_minutes_seconds, bytes_to_human_readable
 from main.forms import LocationEntryCoordinates
 
 
@@ -23,7 +23,7 @@ class MediumAdmin(OSMGeoAdmin):
         return ','.join([str(t) for t in obj.tags.all()])
 
     def duration_mmss(self, obj):
-        return main.utils.seconds_to_minutes_seconds(obj.duration)
+        return seconds_to_minutes_seconds(obj.duration)
 
     def file_object_storage_key(self, obj):
         return obj.file.object_storage_key
@@ -32,7 +32,7 @@ class MediumAdmin(OSMGeoAdmin):
         return obj.file.md5
 
     def file_size(self, obj):
-        return main.utils.bytes_to_human_readable(obj.file.size)
+        return bytes_to_human_readable(obj.file.size)
 
     file_size.admin_order_field = 'file__size'
     duration_mmss.admin_order_field = 'duration'
@@ -108,7 +108,7 @@ class MediumResizedAdmin(admin.ModelAdmin):
         if obj.file is None:
             return None
         else:
-            return main.utils.bytes_to_human_readable(obj.file.size)
+            return bytes_to_human_readable(obj.file.size)
 
 
 class FileAdmin(admin.ModelAdmin):
@@ -121,14 +121,14 @@ class FileAdmin(admin.ModelAdmin):
         if obj.size is None:
             return None
         else:
-            return main.utils.bytes_to_human_readable(obj.size)
+            return bytes_to_human_readable(obj.size)
 
 
-admin.site.register(main.models.Medium, MediumAdmin)
-admin.site.register(main.models.Tag, TagAdmin)
-admin.site.register(main.models.TagName, TagNameAdmin)
-admin.site.register(main.models.MediumResized, MediumResizedAdmin)
-admin.site.register(main.models.Photographer, PhotographerAdmin)
-admin.site.register(main.models.License, LicenseAdmin)
-admin.site.register(main.models.Copyright, CopyrightAdmin)
-admin.site.register(main.models.File, FileAdmin)
+admin.site.register(Medium, MediumAdmin)
+admin.site.register(Tag, TagAdmin)
+admin.site.register(TagName, TagNameAdmin)
+admin.site.register(MediumResized, MediumResizedAdmin)
+admin.site.register(Photographer, PhotographerAdmin)
+admin.site.register(License, LicenseAdmin)
+admin.site.register(Copyright, CopyrightAdmin)
+admin.site.register(File, FileAdmin)

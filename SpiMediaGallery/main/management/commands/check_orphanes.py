@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from main import spi_s3_utils
-from main.models import Medium, MediumResized
+from ... import spi_s3_utils
+from ...models import Medium, MediumResized
 
 
 class Command(BaseCommand):

@@ -18,11 +18,11 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import TemplateView, View
 
-import main.utils as utils
-from main.forms import MediumIdForm
-from main.medium_for_view import MediumForView
-from main.models import Medium, MediumResized, TagName, File
-from main.spi_s3_utils import SpiS3Utils
+from . import utils
+from .forms import MediumIdForm
+from .medium_for_view import MediumForView
+from .models import Medium, MediumResized, TagName, File
+from .spi_s3_utils import SpiS3Utils
 
 
 class Homepage(TemplateView):

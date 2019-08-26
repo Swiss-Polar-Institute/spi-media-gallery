@@ -1,7 +1,7 @@
 from django.test import TestCase
 
-from main.management.commands.generate_virtual_tags import GenerateTags
-from main.models import *
+from ..management.commands.generate_virtual_tags import GenerateTags
+from ..models import *
 
 
 class GenerateTagsTest(TestCase):

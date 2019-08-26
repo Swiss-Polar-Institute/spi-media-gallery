@@ -3,8 +3,8 @@ from typing import List
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 
-from main.models import Medium, Tag, TagName
-from main.progress_report import ProgressReport
+from ...models import Medium, Tag, TagName
+from ...progress_report import ProgressReport
 
 
 class Command(BaseCommand):
