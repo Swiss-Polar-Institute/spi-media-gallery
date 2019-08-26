@@ -119,8 +119,8 @@ def delete_file(sender, instance, *args, **kwargs):
     spi_s3_utils = SpiS3Utils(instance.bucket_name())
     try:
         spi_s3_utils.delete(instance.object_storage_key)
-    except ClientError.AccessDenied:
-        # Boto3 raises AccessDenied if the file is not there
+    except ClientError:
+        # Boto3 raises ClientError(AccessDenied) if the file is not there
         pass
 
 
