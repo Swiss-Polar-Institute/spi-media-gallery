@@ -51,8 +51,11 @@ class CheckOrphanes:
         all_database_files = files_database_media.union(files_database_resized)
         all_bucket_files = files_bucket_media.union(files_bucket_resized)
 
-        files_in_database_not_in_buckets = all_database_files - all_bucket_files
-        files_in_buckets_not_in_database = all_bucket_files - all_database_files
+        files_in_database_not_in_buckets = list(all_database_files - all_bucket_files)
+        files_in_buckets_not_in_database = list(all_bucket_files - all_database_files)
+
+        files_in_database_not_in_buckets.sort()
+        files_in_buckets_not_in_database.sort()
 
         print('Files in the database missing in the buckets:')
 
