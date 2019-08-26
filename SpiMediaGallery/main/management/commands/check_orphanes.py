@@ -23,7 +23,7 @@ class CheckOrphanes:
         self._processed_bucket = spi_s3_utils.SpiS3Utils('processed')
 
     @staticmethod
-    def _database_files(self, qs):
+    def _database_files(qs):
         file_keys = set()
 
         for row in qs:
