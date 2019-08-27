@@ -110,10 +110,10 @@ class Resizer(object):
         if video.width is None or video.height is None or video.duration is None or video.datetime_taken is None:
             information = get_information_from_video(video_file)
 
-            video.width = information['width']
-            video.height = information['height']
-            video.duration = information['duration']
-            video.datetime_taken = information['date_encoded']
+            video.width = information.get('width', None)
+            video.height = information.get('height', None)
+            video.duration = information.get('duration', None)
+            video.datetime_taken = information.get('date_encoded', None)
 
             video.save()
 
