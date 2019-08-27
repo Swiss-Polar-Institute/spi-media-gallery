@@ -172,6 +172,22 @@ class Search(TemplateView):
 
             information, qs = search_in_box(north, south, east, west)
 
+        elif 'medium_id' in request.GET:
+            medium_id = request.GET['medium_id']
+            medium_id = medium_id.split('.')[0]
+            medium_id = int(re.findall('\d+', medium_id)[0])
+
+            try:
+                medium = Medium.objects.get(id=medium_id)
+            except ObjectDoesNotExist:
+                template_information = {}
+                template_information['medium_id_not_found'] = medium_id
+                template_information['form_search_medium_id'] = MediumIdForm
+
+                return render(request, 'error_medium_id_not_found.tmpl', template_information)
+
+            return redirect(reverse('medium', kwargs={'media_id': medium.pk}))
+
         else:
             error = {'error_message': 'Invalid parameters received'}
             return render(request, 'error.tmpl', error, status=400)
@@ -182,24 +198,6 @@ class Search(TemplateView):
         information['media'] = photos
 
         return render(request, 'search.tmpl', information)
-
-    def post(self, request, *args, **kwargs):
-        medium_id = request.POST['medium_id']
-
-        medium_id = medium_id.split('.')[0]
-
-        medium_id = int(re.findall('\d+', medium_id)[0])
-
-        try:
-            medium = Medium.objects.get(id=medium_id)
-        except ObjectDoesNotExist:
-            template_information = {}
-            template_information['medium_id_not_found'] = medium_id
-            template_information['form_search_medium_id'] = MediumIdForm
-
-            return render(request, 'error_medium_id_not_found.tmpl', template_information)
-
-        return redirect(reverse('medium', kwargs={'media_id': medium.pk}))
 
 
 class DisplayRandom(TemplateView):

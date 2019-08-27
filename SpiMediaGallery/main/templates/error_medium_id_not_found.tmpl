@@ -9,16 +9,12 @@
             Medium ID not found: {{ medium_id_not_found }}
 
             Try a different one:
-            <h2>Search using Medium ID</h2>
-            <form action="/search/id/" method="POST">
-                {% csrf_token %}
-
+            <form action="{% url 'search' %}" method="GET">
                 <table>
                     {{ form_search_medium_id }}
                 </table>
                 <input type="submit" value="Search">
             </form>
-
         Or go to the <a href="/">homepage</a>.
         </div>
     </p>
