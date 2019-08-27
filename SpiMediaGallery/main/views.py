@@ -2,6 +2,7 @@ import csv
 import datetime
 import json
 import re
+import urllib
 from typing import Dict, Tuple, Union, List
 
 import requests
@@ -189,7 +190,16 @@ class Search(TemplateView):
         elif 'medium_id' in request.GET:
             medium_id = request.GET['medium_id']
             medium_id = medium_id.split('.')[0]
-            medium_id = int(re.findall('\d+', medium_id)[0])
+            medium_id = re.findall('\d+', medium_id)
+
+            if len(medium_id) != 1:
+                template_information = {}
+                template_information['medium_id_not_found'] = 'Invalid Medium ID'
+                template_information['form_search_medium_id'] = MediumIdForm
+
+                return render(request, 'error_medium_id_not_found.tmpl', template_information)
+
+            medium_id = int(medium_id[0])
 
             try:
                 medium = Medium.objects.get(id=medium_id)
@@ -210,6 +220,7 @@ class Search(TemplateView):
         page_number = request.GET.get('page')
         photos = paginator.get_page(page_number)
         information['media'] = photos
+        information['search_query'] = urllib.parse.quote_plus(request.META['QUERY_STRING'])
 
         return render(request, 'search.tmpl', information)
 
@@ -292,7 +303,8 @@ class Display(TemplateView):
             error = {'error_message': 'Media not found'}
             return render(request, 'error.tmpl', error, status=404)
 
-        return render(request, 'display.tmpl', {'medium': medium})
+        search_query = request.GET.get('search_query', None)
+        return render(request, 'display.tmpl', {'medium': medium, 'search_query': search_query})
 
 
 class Map(TemplateView):
