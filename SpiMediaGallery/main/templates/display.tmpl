@@ -16,20 +16,24 @@
             <div class="row">
                 <div class="col-md-6">
                     {% if medium.is_photo %}
-                        <img class="img-thumbnail" src="{{ medium.small_resolution_url }}"><br>
+                        <a href="{{ medium.large_resolution_url }}">
+                            <img class="img-thumbnail" src="{{ medium.small_resolution_url }}" /><br>
+                        </a>
                     {% endif %}
 
                     {% if medium.is_video %}
                         {% if medium.is_small_resolution_available %}
                             <div class="card p-1 {{ medium.border_color }}">
                                 <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
+                                    <a href="{{ medium.large_resolution_url }}">
                                         <video controls>
-                                            <source src="{{ medium.small_resolution_url }}" type="video/webm">
+                                            <source src="{{ medium.small_resolution_url }}" type="video/webm" />
                                         </video>
+                                    </a>
                                 </div>
                             </div>
                         {% else %}
-                            <img class="img-thumbnail {{ medium.border_color }}" src="{{ medium.small_resolution_url }}"><br>
+                            <img class="img-thumbnail {{ medium.border_color }}" src="{{ medium.small_resolution_url }} /"><br>
                         {% endif %}
                     {% endif %}
                     <small>
