@@ -19,7 +19,7 @@ from django.urls import reverse
 from django.views.generic import TemplateView, View
 
 from . import utils
-from .forms import MediumIdForm
+from .forms import MediumIdForm, FileNameForm
 from .medium_for_view import MediumForView
 from .models import Medium, MediumResized, TagName, File
 from .spi_s3_utils import SpiS3Utils
@@ -66,6 +66,7 @@ class Homepage(TemplateView):
         context['list_of_tags_second_half'] = tags[int(1 + len(tags) / 2):]
 
         context['form_search_medium_id'] = MediumIdForm
+        context['form_search_file_name'] = FileNameForm
 
         return context
 
@@ -150,12 +151,24 @@ def search_for_tag_ids(tag_ids: [List[int]]) -> Union[Dict[str, str], object]:
     return information, query_media_for_tags
 
 
+def search_for_filenames(filename):
+    information = {}
+
+    qs = MediumForView.objects.filter(file__object_storage_key__icontains=filename).order_by('file__object_storage_key')
+
+    information['search_explanation'] = 'Photos which filename contains: {}'.format(filename)
+
+    return information, qs
+
 class Search(TemplateView):
     # @print_sql_decorator(count_only=False)
     def get(self, request, *args, **kwargs):
         if 'tags' in request.GET:
             list_of_tag_ids = request.GET.getlist('tags')
             information, qs = search_for_tag_ids(list_of_tag_ids)
+
+        elif 'filename' in request.GET:
+            information, qs = search_for_filenames(request.GET['filename'])
 
         elif 'latitude' in request.GET and 'longitude' in request.GET and 'km' in request.GET:
             latitude = float(request.GET['latitude'])

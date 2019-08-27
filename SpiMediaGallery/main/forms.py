@@ -10,6 +10,9 @@ class MediumIdForm(forms.Form):
     medium_id = forms.CharField(label='Media ID', max_length=255, help_text='Example: SPI-010.jpg, 10, SPI-010.crw')
 
 
+class FileNameForm(forms.Form):
+    filename = forms.CharField(label='File name', max_length=255, help_text='Search for media in which the file name contains this text')
+
 class LocationEntryCoordinates(forms.ModelForm):
     # This is used in the admin
     latitude = forms.FloatField(

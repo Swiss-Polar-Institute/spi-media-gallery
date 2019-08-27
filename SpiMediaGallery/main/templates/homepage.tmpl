@@ -65,6 +65,14 @@
         </form>
         <p>
 
+        <h2>Search using file name</h2>
+        <form action="{% url 'search' %}" method="GET">
+            <table>
+                {{ form_search_file_name }}
+            </table>
+            <input type="submit" value="Search">
+        </form>
+
         <h2>Random</h2>
         {% include "_random_selection.tmpl" %}
         <p>
