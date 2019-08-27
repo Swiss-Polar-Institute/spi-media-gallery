@@ -11,4 +11,4 @@ services:
       - ./nginx/nginx.conf.template:/etc/nginx/nginx.conf.template
     environment:
       - REDIRECT_TO=${REDIRECT_TO}
-    command: /bin/bash -c "envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"
+    command: /bin/bash -c "envsubst \$REDIRECT_TO < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"
