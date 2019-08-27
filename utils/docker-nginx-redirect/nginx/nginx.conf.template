@@ -1,0 +1,11 @@
+events {
+}
+
+http {
+  include       /etc/nginx/mime.types;
+
+  server {
+    listen	1234;
+    return 301 $REDIRECT_TO$request_uri;
+  }
+}

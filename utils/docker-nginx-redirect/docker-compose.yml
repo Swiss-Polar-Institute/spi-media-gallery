@@ -1,0 +1,14 @@
+version: '3.6'
+
+services:
+  reverse-proxy:
+    image: nginx:1.17
+    ports:
+      - 1234:1234
+    environment:
+      - NGINX_PORT=1234
+    volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/nginx.conf.template
+    environment:
+      - REDIRECT_TO=${REDIRECT_TO}
+    command: /bin/bash -c "envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;'"
