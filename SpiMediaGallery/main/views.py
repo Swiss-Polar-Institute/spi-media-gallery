@@ -190,7 +190,16 @@ class Search(TemplateView):
         elif 'medium_id' in request.GET:
             medium_id = request.GET['medium_id']
             medium_id = medium_id.split('.')[0]
-            medium_id = int(re.findall('\d+', medium_id)[0])
+            medium_id = re.findall('\d+', medium_id)
+
+            if len(medium_id) != 1:
+                template_information = {}
+                template_information['medium_id_not_found'] = 'Invalid Medium ID'
+                template_information['form_search_medium_id'] = MediumIdForm
+
+                return render(request, 'error_medium_id_not_found.tmpl', template_information)
+
+            medium_id = int(medium_id[0])
 
             try:
                 medium = Medium.objects.get(id=medium_id)

@@ -100,6 +100,8 @@
 
                     </div>
             </div>
-        <a href="/media/?{{ search_query }}">Back to search</a>
+        {% if search_query %}
+            <a href="/media/?{{ search_query }}">Back to search</a>
+        {% endif %}
         </div>
 {% endblock %}
