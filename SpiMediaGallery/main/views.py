@@ -156,9 +156,10 @@ def search_for_filenames(filename):
 
     qs = MediumForView.objects.filter(file__object_storage_key__icontains=filename).order_by('file__object_storage_key')
 
-    information['search_explanation'] = 'Photos which filename contains: {}'.format(filename)
+    information['search_explanation'] = '{} media which filename contains: {}'.format(qs.count(), filename)
 
     return information, qs
+
 
 class Search(TemplateView):
     # @print_sql_decorator(count_only=False)
