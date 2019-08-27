@@ -207,8 +207,8 @@ def get_medium_information(image_filepath: str) -> Dict[str, str]:
     exif = json.loads(output)[0]
 
     image_information = {}
-    image_information['width'] = exif['ImageWidth']
-    image_information['height'] = exif['ImageHeight']
+    image_information['width'] = exif.get('ImageWidth', None)
+    image_information['height'] = exif.get('ImageHeight', None)
 
     date_field: Optional[datetime] = None
 

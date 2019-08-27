@@ -151,6 +151,8 @@ class Resizer(object):
 
         for medium in media_to_be_resized:
             # Download Media file from the bucket
+            print('Will resize: ', medium.file.object_storage_key)
+
             suffix = utils.file_extension(medium.file.object_storage_key)
             media_file = tempfile.NamedTemporaryFile(suffix='.' + suffix, delete=False)
             media_file.close()
