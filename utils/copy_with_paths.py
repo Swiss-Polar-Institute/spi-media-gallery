@@ -7,7 +7,7 @@ import errno
 import pathlib
 import sys
 
-FILE_EXTENSION = "xmp"
+FILE_EXTENSION = 'xmp'
 
 
 def copy_files(source, destination):
@@ -15,7 +15,7 @@ def copy_files(source, destination):
     destination = os.path.abspath(destination)
 
     if os.path.exists(destination):
-        sys.stderr.write("Destination exists ({}). Aborting, please use a destination that doesn't exist\n".format(destination))
+        sys.stderr.write('Destination exists ({}). Aborting, please use a destination that does not exist\n'.format(destination))
         sys.exit(1)
 
     source_list = pathlib.Path(source).parts[1:]
@@ -23,7 +23,7 @@ def copy_files(source, destination):
     count = 0
     for root, dirs, files in os.walk(source):
         for file in files:
-            extension = os.path.splitext(file)[1].lstrip(".").lower()
+            extension = os.path.splitext(file)[1].lstrip('.').lower()
 
             if extension != FILE_EXTENSION:
                 continue
@@ -47,15 +47,15 @@ def copy_files(source, destination):
 
             shutil.copy(source_file, destination_file)
             count += 1
-            print("Copied {} to {}".format(source_file, destination_file))
+            print('Copied {} to {}'.format(source_file, destination_file))
 
-    print("Finished! Copied {} files to: {}".format(count, destination))
+    print('Finished! Copied {} files to: {}'.format(count, destination))
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Copy XMP files with paths")
-    parser.add_argument("source", help="Source directory")
-    parser.add_argument("destination", help="Destination directory")
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Copy XMP files with paths')
+    parser.add_argument('source', help='Source directory')
+    parser.add_argument('destination', help='Destination directory')
 
     args = parser.parse_args()
 
