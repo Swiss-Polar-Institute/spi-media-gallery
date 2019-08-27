@@ -117,18 +117,24 @@ class Resizer(object):
 
             video.save()
 
-    def resize_media(self):
-        already_resized = None
+    def _media_to_resize(self):
+        medium_totally_resized = None
         for size_type in self._sizes_type:
             qs = MediumResized.objects.values_list('medium', flat=True).filter(size_label=size_type).filter(
                 medium__medium_type=self._medium_type)
 
-            if already_resized is None:
-                already_resized = qs
+            if medium_totally_resized is None:
+                medium_totally_resized = set(qs)
             else:
-                already_resized |= qs
+                medium_totally_resized = medium_totally_resized.intersection(set(qs))
 
-        media_to_be_resized = Medium.objects.filter(medium_type=self._medium_type).exclude(id__in=already_resized)
+
+        media_to_be_resized = Medium.objects.filter(medium_type=self._medium_type).exclude(id__in=medium_totally_resized)
+
+        return media_to_be_resized
+
+    def resize_media(self):
+        media_to_be_resized = self._media_to_resize()
 
         verbose = self._medium_type == Medium.VIDEO
 
