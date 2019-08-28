@@ -8,6 +8,7 @@ from typing import Optional, Dict, Any, List
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
 from pymediainfo import MediaInfo
@@ -197,6 +198,7 @@ class Resizer(object):
             else:
                 progress_report.increment_steps_and_print_if_needed(medium.file.size)
 
+    @transaction.atomic
     def _resize_medium(self, medium, medium_local_file, sizes: List[str]):
         file_to_delete: Optional[str] = None
 
