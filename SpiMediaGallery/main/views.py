@@ -95,7 +95,6 @@ def search_for_nearby(latitude: float, longitude: float, km: float) -> Tuple[Dic
     information = {}
     information['search_query_human'] = 'radius of {} Km from latitude: {:.2f} longitude: {:.2f}'.format(
         media_string, km, latitude, longitude)
-    information['number_results'] = qs.count()
 
     return information, qs
 
@@ -110,7 +109,6 @@ def search_in_box(north: float, south: float, east: float, west: float) -> Tuple
     information['search_query_human'] = 'in area {:.2f} {:.2f} {:.2f} {:.2f}'.format(
         north, east,
         south, west)
-    information['number_results'] = qs.count()
 
     return information, qs
 
@@ -134,8 +132,6 @@ def search_for_tag_ids(tag_ids: [List[int]]) -> Union[Dict[str, str], object]:
     else:
         information['search_query_human'] = 'tag: {}'.format(tags_list)
 
-    information['number_results'] = qs.count()
-
     return information, qs
 
 
@@ -144,7 +140,7 @@ def search_for_filenames(filename):
 
     qs = MediumForView.objects.filter(file__object_storage_key__icontains=filename).order_by('file__object_storage_key')
 
-    information['search_explanation'] = '{} media which filename contains: {}'.format(qs.count(), filename)
+    information['search_query_human'] = 'media which filename contains: {}'.format(filename)
 
     return information, qs
 
