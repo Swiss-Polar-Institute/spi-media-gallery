@@ -13,6 +13,7 @@ services:
       - tmp-for-spi-media-gallery:/tmp
     expose:
       - "8000"
+    restart: always
 
   reverse-proxy:
     image: nginx:1.17
@@ -27,6 +28,7 @@ services:
       - static_volume:/code/SpiMediaGallery/staticfiles
     links:
       - spi-media-gallery
+    restart: always
 
 volumes:
   static_volume: {}
