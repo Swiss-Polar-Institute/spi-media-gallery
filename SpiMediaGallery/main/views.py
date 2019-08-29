@@ -211,14 +211,16 @@ class Search(TemplateView):
         information['media'] = photos
         information['search_query'] = urllib.parse.quote_plus(request.META['QUERY_STRING'])
 
-        if paginator.count <= number_results_per_page:
-            information['current_results_information'] = '{} results'.format(paginator.count)
+        paginator_count = paginator.count
+
+        if paginator_count <= number_results_per_page:
+            information['current_results_information'] = '{} results'.format(paginator_count)
         else:
-            maximum_number = min(page_number*number_results_per_page, paginator.count)
+            maximum_number = min(page_number*number_results_per_page, paginator_count)
 
             information['current_results_information'] = '{}-{} of {} results'.format((page_number-1)*number_results_per_page+1,
                                                                               maximum_number,
-                                                                              paginator.count)
+                                                                              paginator_count)
 
         return render(request, 'search.tmpl', information)
 
