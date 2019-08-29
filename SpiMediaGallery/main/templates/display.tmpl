@@ -12,7 +12,13 @@
         <div class="container">
             {% include "_logo.tmpl" %}
             <p></p>
+
+            <a href="/">Home</a> >
+            {% if search_query %}
+                <a href="/media/?{{ search_query }}">Search results</a> >
+            {% endif %}
             <b>{{ medium.file_name }}</b>
+
             <div class="row">
                 <div class="col-md-6">
                     {% if medium.is_photo %}
@@ -100,8 +106,5 @@
 
                     </div>
             </div>
-        {% if search_query %}
-            <a href="/media/?{{ search_query }}">Back to search</a>
-        {% endif %}
         </div>
 {% endblock %}

@@ -88,14 +88,14 @@ def search_for_nearby(latitude: float, longitude: float, km: float) -> Tuple[Dic
     qs = MediumForView.objects.filter(location__within=buffered)
 
     if qs.count() != 1:
-        photos_string = 'media'
+        media_string = 'media'
     else:
-        photos_string = 'medium'
+        media_string = 'medium'
 
     information = {}
-    information['search_explanation'] = '{} {} in a radius of {} Km from latitude: {:.2f} longitude: {:.2f}'.format(
-        qs.count(),
-        photos_string, km, latitude, longitude)
+    information['search_query_human'] = 'radius of {} Km from latitude: {:.2f} longitude: {:.2f}'.format(
+        media_string, km, latitude, longitude)
+    information['number_results'] = qs.count()
 
     return information, qs
 
@@ -105,18 +105,12 @@ def search_in_box(north: float, south: float, east: float, west: float) -> Tuple
 
     qs = MediumForView.objects.filter(location__contained=geom)
 
-    if qs.count() != 1:
-        photos_string = 'media'
-    else:
-        photos_string = 'medium'
-
     information = {}
 
-    information['search_explanation'] = '{} {} taken in area {:.2f} {:.2f} {:.2f} {:.2f}'.format(
-        qs.count(),
-        photos_string,
+    information['search_query_human'] = 'in area {:.2f} {:.2f} {:.2f} {:.2f}'.format(
         north, east,
         south, west)
+    information['number_results'] = qs.count()
 
     return information, qs
 
@@ -124,32 +118,25 @@ def search_in_box(north: float, south: float, east: float, west: float) -> Tuple
 def search_for_tag_ids(tag_ids: [List[int]]) -> Union[Dict[str, str], object]:
     information = {}
 
-    query_media_for_tags = MediumForView.objects.order_by('datetime_taken')
+    qs = MediumForView.objects.order_by('datetime_taken')
     tags_list = []
 
     for tag_id in tag_ids:
         tag_name = TagName.objects.get(pk=tag_id).name
 
-        query_media_for_tags = query_media_for_tags.filter(tags__name__name=tag_name)
+        qs = qs.filter(tags__name__name=tag_name)
         tags_list.append(tag_name)
 
     tags_list = ', '.join(tags_list)
 
-    query_media_for_tags_count = query_media_for_tags.count()
-
-    if query_media_for_tags_count != 1:
-        photos_string = 'Media'
-    else:
-        photos_string = 'Medium'
-
     if len(tag_ids) != 1:
-        information['search_explanation'] = '{} {} with these tags: {}'.format(query_media_for_tags_count,
-                                                                               photos_string, tags_list)
+        information['search_query_human'] = 'tags: {}'.format(tags_list)
     else:
-        information['search_explanation'] = '{} {} with this tag: {}'.format(query_media_for_tags_count, photos_string,
-                                                                             tags_list)
+        information['search_query_human'] = 'tag: {}'.format(tags_list)
 
-    return information, query_media_for_tags
+    information['number_results'] = qs.count()
+
+    return information, qs
 
 
 def search_for_filenames(filename):
@@ -216,11 +203,26 @@ class Search(TemplateView):
             error = {'error_message': 'Invalid parameters received'}
             return render(request, 'error.tmpl', error, status=400)
 
-        paginator = Paginator(qs, 100)
-        page_number = request.GET.get('page')
+        number_results_per_page = 100
+        paginator = Paginator(qs, number_results_per_page)
+
+        try:
+            page_number = int(request.GET.get('page', 1))
+        except ValueError:
+            page_number = 1
+
         photos = paginator.get_page(page_number)
         information['media'] = photos
         information['search_query'] = urllib.parse.quote_plus(request.META['QUERY_STRING'])
+
+        if paginator.count <= number_results_per_page:
+            information['current_results_information'] = '{} results'.format(paginator.count)
+        else:
+            maximum_number = min(page_number*number_results_per_page, paginator.count)
+
+            information['current_results_information'] = '{}-{} of {} results'.format((page_number-1)*number_results_per_page+1,
+                                                                              maximum_number,
+                                                                              paginator.count)
 
         return render(request, 'search.tmpl', information)
 
