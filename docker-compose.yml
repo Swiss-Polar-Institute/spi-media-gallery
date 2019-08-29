@@ -15,7 +15,6 @@ services:
       - "8000"
     networks:
       - nginx-proxy
-    restart: always
 
   reverse-proxy:
     image: nginx:1.17
@@ -35,7 +34,6 @@ services:
       - spi-media-gallery
     networks:
       - nginx-proxy
-    restart: always
 
 volumes:
   static_volume: {}
