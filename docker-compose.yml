@@ -13,6 +13,8 @@ services:
       - tmp-for-spi-media-gallery:/tmp
     expose:
       - "8000"
+    networks:
+      - nginx-proxy
 
   reverse-proxy:
     image: nginx:1.17
@@ -20,13 +22,18 @@ services:
       - spi_media_gallery_htpasswd
     ports:
       - 1234:1234
+    expose:
+      - "1234"
     environment:
       - NGINX_PORT=1234
+      - VIRTUAL_HOST=${SPI_MEDIA_GALLERY_DOMAIN}
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - static_volume:/code/SpiMediaGallery/staticfiles
     links:
       - spi-media-gallery
+    networks:
+      - nginx-proxy
 
 volumes:
   static_volume: {}
@@ -39,3 +46,8 @@ secrets:
     file: ${SPI_MEDIA_GALLERY_MYSQL_CONF_PATH}
   spi_media_gallery_htpasswd:
     file: ${SPI_MEDIA_GALLERY_HTPASSWD}
+
+networks:
+  nginx-proxy:
+    external:
+      name: nginx-proxy
