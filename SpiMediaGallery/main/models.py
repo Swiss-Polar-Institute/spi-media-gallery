@@ -109,7 +109,13 @@ class File(models.Model):
 
     def download_file(self):
         spi_s3_utils = SpiS3Utils(self.bucket_name())
-        url = spi_s3_utils.get_presigned_download_link(self.object_storage_key)
+
+        # TODO: if not having the replace the filename in the S3 response is
+        # the filename until the first space.
+        # Even though using curl this can be seen:
+        # Content-Disposition: attachment; filename=carles test.jpg
+        filename = self.object_storage_key.replace(' ', '_')
+        url = spi_s3_utils.get_presigned_download_link(self.object_storage_key, filename=filename)
 
         return mark_safe('<a href="{}">Download</a>'.format(escape(url)))
 
