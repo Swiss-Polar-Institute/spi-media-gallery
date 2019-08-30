@@ -149,6 +149,7 @@ def content_type_for_filename(filename: str) -> str:
                                  'nef': 'image/x-nikon-nef',
                                  'mp4': 'video/mp4',
                                  'mpeg': 'video/mpeg',
+                                 'mpg': 'video/mpeg',
                                  'mov': 'video/quicktime',
                                  'avi': 'video/avi',
                                  'webm': 'video/webm'}
