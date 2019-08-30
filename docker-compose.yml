@@ -22,6 +22,7 @@ services:
       - spi_media_gallery_htpasswd
     ports:
       - 1234:1234
+      - 80:1234 
     expose:
       - "1234"
     environment:
