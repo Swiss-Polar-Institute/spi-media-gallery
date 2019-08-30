@@ -301,9 +301,7 @@ class ResizeMedium:
             file_to_resize = self._medium_local_file
 
         resized_medium_file = utils.resize_photo(file_to_resize, width_wanted)
-        if os.stat(resized_medium_file).st_size == 0:
-            print('File {} resized output size is 0, skipping it'.format(self._medium.file.object_storage_key))
-            os.remove(resized_medium_file)
+        if resized_medium_file is None:
             return None, None, None
 
         resized_image_information = utils.get_medium_information(resized_medium_file)

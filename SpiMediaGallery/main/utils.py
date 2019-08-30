@@ -43,24 +43,31 @@ def hash_of_file_path(file_path: str) -> str:
     return hash_md5.hexdigest()
 
 
-def resize_photo(input_file_path: int, width: int) -> str:
+def resize_photo(input_file_path: int, width: int) -> Optional[str]:
     output_file_path = tempfile.NamedTemporaryFile(suffix='.jpg', delete=False)
     output_file_path.close()
+    output_file_path_name = output_file_path.name
 
     with open(os.devnull, 'w') as devnull:
         command = ['convert', '-auto-orient']
         if width is not None:
             command += ['-resize', '{}x{}'.format(width, width)]
 
-        command += [input_file_path, output_file_path.name]
+        command += [input_file_path, output_file_path_name]
 
         try:
             subprocess.run(command, stdout=devnull, stderr=devnull)
         except OSError:
+            os.remove(output_file_path_name)
+
             print('Error in the command:', command)
             sys.exit(1)
 
-    return output_file_path.name
+        if os.stat(output_file_path_name).st_size == 0:
+            os.remove(output_file_path_name)
+            return None
+
+    return output_file_path_name
 
 
 def resize_video(input_file_path: str, width: int) -> Optional[str]:
