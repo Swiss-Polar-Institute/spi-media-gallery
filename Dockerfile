@@ -22,6 +22,12 @@ RUN apt-get purge -y gcc-7 gcc \
 	libpq-dev libpython3.7-dev && \
     apt-get autoremove -y && \
     apt-get clean
+# Some photos are bigger than the ImageMagick default size (16KP width and height)
+# and 1 GiB for disk cache
+# Here we change the limits
+RUN sed -i 's/<policy domain="resource" name="width" value="[0-9]\+KP"\/>/<policy domain="resource" name="width" value="64KP"\/>/' /etc/ImageMagick-6/policy.xml && \
+    sed -i 's/<policy domain="resource" name="height" value="[0-9]\+KP"\/>/<policy domain="resource" name="height" value="64KP"\/>/' /etc/ImageMagick-6/policy.xml  && \
+    sed -i 's/<policy domain="resource" name="disk" value="[0-9]\+GiB"\/>/<policy domain="resource" name="disk" value="4GiB"\/>/' /etc/ImageMagick-6/policy.xml
 
 WORKDIR /code/SpiMediaGallery
 ENTRYPOINT ["/code/entrypoint.sh"]
