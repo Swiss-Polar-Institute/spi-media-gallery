@@ -66,6 +66,7 @@ def resize_photo(input_file_path: int, width: int) -> str:
 def resize_video(input_file_path: str, width: int) -> Optional[str]:
     output_file_path = tempfile.NamedTemporaryFile(suffix='.webm', delete=False)
     output_file_path.close()
+    output_file_path_name = output_file_path.name
 
     with open(os.devnull, 'w') as devnull:
         # ffmpeg -y -i C0004.MP4 -vcodec vp8 -crf 27 -preset veryfast -c:a libvorbis -s 320x480 resized-320.webm
@@ -78,15 +79,13 @@ def resize_video(input_file_path: str, width: int) -> Optional[str]:
                    '-auto-alt-ref', '0',
                    # Fixes error: 'Transparency encoding with auto_alt_ref does not work', 'Error initializing output stream 0:0 -- Error while opening encoder for output stream #0:0 - maybe incorrect parameters such as bit_rate, rate, width or height'
                    '-max_muxing_queue_size', '4096',  # Fixes error: 'Too many packets buffered for output stream 0:1.'
-                   output_file_path.name]
+                   output_file_path_name]
 
         try:
             subprocess.run(command, stdout=devnull, stderr=devnull)
         except OSError:
             print('Error in the command:', command)
             sys.exit(1)
-
-    output_file_path_name = output_file_path.name
 
     if os.stat(output_file_path_name).st_size == 0:
         # Encoding failed

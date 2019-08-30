@@ -161,18 +161,18 @@ class Resizer(object):
             print('Will resize:', medium.file.object_storage_key)
 
             suffix = utils.file_extension(medium.file.object_storage_key)
-            media_file = tempfile.NamedTemporaryFile(suffix='.' + suffix, delete=False)
-            media_file.close()
+            medium_file = tempfile.NamedTemporaryFile(suffix='.' + suffix, delete=False)
+            medium_file.close()
             start_download = time.time()
             try:
-                self._media_bucket.bucket().download_file(medium.file.object_storage_key, media_file.name)
+                self._media_bucket.bucket().download_file(medium.file.object_storage_key, medium_file.name)
             except ClientError:
                 print('Cannot download: {}'.format(medium.file.object_storage_key))
                 continue
 
             download_time = time.time() - start_download
 
-            assert os.stat(media_file.name).st_size == medium.file.size
+            assert os.stat(medium_file.name).st_size == medium.file.size
 
             if verbose:
                 speed = (medium.file.size / 1024 / 1024) / download_time  # MB/s
@@ -183,15 +183,15 @@ class Resizer(object):
                     medium.file.object_storage_key))
 
             if medium.file.md5 is None:
-                md5_media_file = utils.hash_of_file_path(media_file.name)
+                md5_media_file = utils.hash_of_file_path(medium_file.name)
                 medium.file.md5 = md5_media_file
                 medium.file.save()
 
-            self._resize_medium(medium, media_file.name, self._sizes_type)
+            self._resize_medium(medium, medium_file.name, self._sizes_type)
 
             print('Finished: medium.id: {}'.format(medium.id))
 
-            os.remove(media_file.name)
+            os.remove(medium_file.name)
 
             if self._medium_type == Medium.PHOTO:
                 progress_report.increment_and_print_if_needed()
@@ -299,6 +299,7 @@ class ResizeMedium:
         resized_medium_file = utils.resize_photo(file_to_resize, width_wanted)
         if os.stat(resized_medium_file).st_size == 0:
             print('File {} resized output size is 0, skipping it'.format(self._medium.file.object_storage_key))
+            os.remove(resized_medium_file)
             return None, None, None
 
         resized_image_information = utils.get_medium_information(resized_medium_file)
