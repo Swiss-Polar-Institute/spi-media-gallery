@@ -19,7 +19,6 @@ class MediaLocationLookup(object):
     def __init__(self):
         pass
 
-    @staticmethod
     def lookup(self):
         media_to_geolocate = Medium.objects.filter(location=None).exclude(datetime_taken__isnull=True)
 
