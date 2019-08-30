@@ -188,7 +188,7 @@ IMAGE_LABEL_TO_SIZES = {
 
 # If adding extensions here also add the content-type in utils.content_type_for_filename()
 PHOTO_EXTENSIONS = {'jpeg', 'jpg', 'cr2', 'arw', 'nef'}
-VIDEO_EXTENSIONS = {'mp4', 'mpeg', 'mov', 'avi', 'webm'}
+VIDEO_EXTENSIONS = {'mp4', 'mpeg', 'mpg', 'mov', 'avi', 'webm'}
 PHOTO_PRE_PROCESS_DCRAW = {'arw', 'nef', 'cr2'}
 
 # Internationalization
