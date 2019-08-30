@@ -187,9 +187,9 @@ IMAGE_LABEL_TO_SIZES = {
 }
 
 # If adding extensions here also add the content-type in utils.content_type_for_filename()
-PHOTO_EXTENSIONS = {'jpeg', 'jpg', 'cr2', 'arw', 'nef'}
-VIDEO_EXTENSIONS = {'mp4', 'mpeg', 'mpg', 'mov', 'avi', 'webm'}
-PHOTO_PRE_PROCESS_DCRAW = {'arw', 'nef', 'cr2'}
+PHOTO_EXTENSIONS = {'arw', 'cr2', 'jpeg', 'jpg', 'nef'}
+VIDEO_EXTENSIONS = {'avi', 'mov', 'mp4', 'mpeg', 'mpg', 'webm'}
+PHOTO_PRE_PROCESS_DCRAW = {'arw', 'cr2', 'nef'}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/

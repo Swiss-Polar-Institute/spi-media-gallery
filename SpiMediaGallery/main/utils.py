@@ -142,16 +142,16 @@ def content_type_for_filename(filename: str) -> str:
     # Raw images: https://stackoverflow.com/questions/43473056/which-mime-type-should-be-used-for-a-raw-image
     # Videos (and anything): https://www.sitepoint.com/mime-types-complete-list/
 
-    extension_to_content_type = {'jpg': 'image/jpeg',
-                                 'jpeg': 'image/jpeg',
+    extension_to_content_type = {'arw': 'image/x-sony-arw',
+                                 'avi': 'video/avi',
                                  'cr2': 'image/x-canon-cr2',
-                                 'arw': 'image/x-sony-arw',
-                                 'nef': 'image/x-nikon-nef',
+                                 'jpeg': 'image/jpeg',
+                                 'jpg': 'image/jpeg',
+                                 'mov': 'video/quicktime',
                                  'mp4': 'video/mp4',
                                  'mpeg': 'video/mpeg',
                                  'mpg': 'video/mpeg',
-                                 'mov': 'video/quicktime',
-                                 'avi': 'video/avi',
+                                 'nef': 'image/x-nikon-nef',
                                  'webm': 'video/webm'}
 
     assert extension in extension_to_content_type
