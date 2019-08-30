@@ -53,7 +53,11 @@ def get_information_from_video(video_file: str) -> Dict[str, Any]:
         if track.track_type == 'Video':
             information['width'] = track.width
             information['height'] = track.height
-            information['duration'] = float(track.duration) / 1000
+            if track.duration is not None:
+                information['duration'] = float(track.duration) / 1000
+            else:
+                information['duration'] = None
+
             if track.encoded_date is not None:
                 dt = datetime.strptime(track.encoded_date, 'UTC %Y-%m-%d %H:%M:%S')
                 dt = dt.replace(tzinfo=timezone.utc)
