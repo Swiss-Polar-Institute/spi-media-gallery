@@ -209,7 +209,7 @@ VIDEO_FORMATS = {
     'mp4': Format('video/mp4', False),
     'mpeg': Format('video/mpeg', False),
     'mpg': Format('video/mpeg', False),
-    'web': Format('video/web', False)
+    'webm': Format('video/web', False)
 }
 
 # Internationalization
