@@ -10,17 +10,21 @@ class Command(BaseCommand):
            'in the buckets. Check files for the recognized extensions only'
 
     def add_arguments(self, parser):
-        pass
+        parser.add_argument('--bucket', type=str, choices=['original', 'processed'],
+                            help='Does check for only the specified bucket. If not specified: both buckets')
+
 
     def handle(self, *args, **options):
-        check_orphanes = CheckOrphanes()
+        bucket = options['bucket']
+        check_orphanes = CheckOrphanes(bucket)
         check_orphanes.run()
 
 
 class CheckOrphanes:
-    def __init__(self):
+    def __init__(self, bucket_to_check):
         self._original_bucket = spi_s3_utils.SpiS3Utils('original')
         self._processed_bucket = spi_s3_utils.SpiS3Utils('processed')
+        self._bucket_to_check = bucket_to_check
 
     @staticmethod
     def _database_files(qs):
@@ -53,22 +57,30 @@ class CheckOrphanes:
     def run(self):
         valid_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
 
-        print('Collecting files from Media bucket')
-        files_bucket_media = self._original_bucket.list_files('', only_from_extensions=valid_extensions)
+        files_bucket_original = set()
+        files_database_original = set()
+        files_bucket_processed = set()
+        files_database_processed = set()
 
-        print('Collecting files from Media database')
-        files_database_media = self._database_files(Medium.objects.all())
+        if self._bucket_to_check is None or self._bucket_to_check == 'original':
+            print('Collecting files from original bucket')
+            files_bucket_original = self._original_bucket.list_files('', only_from_extensions=valid_extensions)
 
-        print('Collecting files from Resized bucket')
-        files_bucket_resized = self._processed_bucket.list_files(settings.RESIZED_PREFIX + '/',
-                                                                 only_from_extensions=valid_extensions)
+            print('Collecting files from original database')
+            files_database_original = self._database_files(Medium.objects.all())
 
-        print('Collecting files from Resized database')
-        files_database_processed = self._database_files(MediumResized.objects.all())
+
+        if self._bucket_to_check is None or self._bucket_to_check == 'processed':
+            print('Collecting files from Resized bucket')
+            files_bucket_processed = self._processed_bucket.list_files(settings.RESIZED_PREFIX + '/',
+                                                                     only_from_extensions=valid_extensions)
+
+            print('Collecting files from Resized database')
+            files_database_processed = self._database_files(MediumResized.objects.all())
 
         print('Calculating missing files')
-        all_database_files = files_database_media.union(files_database_processed)
-        all_bucket_files = files_bucket_media.union(files_bucket_resized)
+        all_database_files = files_database_original.union(files_database_processed)
+        all_bucket_files = files_bucket_original.union(files_bucket_processed)
 
         files_in_database_not_in_buckets = list(all_database_files - all_bucket_files)
         files_in_buckets_not_in_database = list(all_bucket_files - all_database_files)
