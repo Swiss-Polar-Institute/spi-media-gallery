@@ -41,7 +41,7 @@ class MediaImporter(object):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name)
         self._prefix = prefix
         self._all_keys: Optional[Set[str]] = None
-        self._valid_extensions = settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS
+        self._valid_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
 
     def import_media(self):
         self._all_keys = self._media_bucket.get_set_of_keys(self._prefix)
@@ -112,9 +112,9 @@ class MediaImporter(object):
 
             medium.file = file
 
-            if file_extension in settings.PHOTO_EXTENSIONS:
+            if file_extension in settings.PHOTO_FORMATS:
                 medium.medium_type = Medium.PHOTO
-            elif file_extension in settings.VIDEO_EXTENSIONS:
+            elif file_extension in settings.VIDEO_FORMATS:
                 medium.medium_type = Medium.VIDEO
             else:
                 assert False

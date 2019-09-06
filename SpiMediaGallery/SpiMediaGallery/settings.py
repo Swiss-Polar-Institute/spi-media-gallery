@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 import json
 import pathlib
+from collections import namedtuple
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -186,10 +187,30 @@ IMAGE_LABEL_TO_SIZES = {
     'L': (1920, 1920)
 }
 
-# If adding extensions here also add the content-type in utils.content_type_for_filename()
-PHOTO_EXTENSIONS = {'arw', 'cr2', 'jpeg', 'jpg', 'nef'}
-VIDEO_EXTENSIONS = {'avi', 'mov', 'mp4', 'mpeg', 'mpg', 'webm'}
-PHOTO_PRE_PROCESS_DCRAW = {'arw', 'cr2', 'nef'}
+Format = namedtuple('Format', ['content_type', 'dcraw_preprocessing'])
+
+# Can add more from:
+# Raw images: https://stackoverflow.com/questions/43473056/which-mime-type-should-be-used-for-a-raw-image
+# Videos (and anything): https://www.sitepoint.com/mime-types-complete-list/
+
+# ImageMagic needs to deal with the format (or via dcraw if dcraw_preprocessing is True)
+PHOTO_FORMATS = {
+    'arw': Format('image/x-sony-arw', True),
+    'cr2': Format('image/x-canon-cr2', True),
+    'jpeg': Format('image/jpeg', False),
+    'jpg': Format('image/jpeg', False),
+    'nef': Format('image/x-nikon-nef', True),
+}
+
+# ffmpeg needs to deal with the format
+VIDEO_FORMATS = {
+    'avi': Format('video/avi', False),
+    'mov': Format('video/quicktime', False),
+    'mp4': Format('video/mp4', False),
+    'mpeg': Format('video/mpeg', False),
+    'mpg': Format('video/mpeg', False),
+    'web': Format('video/web', False)
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/

@@ -26,59 +26,66 @@ from .models import Medium, MediumResized, TagName, File
 from .spi_s3_utils import SpiS3Utils
 
 
+def create_dictionary_tag_name_to_id() -> Dict[str, str]:
+    tag_name_to_id = {}
+
+    for tag_name in TagName.objects.all():
+        tag_name: TagName
+        tag_name_to_id[tag_name.name] = tag_name.pk
+
+    return tag_name_to_id
+
+
+def get_tags_with_extra_information():
+    tags = []
+
+    last_indentation = 0
+    name_to_id = create_dictionary_tag_name_to_id()
+
+    for tag in TagName.objects.order_by('name'):
+        t = {}
+
+        tag_name = tag.name
+        tag_indentation = tag_name.count('/')
+
+        t['id'] = name_to_id.get(tag_name, None)
+
+        if t['id'] is None:
+            # A tag exists now but not when the dictionary was created
+            continue
+
+        t['open_uls'] = '<ul>' * (tag_indentation - last_indentation)
+        t['close_uls'] = '</ul>' * (last_indentation - tag_indentation)
+
+        last_indentation = tag_indentation
+
+        t['tag'] = tag.name
+        t['count'] = Medium.objects.filter(tags__name__name=tag_name).count()
+        t['shortname'] = tag_name.split('/')[-1]
+
+        tags.append(t)
+
+    return tags
+
+
 class Homepage(TemplateView):
     template_name = 'homepage.tmpl'
 
     def get_context_data(self, **kwargs):
         context = super(Homepage, self).get_context_data(**kwargs)
 
-        tags = []
-        last_indentation = 0
-        name_to_id = self.create_dictionary_tag_name_to_id()
+        list_of_tags = get_tags_with_extra_information()
 
-        for tag in TagName.objects.order_by('name'):
-            t = {}
+        if len(list_of_tags) > 0:
+            context['close_orphaned_uls'] = '</ul>' * list_of_tags[-1]['tag'].count('/')
+        else:
+            context['closed_orphaned_uls'] = ''
 
-            tag_name = tag.name
-            tag_indentation = tag_name.count('/')
-
-            t['id'] = name_to_id.get(tag_name, None)
-
-            if t['id'] is None:
-                # A tag exists now but not when the dictionary was created
-                continue
-
-            t['open_uls'] = '<ul>' * (tag_indentation - last_indentation)
-            t['close_uls'] = '</ul>' * (last_indentation - tag_indentation)
-
-            context['close_orphaned_uls'] = '</ul>' * tag_indentation
-
-            last_indentation = tag_indentation
-
-            t['tag'] = tag.name
-            t['count'] = Medium.objects.filter(tags__name__name=tag_name).count()
-            t['shortname'] = tag_name.split('/')[-1]
-
-            tags.append(t)
-
-        context['list_of_tags'] = tags
-
-        context['list_of_tags_first_half'] = tags[:int(1 + len(tags) / 2)]
-        context['list_of_tags_second_half'] = tags[int(1 + len(tags) / 2):]
-
+        context['list_of_tags'] = list_of_tags
         context['form_search_medium_id'] = MediumIdForm
         context['form_search_file_name'] = FileNameForm
 
         return context
-
-    def create_dictionary_tag_name_to_id(self) -> Dict[str, str]:
-        tag_name_to_id = {}
-
-        for tag_name in TagName.objects.all():
-            tag_name: TagName
-            tag_name_to_id[tag_name.name] = tag_name.pk
-
-        return tag_name_to_id
 
 
 def search_for_nearby(latitude: float, longitude: float, km: float) -> Tuple[Dict[str, str], object]:
@@ -352,6 +359,20 @@ class GetFile(View):
         response = HttpResponse(r.raw, content_type=content_type)
         response['Content-Disposition'] = '{}; filename={}'.format(content_disposition_type, filename)
         return response
+
+
+class SearchByMultipleTags(TemplateView):
+    template_name = 'search_by_multiple_tags.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(TemplateView, self).get_context_data(**kwargs)
+
+        tags = get_tags_with_extra_information()
+
+        context['list_of_tags_first_half'] = tags[:int(1 + len(tags) / 2)]
+        context['list_of_tags_second_half'] = tags[int(1 + len(tags) / 2):]
+
+        return context
 
 
 class Stats(TemplateView):

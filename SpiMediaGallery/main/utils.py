@@ -143,27 +143,14 @@ def seconds_to_human_readable(seconds: float) -> str:
 def content_type_for_filename(filename: str) -> str:
     extension: str = os.path.splitext(filename)[1][1:].lower()
 
-    assert extension in (settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS)
+    assert extension in (settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys())
 
-    # Can add more from:
-    # Raw images: https://stackoverflow.com/questions/43473056/which-mime-type-should-be-used-for-a-raw-image
-    # Videos (and anything): https://www.sitepoint.com/mime-types-complete-list/
-
-    extension_to_content_type = {'arw': 'image/x-sony-arw',
-                                 'avi': 'video/avi',
-                                 'cr2': 'image/x-canon-cr2',
-                                 'jpeg': 'image/jpeg',
-                                 'jpg': 'image/jpeg',
-                                 'mov': 'video/quicktime',
-                                 'mp4': 'video/mp4',
-                                 'mpeg': 'video/mpeg',
-                                 'mpg': 'video/mpeg',
-                                 'nef': 'image/x-nikon-nef',
-                                 'webm': 'video/webm'}
-
-    assert extension in extension_to_content_type
-
-    return extension_to_content_type[extension]
+    if extension in settings.PHOTO_FORMATS:
+        return settings.PHOTO_FORMATS[extension].content_type
+    elif extension in settings.VIDEO_FORMATS:
+        return settings.VIDEO_FORMATS[extension].content_type
+    else:
+        assert False
 
 
 def filename_for_resized_medium(medium_id: int, photo_resize_label: str, extension: str) -> str:

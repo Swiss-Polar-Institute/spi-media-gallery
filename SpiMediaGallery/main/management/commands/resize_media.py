@@ -295,8 +295,9 @@ class ResizeMedium:
 
     def _resize_photo(self, width_wanted: int):
         file_extension = utils.file_extension(self._medium_local_file).lower()
+        file_format = settings.PHOTO_FORMATS[file_extension]
 
-        if (file_extension in settings.PHOTO_PRE_PROCESS_DCRAW) and self._file_pre_processed is None:
+        if file_format.dcraw_preprocessing and self._file_pre_processed is None:
             self._file_pre_processed = utils.convert_raw_to_ppm(self._medium_local_file)
 
         if self._file_pre_processed is not None:

@@ -11,7 +11,7 @@ class MediumIdForm(forms.Form):
 
 
 class FileNameForm(forms.Form):
-    filename = forms.CharField(label='File name', max_length=255, help_text='Search for media in which the file name contains this text')
+    filename = forms.CharField(label='File name', max_length=255, help_text='Search for media in which the file path/name contains this text')
 
 
 class LocationEntryCoordinates(forms.ModelForm):

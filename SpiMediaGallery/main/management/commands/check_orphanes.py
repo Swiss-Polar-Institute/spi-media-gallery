@@ -51,7 +51,7 @@ class CheckOrphanes:
         return unused_file_ids
 
     def run(self):
-        valid_extensions = settings.PHOTO_EXTENSIONS | settings.VIDEO_EXTENSIONS
+        valid_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
 
         print('Collecting files from Media bucket')
         files_bucket_media = self._original_bucket.list_files('', only_from_extensions=valid_extensions)
