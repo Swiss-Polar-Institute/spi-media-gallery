@@ -203,7 +203,7 @@ class Search(TemplateView):
             return redirect(reverse('medium', kwargs={'media_id': medium.pk}))
 
         else:
-            error = {'error_message': 'Invalid parameters received'}
+            error = {'error_message': 'Invalid parameters received. If searching by multiple tags, did you select at least one tag?'}
             return render(request, 'error.tmpl', error, status=400)
 
         number_results_per_page = 100
