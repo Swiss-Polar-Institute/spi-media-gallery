@@ -55,6 +55,7 @@ class MediaImporter(object):
         media_without_xmp = 0
         media_count = 0
         xmps_count = 0
+        xmps_without_medium_list = []
 
         recognised_file_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
 
@@ -66,10 +67,11 @@ class MediaImporter(object):
 
                 if medium_file not in self._all_keys:
                     xmps_without_medium += 1
+                    xmps_without_medium_list.append(key)
 
             if utils.file_extension(key).lower() in recognised_file_extensions:
                 media_count += 1
-                xmp_file = key + ".xmp"
+                xmp_file = key + '.xmp'
 
                 if xmp_file not in self._all_keys:
                     media_without_xmp += 1
@@ -79,6 +81,10 @@ class MediaImporter(object):
         print('XMPs without a Medium:', xmps_without_medium)
         print('Media without an XMP:', media_without_xmp)
 
+        print('Medium files without:')
+        xmps_without_medium_list.sort()
+        for file in xmps_without_medium_list:
+            print(file)
 
     def import_media(self):
         progress_report = ProgressReport(len(self._all_keys), extra_information='Adding files with tags')
