@@ -4,6 +4,7 @@ from ...models import Medium, TagName
 
 import re
 
+
 class Command(BaseCommand):
     help = 'Rename tags'
 

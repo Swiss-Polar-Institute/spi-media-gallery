@@ -120,21 +120,21 @@ def search_in_box(north: float, south: float, east: float, west: float) -> Tuple
     return information, qs
 
 
-def search_for_tag_ids(tag_ids: [List[int]]) -> Union[Dict[str, str], object]:
+def search_for_tag_name_ids(tag_name_ids: [List[int]]) -> Union[Dict[str, str], object]:
     information = {}
 
     qs = MediumForView.objects.order_by('datetime_taken')
     tags_list = []
 
-    for tag_id in tag_ids:
-        tag_name = TagName.objects.get(pk=tag_id).name
+    for tag_name_id in tag_name_ids:
+        tag_name = TagName.objects.get(pk=tag_name_id).name
 
         qs = qs.filter(tags__name__name=tag_name)
         tags_list.append(tag_name)
 
     tags_list = ', '.join(tags_list)
 
-    if len(tag_ids) != 1:
+    if len(tag_name_ids) != 1:
         information['search_query_human'] = 'tags: {}'.format(tags_list)
     else:
         information['search_query_human'] = 'tag: {}'.format(tags_list)
@@ -157,7 +157,7 @@ class Search(TemplateView):
     def get(self, request, *args, **kwargs):
         if 'tags' in request.GET:
             list_of_tag_ids = request.GET.getlist('tags')
-            information, qs = search_for_tag_ids(list_of_tag_ids)
+            information, qs = search_for_tag_name_ids(list_of_tag_ids)
 
         elif 'filename' in request.GET:
             information, qs = search_for_filenames(request.GET['filename'])
