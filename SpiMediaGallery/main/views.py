@@ -127,7 +127,10 @@ def search_for_tag_name_ids(tag_name_ids: [List[int]]) -> Union[Dict[str, str], 
     tags_list = []
 
     for tag_name_id in tag_name_ids:
-        tag_name = TagName.objects.get(pk=tag_name_id).name
+        try:
+            tag_name = TagName.objects.get(pk=tag_name_id).name
+        except ObjectDoesNotExist:
+            continue
 
         qs = qs.filter(tags__name__name=tag_name)
         tags_list.append(tag_name)
