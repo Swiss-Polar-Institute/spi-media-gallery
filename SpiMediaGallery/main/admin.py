@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.gis.admin.options import OSMGeoAdmin
 
-from .models import Medium, Tag, TagName, MediumResized, Photographer, License, Copyright, File
+from .models import Medium, Tag, TagName, MediumResized, Photographer, License, Copyright, File, TagRenamed
 from .utils import seconds_to_minutes_seconds, bytes_to_human_readable
 from main.forms import LocationEntryCoordinates
 
@@ -124,6 +124,12 @@ class FileAdmin(admin.ModelAdmin):
             return bytes_to_human_readable(obj.size)
 
 
+class TagRenamedAdmin(admin.ModelAdmin):
+    list_display = ('old_name', 'new_name', 'datetime_renamed',)
+    ordering = ('old_name', 'new_name', 'datetime_renamed',)
+    search_fields = ('old_name', 'new_name', 'datetime_renamed',)
+
+
 admin.site.register(Medium, MediumAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(TagName, TagNameAdmin)
@@ -132,3 +138,4 @@ admin.site.register(Photographer, PhotographerAdmin)
 admin.site.register(License, LicenseAdmin)
 admin.site.register(Copyright, CopyrightAdmin)
 admin.site.register(File, FileAdmin)
+admin.site.register(TagRenamed, TagRenamedAdmin)

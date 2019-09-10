@@ -1,9 +1,11 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 
-from ...models import Medium, TagName, Tag
+from django.utils import timezone
 
-import re
+from ...models import Medium, TagName, Tag, TagRenamed
+
+from datetime import datetime
 
 
 class Command(BaseCommand):
@@ -49,7 +51,11 @@ class ModifyTag:
             '''Check to see if new tag exists. If it exists, abort.'''
             print('Tag already exists, aborting.')
         else:
-            '''If it does not exist, create the tag and tag all the media that are already tagged with the old tag, with the new tag.'''
+            '''If it does not exist, rename the old tag with the new name.'''
             tag_name = TagName.objects.get(name=old)
             tag_name.name = new
             tag_name.save()
+
+            '''Add the old / new tag into the TagRenamed model.'''
+            renamed_tag = TagRenamed(old_name=old, new_name=new, datetime_renamed=datetime.now(tz=timezone.utc))
+            renamed_tag.save()

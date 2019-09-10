@@ -226,3 +226,13 @@ class MediumResized(models.Model):
 
     class Meta:
         verbose_name_plural = 'MediaResized'
+
+
+class TagRenamed(models.Model):
+
+    old_name = models.CharField(max_length=255, null=True, blank=True)
+    new_name= models.CharField(max_length=255, null=True, blank=True)
+    datetime_renamed= models.DateTimeField()
+
+    def __str__(self):
+        return 'O: {} - N: {}'.format(self.old_name, self.new_name())
