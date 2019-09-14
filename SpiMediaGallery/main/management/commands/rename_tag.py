@@ -25,19 +25,19 @@ class Command(BaseCommand):
 
         modifier = ModifyTag()
         modifier.rename(old_tag, new_tag)
-        #
-        # for tag_name in TagName.objects.filter(name__startswith=old_tag):
-        #     tag_name.name = re.sub('^' + old_tag, new_tag, tag_name.name)
-        #     tag_name.save()
-        #
-        # TagName.objects.filter(name=old_tag).update(name=new_tag)
+
 
 class ModifyTag:
     def __init__(self):
         pass
 
 
-    def tag_name_is_in_database(self, tag):
+    def _tag_name_is_in_database(self, tag):
+        """Test if tag name is in the database. Return True or False.
+
+        :param tag: name of the tag
+        """
+
         try:
             TagName.objects.get(name=tag)
             return True
@@ -46,16 +46,19 @@ class ModifyTag:
 
 
     def rename(self, old, new):
+        """Check to see if new tag exists. If it exists, abort. If it does not exist, rename the old tag with the new
+        name, adding the old / new tag into the TagRenamed model.
 
-        if self.tag_name_is_in_database(new):
-            '''Check to see if new tag exists. If it exists, abort.'''
+        :param old: name of the old tag
+        :param new: name of the new tag
+        """
+
+        if self._tag_name_is_in_database(new):
             print('Tag already exists, aborting.')
         else:
-            '''If it does not exist, rename the old tag with the new name.'''
             tag_name = TagName.objects.get(name=old)
             tag_name.name = new
             tag_name.save()
 
-            '''Add the old / new tag into the TagRenamed model.'''
             renamed_tag = TagRenamed(old_name=old, new_name=new, datetime_renamed=datetime.now(tz=timezone.utc))
             renamed_tag.save()
