@@ -58,11 +58,13 @@ class Tag(models.Model):
     XMP = 'X'
     GENERATED = 'G'
     MANUAL = 'M'
+    RENAMED = 'R'
 
     IMPORTER = (
         (XMP, 'XMP'),
         (GENERATED, 'Generated'),
-        (MANUAL, 'Manual')
+        (MANUAL, 'Manual'),
+        (RENAMED, 'Renamed')
     )
 
     name = models.ForeignKey(TagName, on_delete=models.PROTECT)
