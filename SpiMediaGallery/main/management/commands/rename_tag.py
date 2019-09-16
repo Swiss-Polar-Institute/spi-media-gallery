@@ -70,6 +70,15 @@ class ModifyTag:
         if TagName.objects.filter(name=old).count() == 0:
             raise CommandError('Old tag name does not exist: aborting.')
 
+    def _raise_error_if_old_tag_same_as_new(self, old, new):
+        """Check if the old and new tags are the same. If they are, abort.
+
+        :param old: old tag name (string)
+        :param new: new tag name (string)"""
+
+        if old == new:
+            raise CommandError('Old tag is the same as the new tag: aborting.')
+
 
     def rename(self, old, new):
         """Check to see if new tag exists. If it exists, abort. If it does not exist, rename the old tag with the new
@@ -79,11 +88,12 @@ class ModifyTag:
         :param new: name of the new tag
         """
 
+        self._raise_error_if_old_tag_same_as_new(old, new)
+
         self._raise_error_if_old_tag_does_not_exist(old)
 
         if self._tag_name_is_in_database(new):
 
-            #print('Tag already exists, aborting.')
             tag_name = TagName.objects.get(name=new)
             new_tag = self._get_or_create_tag_in_database(tag_name, Tag.RENAMED)
 
