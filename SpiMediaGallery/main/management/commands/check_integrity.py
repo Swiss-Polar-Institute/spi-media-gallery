@@ -98,8 +98,7 @@ class CheckOrphanes:
         xmps_without_medium_list = []
 
         recognised_file_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
-
-        all_keys = ...
+        all_keys = self._get_files_in_bucket('original')
 
         for key in all_keys:
             if key.endswith('.xmp'):
@@ -136,7 +135,7 @@ class CheckOrphanes:
 
     def _get_files_in_bucket(self, bucket_name):
         if self._files_in_bucket[bucket_name] is None:
-            print('Collecing files from {}'.format(bucket_name))
+            print('Collecting files from {}'.format(bucket_name))
             valid_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
             self._files_in_bucket[bucket_name] = self._bucket_utils[bucket_name].list_files('',
                                                                                             only_from_extensions=valid_extensions)
