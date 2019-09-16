@@ -136,6 +136,7 @@ class CheckOrphanes:
 
     def _get_files_in_bucket(self, bucket_name):
         if self._files_in_bucket[bucket_name] is None:
+            print('Collecing files from {}'.format(bucket_name))
             valid_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
             self._files_in_bucket[bucket_name] = self._bucket_utils[bucket_name].list_files('',
                                                                                             only_from_extensions=valid_extensions)
@@ -149,14 +150,12 @@ class CheckOrphanes:
         files_database_processed = set()
 
         if self._bucket_to_check is None or self._bucket_to_check == 'original':
-            print('Collecting files from original bucket...')
             files_bucket_original = self._get_files_in_bucket('original')
 
             print('Collecting files from original database...')
             files_database_original = self._database_files(Medium.objects.all())
 
         if self._bucket_to_check is None or self._bucket_to_check == 'processed':
-            print('Collecting files from Resized bucket...')
             files_bucket_processed = self._get_files_in_bucket('processed')
 
             print('Collecting files from Resized database...')
