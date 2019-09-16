@@ -86,7 +86,7 @@ class File(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
     ORIGINAL = 'O'
-    PROCESSED = 'P'\
+    PROCESSED = 'P'
 
     BUCKET_NAMES = (
         (ORIGINAL, 'Original'),
