@@ -126,14 +126,26 @@ def search_for_tag_name_ids(tag_name_ids: List[int]) -> Tuple[Dict[str, str], ob
     qs = MediumForView.objects.order_by('datetime_taken')
     tags_list = []
 
+    error = None
     for tag_name_id in tag_name_ids:
         try:
-            tag_name = TagName.objects.get(pk=tag_name_id).name
+            tag_name_id_int = int(tag_name_id)
+        except ValueError:
+            error = 'Invalid tag name id: {}'.format(tag_name_id)
+            break
+
+        try:
+            tag_name = TagName.objects.get(pk=tag_name_id_int).name
         except ObjectDoesNotExist:
-            continue
+            error = 'Non-existing tag name id: {}'.format(tag_name_id_int)
+            break
 
         qs = qs.filter(tags__name__name=tag_name)
         tags_list.append(tag_name)
+
+    if error is not None:
+        qs = MediumForView.objects.none()
+        tags_list = ['Error: Invalid tag name id']
 
     tags_list = ', '.join(tags_list)
 
