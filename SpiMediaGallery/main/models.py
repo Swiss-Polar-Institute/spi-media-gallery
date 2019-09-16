@@ -84,7 +84,7 @@ class File(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
     ORIGINAL = 'O'
-    PROCESSED = 'P'
+    PROCESSED = 'P'\
 
     BUCKET_NAMES = (
         (ORIGINAL, 'Original'),
@@ -229,10 +229,11 @@ class MediumResized(models.Model):
 
 
 class TagRenamed(models.Model):
+    objects = models.Manager()  # Helps Pycharm CE auto-completion
 
     old_name = models.CharField(max_length=255, null=True, blank=True)
     new_name= models.CharField(max_length=255, null=True, blank=True)
     datetime_renamed= models.DateTimeField()
 
     def __str__(self):
-        return 'O: {} - N: {}'.format(self.old_name, self.new_name())
+        return 'O: {} - N: {}'.format(self.old_name, self.new_name)
