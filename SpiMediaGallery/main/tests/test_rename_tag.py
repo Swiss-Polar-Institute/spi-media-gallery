@@ -21,7 +21,6 @@ class RenameTagTest(TestCase):
         pass
 
     def test_rename_tag_destination_tag_does_not_exist(self):
-
         old_tag = 'people/john_doe'
         new_tag = 'people/james_door'
 

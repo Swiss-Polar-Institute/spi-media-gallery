@@ -206,8 +206,8 @@ class Resizer(object):
     # Getting some:
     # django.db.utils.OperationalError: (1213, 'Deadlock found when trying to get lock; try restarting transaction')
     # Not explained yet but disabling it - it can cause a file to be saved but not the Medium,
-    # this is detected by check_orphanes.py if needed
-    def _resize_medium(self, medium, medium_local_file, sizes: List[str]):
+    # this is detected by check_integrity.py if needed
+    def _resize_medium(self, medium, medium_local_file, sizes: List[str]) -> None:
         file_to_delete: Optional[str] = None
 
         file_resizer = ResizeMedium(medium, medium_local_file)

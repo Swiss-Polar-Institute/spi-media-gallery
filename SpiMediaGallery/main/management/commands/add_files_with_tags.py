@@ -26,8 +26,6 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--prefix', type=str, default='',
                             help='Prefix of the files to be imported.')
-        parser.add_argument('--only-report', dest='only_report', action='store_true',
-                            help='Prints a report of orphaned XMPs/orphaned media files.')
 
     def handle(self, *args, **options):
         bucket_name = 'original'
@@ -35,10 +33,7 @@ class Command(BaseCommand):
 
         media_importer = MediaImporter(bucket_name, prefix)
 
-        if options['only_report']:
-            media_importer.validate_keys()
-        else:
-            media_importer.import_media()
+        media_importer.import_media()
 
 
 class MediaImporter(object):
@@ -49,48 +44,6 @@ class MediaImporter(object):
         self._valid_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
 
         self._all_keys = self._media_bucket.get_set_of_keys(self._prefix)
-
-    def validate_keys(self):
-        xmps_without_medium = 0
-        media_without_xmp = 0
-        media_count = 0
-        xmps_count = 0
-        xmps_without_medium_list = []
-
-        recognised_file_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
-
-        for key in self._all_keys:
-            if key.endswith('.xmp'):
-                xmps_count += 1
-
-                medium_file = key[0:-(len('.xmp'))]
-
-                medium_file_extension = utils.file_extension(medium_file).lower()
-
-                if medium_file_extension in recognised_file_extensions and medium_file not in self._all_keys:
-                    xmps_without_medium += 1
-                    xmps_without_medium_list.append(key)
-
-            if utils.file_extension(key).lower() in recognised_file_extensions:
-                media_count += 1
-                xmp_file = key + '.xmp'
-
-                if xmp_file not in self._all_keys:
-                    media_without_xmp += 1
-
-        print('Total XMP files:', xmps_count)
-        print('Total Medium files:', media_count)
-        print('XMPs without a Medium:', xmps_without_medium)
-        print('Media without an XMP:', media_without_xmp)
-
-        print('XMP files for a recognized extension that does not have a Medium file:')
-        if len(xmps_without_medium_list) > 0:
-            xmps_without_medium_list.sort()
-
-            for file in xmps_without_medium_list:
-                print('  ' + file)
-        else:
-            print(' None')
 
     def import_media(self):
         progress_report = ProgressReport(len(self._all_keys), extra_information='Adding files with tags')

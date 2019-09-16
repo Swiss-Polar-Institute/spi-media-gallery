@@ -38,7 +38,7 @@ def generate_virtual_tags(medium: Medium):
     "people" (type is generated)
     """
     for tag in medium.tags.all():
-        tag_parts: List[str] = tag.name.name.split("/")
+        tag_parts: List[str] = tag.name.name.split('/')
 
         i = 1
         while i < len(tag_parts):

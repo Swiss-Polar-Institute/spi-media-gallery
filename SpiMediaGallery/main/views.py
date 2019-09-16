@@ -120,7 +120,7 @@ def search_in_box(north: float, south: float, east: float, west: float) -> Tuple
     return information, qs
 
 
-def search_for_tag_name_ids(tag_name_ids: [List[int]]) -> Union[Dict[str, str], object]:
+def search_for_tag_name_ids(tag_name_ids: List[int]) -> Tuple[Dict[str, str], object]:
     information = {}
 
     qs = MediumForView.objects.order_by('datetime_taken')
