@@ -1,5 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from django.utils import timezone
 
@@ -47,6 +47,11 @@ class ModifyTag:
 
 
     def _get_or_create_tag_in_database(self, tag_name, importer):
+        """Get the tag object from the database if it already exists, then return it. If not, create the tag and return it.
+
+        :param tag_name: tag_name object
+        :param importer: importer method used when adding the tag to the database
+        """
 
         try:
             return Tag.objects.get(name=tag_name, importer=importer)
@@ -56,6 +61,16 @@ class ModifyTag:
             return new_tag
 
 
+    def _raise_error_if_old_tag_does_not_exist(self, old):
+        """ Check if old tag name exists in the database. If it does not, raise command error. If it does, continue.
+
+        :param old: old tag name (string)
+        """
+
+        if TagName.objects.filter(name=old).count() == 0:
+            raise CommandError('Old tag name does not exist: aborting.')
+
+
     def rename(self, old, new):
         """Check to see if new tag exists. If it exists, abort. If it does not exist, rename the old tag with the new
         name, adding the old / new tag into the TagRenamed model.
@@ -63,11 +78,8 @@ class ModifyTag:
         :param old: name of the old tag
         :param new: name of the new tag
         """
-        
-        # Check if old tag name exists
-        if TagName.objects.get(name=old).count() == 0:
-            print("Old tag name does not exist: aborting.")
-            exit()
+
+        self._raise_error_if_old_tag_does_not_exist(old)
 
         if self._tag_name_is_in_database(new):
 
@@ -90,9 +102,12 @@ class ModifyTag:
             TagName.objects.get(name=old).delete()
 
         else:
+            # Rename the tag with the new name
             tag_name = TagName.objects.get(name=old)
             tag_name.name = new
             tag_name.save()
 
+        # Add a row to the TagRenamed table to record each change or renaming of tags. This includes tags that are
+        # renamed, or those that are changed to be ones that already exist in the database.
         renamed_tag = TagRenamed(old_name=old, new_name=new, datetime_renamed=datetime.now(tz=timezone.utc))
         renamed_tag.save()
