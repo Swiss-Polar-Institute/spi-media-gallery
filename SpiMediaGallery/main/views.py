@@ -20,7 +20,7 @@ from django.urls import reverse
 from django.views.generic import TemplateView, View
 
 from . import utils
-from .forms import MediumIdForm, FileNameForm
+from .forms import MediumIdForm, FileNameForm, MultipleTagsSearchForm
 from .medium_for_view import MediumForView
 from .models import Medium, MediumResized, TagName, File
 from .spi_s3_utils import SpiS3Utils
@@ -391,8 +391,10 @@ class SearchByMultipleTags(TemplateView):
 
         tags = get_tags_with_extra_information()
 
-        context['list_of_tags_first_half'] = tags[:int(1 + len(tags) / 2)]
-        context['list_of_tags_second_half'] = tags[int(1 + len(tags) / 2):]
+        context['form_search_by_multiple_tags'] = MultipleTagsSearchForm(extra=tags)
+
+        # context['list_of_tags_first_half'] = tags[:int(1 + len(tags) / 2)]
+        # context['list_of_tags_second_half'] = tags[int(1 + len(tags) / 2):]
 
         return context
 

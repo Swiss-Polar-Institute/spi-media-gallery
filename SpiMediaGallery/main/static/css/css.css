@@ -25,3 +25,8 @@ li.collapsibleListClosed{
   list-style-image : url('/static/images/button-closed.png');
   cursor           : pointer;
 }
+
+
+label {
+    font-weight: normal !important;
+}

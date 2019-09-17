@@ -11,19 +11,8 @@
         Only media with all selected tags will be displayed.
 
         <form action="{% url 'search' %}" method="get">
-            <table border="0">
-                <tbody>
-                    <tr>
-                        <td valign="top">{% for tag in list_of_tags_first_half %}<input type="checkbox" id="{{ tag.id }}" value="{{ tag.id }}" name="tags">
-                                <label for="{{ tag.id }}">{{ tag.tag }} ({{ tag.count }})</label><br>
-                            {% endfor %}
-                        </td>
-                        <td valign="top">{% for tag in list_of_tags_second_half %}<input type="checkbox" id="{{ tag.id }}" value="{{ tag.id }}" name="tags">
-                                <label for="{{ tag.id }}">{{ tag.tag }} ({{ tag.count }})</label><br>
-                            {% endfor %}
-                        </td>
-                    </tr>
-                </tbody>
+            <table border="1">
+                {{ form_search_by_multiple_tags }}
             </table>
             <div>
                 <input type="submit" value="Search">

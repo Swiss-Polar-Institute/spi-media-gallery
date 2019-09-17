@@ -7,7 +7,7 @@ from main.views import Homepage, ListVideos, \
 
 urlpatterns = [
     path('', cache_page(60 * 15)(Homepage.as_view())),
-    path('search/multiple_tags/', cache_page(60 * 15)(SearchByMultipleTags.as_view()), name='search_by_multiple_tags'),
+    path('search/multiple_tags/', SearchByMultipleTags.as_view(), name='search_by_multiple_tags'),
     re_path('media/random/(?P<type_of_medium>photo|video|medium)/', DisplayRandom.as_view(), name='display_random'),
     path('media/<int:media_id>', Display.as_view(), name='medium'),
     re_path('media/', Search.as_view(), name='search'),
