@@ -134,13 +134,11 @@ class CheckOrphanes:
 
             for file in xmps_without_medium_list:
                 print('  ' + file)
-        else:
-            print(' None')
 
     def _get_files_in_bucket(self, bucket_name, extensions_filter=frozenset()):
         extensions_filter = frozenset(extensions_filter)
         if self._files_in_bucket[bucket_name] is None or extensions_filter not in self._files_in_bucket[bucket_name]:
-            print('Collecting files from {} extension filter:'.format(bucket_name, extensions_filter))
+            print('Collecting files from {} extension filter...'.format(bucket_name, extensions_filter))
             self._files_in_bucket[bucket_name][extensions_filter] = self._bucket_utils[bucket_name].list_files('',
                                                                                                                only_from_extensions=extensions_filter)
 
