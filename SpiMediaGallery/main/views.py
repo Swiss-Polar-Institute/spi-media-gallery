@@ -163,11 +163,11 @@ def add_filter_for_media_type(qs, media_type):
 
     return qs
 
-def search_for_filenames(filename, media_type):
+
+def search_for_filenames(filename):
     information = {}
 
     qs = MediumForView.objects.filter(file__object_storage_key__icontains=filename).order_by('file__object_storage_key')
-    qs = add_filter_for_media_type(qs, media_type)
 
     information['search_query_human'] = 'media which filename contains: {}'.format(filename)
 
@@ -196,7 +196,7 @@ class Search(TemplateView):
             information, qs = search_for_tag_name_ids(list_of_tag_ids)
 
         elif 'filename' in request.GET:
-            information, qs = search_for_filenames(request.GET['filename'], request.GET['media_type'])
+            information, qs = search_for_filenames(request.GET['filename'])
 
         elif 'latitude' in request.GET and 'longitude' in request.GET and 'km' in request.GET:
             latitude = float(request.GET['latitude'])
@@ -243,6 +243,15 @@ class Search(TemplateView):
             return render(request, 'error.tmpl', error, status=400)
 
         number_results_per_page = 100
+
+        media_type_filter = request.GET.get('media_type', None)
+        qs = add_filter_for_media_type(qs, request.GET.get(media_type_filter, None))
+
+        if media_type_filter == 'P':
+            information['search_query_human'] += ' (only photos)'
+        elif media_type_filter == 'V':
+            information['search_query_human'] += ' (only videos)'
+
         paginator = Paginator(qs, number_results_per_page)
 
         try:
@@ -250,8 +259,8 @@ class Search(TemplateView):
         except ValueError:
             page_number = 1
 
-        photos = paginator.get_page(page_number)
-        information['media'] = photos
+        media = paginator.get_page(page_number)
+        information['media'] = media
         information['search_query'] = urllib.parse.quote_plus(request.META['QUERY_STRING'])
 
         paginator_count = paginator.count

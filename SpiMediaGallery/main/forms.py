@@ -7,8 +7,8 @@ from .models import Medium
 
 
 def media_type_field():
-    medium_types = Medium.MEDIUM_TYPES + (('A', 'Any'),)
-    return forms.ChoiceField(choices=medium_types)
+    medium_types = (('A', 'Any'),) + Medium.MEDIUM_TYPES
+    return forms.ChoiceField(choices=medium_types, help_text='Result will include only the specific media type')
 
 
 class MultipleTagsSearchForm(forms.Form):
