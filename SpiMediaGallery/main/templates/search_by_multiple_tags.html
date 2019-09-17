@@ -11,10 +11,23 @@
         Only media with all selected tags will be displayed.
 
         <form action="{% url 'search' %}" method="get">
-            <table border="1">
-                {{ form_search_by_multiple_tags }}
+            <table class="multiple-tags" border="0">
+                        <tr>
+                        {% for field in form_search_by_multiple_tags %}
+                            <td>
+                             {{ field }} {{ field.label }}<br>
+                            </td>
+                            {% if forloop.counter|divisibleby:"2" %}
+                                </tr><tr>
+                            {% endif %}
+                        {% endfor %}
+                        <tr>
             </table>
             <div>
+                <table>
+                    {{ media_type_form }}
+                    {{ add_referrer_form }}
+                </table>
                 <input type="submit" value="Search">
             </div>
         </form>

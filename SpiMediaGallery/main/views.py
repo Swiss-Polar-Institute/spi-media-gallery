@@ -20,7 +20,7 @@ from django.urls import reverse
 from django.views.generic import TemplateView, View
 
 from . import utils
-from .forms import MediumIdForm, FileNameForm, MultipleTagsSearchForm
+from .forms import MediumIdForm, FileNameForm, MultipleTagsSearchForm, MediaTypeForm, AddReferrerForm
 from .medium_for_view import MediumForView
 from .models import Medium, MediumResized, TagName, File
 from .spi_s3_utils import SpiS3Utils
@@ -179,6 +179,20 @@ class Search(TemplateView):
     def get(self, request, *args, **kwargs):
         if 'tags' in request.GET:
             list_of_tag_ids = request.GET.getlist('tags')
+            information, qs = search_for_tag_name_ids(list_of_tag_ids)
+
+        elif 'search_by_multiple_tags' in request.GET:
+            list_of_tag_ids = []
+
+            for key, value in request.GET.items():
+                try:
+                    tag_id = int(key)
+                except ValueError:
+                    continue
+
+                if value == 'on':
+                    list_of_tag_ids.append(tag_id)
+
             information, qs = search_for_tag_name_ids(list_of_tag_ids)
 
         elif 'filename' in request.GET:
@@ -391,7 +405,9 @@ class SearchByMultipleTags(TemplateView):
 
         tags = get_tags_with_extra_information()
 
-        context['form_search_by_multiple_tags'] = MultipleTagsSearchForm(extra=tags)
+        context['form_search_by_multiple_tags'] = MultipleTagsSearchForm(tags=tags)
+        context['media_type_form'] = MediaTypeForm
+        context['add_referrer_form'] = AddReferrerForm(referrer='search_by_multiple_tags')
 
         # context['list_of_tags_first_half'] = tags[:int(1 + len(tags) / 2)]
         # context['list_of_tags_second_half'] = tags[int(1 + len(tags) / 2):]

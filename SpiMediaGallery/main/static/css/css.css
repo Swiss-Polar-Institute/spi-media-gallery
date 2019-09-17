@@ -30,3 +30,9 @@ li.collapsibleListClosed{
 label {
     font-weight: normal !important;
 }
+
+.multiple-tags tr,
+.multiple-tags td{
+  padding: 0 !important;
+  margin: 0 !important;
+}

@@ -13,13 +13,24 @@ def media_type_field():
 
 class MultipleTagsSearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        extra = kwargs.pop('extra')
+        tags = kwargs.pop('tags')
         super(MultipleTagsSearchForm, self).__init__(*args, **kwargs)
 
-        for i, tag in enumerate(extra):
-            self.fields[tag['id']] = forms.BooleanField(label='{} ({})'.format(tag['tag'], tag['count']))
+        for i, tag in enumerate(tags):
+            self.fields[tag['id']] = forms.BooleanField(label='{} ({})'.format(tag['tag'], tag['count']), required=False)
 
-        self.fields['medium_types'] = media_type_field()
+
+class AddReferrerForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        referrer = kwargs.pop('referrer')
+        super(AddReferrerForm, self).__init__(*args, **kwargs)
+
+        self.fields[referrer] = forms.CharField(widget=forms.HiddenInput(), initial='1')
+
+
+class MediaTypeForm(forms.Form):
+    media_type = media_type_field()
+
 
 class MediumIdForm(forms.Form):
     medium_id = forms.CharField(label='Media ID', max_length=255, help_text='Example: SPI-010.jpg, 10, SPI-010.crw')
