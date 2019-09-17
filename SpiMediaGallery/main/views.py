@@ -157,10 +157,17 @@ def search_for_tag_name_ids(tag_name_ids: List[int]) -> Tuple[Dict[str, str], ob
     return information, qs
 
 
-def search_for_filenames(filename):
+def add_filter_for_media_type(qs, media_type):
+    if media_type == 'P' or media_type == 'V':
+        qs = qs.filter(medium_type=media_type)
+
+    return qs
+
+def search_for_filenames(filename, media_type):
     information = {}
 
     qs = MediumForView.objects.filter(file__object_storage_key__icontains=filename).order_by('file__object_storage_key')
+    qs = add_filter_for_media_type(qs, media_type)
 
     information['search_query_human'] = 'media which filename contains: {}'.format(filename)
 
@@ -175,7 +182,7 @@ class Search(TemplateView):
             information, qs = search_for_tag_name_ids(list_of_tag_ids)
 
         elif 'filename' in request.GET:
-            information, qs = search_for_filenames(request.GET['filename'])
+            information, qs = search_for_filenames(request.GET['filename'], request.GET['media_type'])
 
         elif 'latitude' in request.GET and 'longitude' in request.GET and 'km' in request.GET:
             latitude = float(request.GET['latitude'])

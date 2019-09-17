@@ -6,12 +6,18 @@ from django.contrib.gis.geos import Point
 from .models import Medium
 
 
+def media_type_field():
+    medium_types = Medium.MEDIUM_TYPES + (('A', 'Any'),)
+    return forms.ChoiceField(choices=medium_types)
+
+
 class MediumIdForm(forms.Form):
     medium_id = forms.CharField(label='Media ID', max_length=255, help_text='Example: SPI-010.jpg, 10, SPI-010.crw')
 
 
 class FileNameForm(forms.Form):
     filename = forms.CharField(label='File name', max_length=255, help_text='Search for media in which the file path/name contains this text')
+    media_type = media_type_field()
 
 
 class LocationEntryCoordinates(forms.ModelForm):
