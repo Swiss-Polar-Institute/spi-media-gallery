@@ -48,9 +48,13 @@ class CheckOrphanes:
                               'processed': spi_s3_utils.SpiS3Utils('processed')
                               }
 
-        self._files_in_bucket: Dict[str, Optional[set]] = {'original': None,
-                                                           'processed': None
-                                                           }
+        # This is a cache of the files in the bucket (since it can be needed multiple times).
+        # The first dictionary is the bucket. The second dictionary's key is the
+        # file extensions that we've requested. Some of the code only needs media file extensions,
+        # some all. It keeps a cache for each one and resuses appropiately
+        self._files_in_bucket: Dict[str, Dict[frozenset, set]] = {'original': {},
+                                                                  'processed': {}
+                                                                  }
 
     @staticmethod
     def _database_files(qs):
@@ -133,14 +137,14 @@ class CheckOrphanes:
         else:
             print(' None')
 
-    def _get_files_in_bucket(self, bucket_name):
-        if self._files_in_bucket[bucket_name] is None:
-            print('Collecting files from {}'.format(bucket_name))
-            valid_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
-            self._files_in_bucket[bucket_name] = self._bucket_utils[bucket_name].list_files('',
-                                                                                            only_from_extensions=valid_extensions)
+    def _get_files_in_bucket(self, bucket_name, extensions_filter=frozenset()):
+        extensions_filter = frozenset(extensions_filter)
+        if self._files_in_bucket[bucket_name] is None or extensions_filter not in self._files_in_bucket[bucket_name]:
+            print('Collecting files from {} extension filter:'.format(bucket_name, extensions_filter))
+            self._files_in_bucket[bucket_name][extensions_filter] = self._bucket_utils[bucket_name].list_files('',
+                                                                                                               only_from_extensions=extensions_filter)
 
-        return self._files_in_bucket[bucket_name]
+        return self._files_in_bucket[bucket_name][extensions_filter]
 
     def check_orphaned_files(self):
         files_bucket_original = set()
@@ -148,14 +152,16 @@ class CheckOrphanes:
         files_bucket_processed = set()
         files_database_processed = set()
 
+        valid_media_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
+
         if self._bucket_to_check is None or self._bucket_to_check == 'original':
-            files_bucket_original = self._get_files_in_bucket('original')
+            files_bucket_original = self._get_files_in_bucket('original', valid_media_extensions)
 
             print('Collecting files from original database...')
             files_database_original = self._database_files(Medium.objects.all())
 
         if self._bucket_to_check is None or self._bucket_to_check == 'processed':
-            files_bucket_processed = self._get_files_in_bucket('processed')
+            files_bucket_processed = self._get_files_in_bucket('processed', valid_media_extensions)
 
             print('Collecting files from Resized database...')
             files_database_processed = self._database_files(MediumResized.objects.all())
