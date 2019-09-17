@@ -15,7 +15,7 @@
                         <tr>
                         {% for field in form_search_by_multiple_tags %}
                             <td>
-                             {{ field }} {{ field.label }}<br>
+                                {{ field }} <label for="{{ field.auto_id }}">{{ field.label }}</label><br>
                             </td>
                             {% if forloop.counter|divisibleby:"2" %}
                                 </tr><tr>

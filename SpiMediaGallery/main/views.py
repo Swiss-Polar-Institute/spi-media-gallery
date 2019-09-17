@@ -409,9 +409,6 @@ class SearchByMultipleTags(TemplateView):
         context['media_type_form'] = MediaTypeForm
         context['add_referrer_form'] = AddReferrerForm(referrer='search_by_multiple_tags')
 
-        # context['list_of_tags_first_half'] = tags[:int(1 + len(tags) / 2)]
-        # context['list_of_tags_second_half'] = tags[int(1 + len(tags) / 2):]
-
         return context
 
 
