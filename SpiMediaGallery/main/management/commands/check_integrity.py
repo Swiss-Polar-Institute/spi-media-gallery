@@ -139,8 +139,13 @@ class CheckOrphanes:
         extensions_filter = frozenset(extensions_filter)
         if self._files_in_bucket[bucket_name] is None or extensions_filter not in self._files_in_bucket[bucket_name]:
             print('Collecting files from {} extension filter {}...'.format(bucket_name, extensions_filter))
+            if extensions_filter == frozenset():
+                extensions_filter_or_none = None
+            else:
+                extensions_filter_or_none = extensions_filter
+
             self._files_in_bucket[bucket_name][extensions_filter] = self._bucket_utils[bucket_name].list_files('',
-                                                                                                               only_from_extensions=extensions_filter)
+                                                                                                               only_from_extensions=extensions_filter_or_none)
             print('Number of files collected: {}'.format(len(self._files_in_bucket[bucket_name][extensions_filter])))
 
         return self._files_in_bucket[bucket_name][extensions_filter]
