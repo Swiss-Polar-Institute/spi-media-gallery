@@ -138,9 +138,10 @@ class CheckOrphanes:
     def _get_files_in_bucket(self, bucket_name, extensions_filter=frozenset()):
         extensions_filter = frozenset(extensions_filter)
         if self._files_in_bucket[bucket_name] is None or extensions_filter not in self._files_in_bucket[bucket_name]:
-            print('Collecting files from {} extension filter...'.format(bucket_name, extensions_filter))
+            print('Collecting files from {} extension filter {}...'.format(bucket_name, extensions_filter))
             self._files_in_bucket[bucket_name][extensions_filter] = self._bucket_utils[bucket_name].list_files('',
                                                                                                                only_from_extensions=extensions_filter)
+            print('Number of files collected: {}'.format(len(self._files_in_bucket[bucket_name][extensions_filter])))
 
         return self._files_in_bucket[bucket_name][extensions_filter]
 
@@ -179,10 +180,12 @@ class CheckOrphanes:
         print('* Media without a file')
         for medium_pk in medium_without_files:
             print(medium_pk)
+        print()
 
         print('* Unused file IDs')
         for file in self._file_ids_not_used():
             print(file.id, file.object_storage_key)
+        print()
 
         print('* Files in the database missing in the buckets:')
         for file in files_in_database_not_in_buckets:
@@ -193,6 +196,7 @@ class CheckOrphanes:
 
         for file in files_in_buckets_not_in_database:
             print(file)
+        print()
 
     def check_orphaned_tags(self):
         print('* TagNames not referenced by any Tag:')
@@ -204,6 +208,7 @@ class CheckOrphanes:
                 print('TagName: {} not used by any Tag'.format(tag_name.name))
             except MultipleObjectsReturned:
                 pass
+        print()
 
         print('* Tags not referenced by any Medium:')
         for tag in Tag.objects.all():
@@ -213,3 +218,4 @@ class CheckOrphanes:
                 print('Tag: {} not used by any Medium'.format(tag_name))
             except MultipleObjectsReturned:
                 pass
+        print()
