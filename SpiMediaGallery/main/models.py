@@ -122,14 +122,14 @@ class File(models.Model):
         return mark_safe('<a href="{}">Download</a>'.format(escape(url)))
 
 
-@receiver(models.signals.post_delete, sender=File)
-def delete_file(sender, instance, *args, **kwargs):
-    spi_s3_utils = SpiS3Utils(instance.bucket_name())
-    try:
-        spi_s3_utils.delete(instance.object_storage_key)
-    except ClientError:
-        # Boto3 raises ClientError(AccessDenied) if the file is not there
-        pass
+#@receiver(models.signals.post_delete, sender=File)
+#def delete_file(sender, instance, *args, **kwargs):
+#    spi_s3_utils = SpiS3Utils(instance.bucket_name())
+#    try:
+#        spi_s3_utils.delete(instance.object_storage_key)
+#    except ClientError:
+#        # Boto3 raises ClientError(AccessDenied) if the file is not there
+#        pass
 
 
 class Medium(models.Model):
