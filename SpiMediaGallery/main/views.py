@@ -245,7 +245,7 @@ class Search(TemplateView):
         number_results_per_page = 100
 
         media_type_filter = request.GET.get('media_type', None)
-        qs = add_filter_for_media_type(qs, request.GET.get(media_type_filter, None))
+        qs = add_filter_for_media_type(qs, media_type_filter)
 
         if media_type_filter == 'P':
             information['search_query_human'] += ' (only photos)'
