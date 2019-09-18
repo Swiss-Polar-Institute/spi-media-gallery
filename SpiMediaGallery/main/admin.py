@@ -118,10 +118,7 @@ class FileAdmin(admin.ModelAdmin):
     readonly_fields = ('download_file',)
 
     def file_size(self, obj):
-        if obj.size is None:
-            return None
-        else:
-            return bytes_to_human_readable(obj.size)
+        return bytes_to_human_readable(obj.size)
 
 
 class TagRenamedAdmin(admin.ModelAdmin):
