@@ -2,9 +2,7 @@ from django.test import TestCase
 from ..models import TagName, TagRenamed, Tag
 from ..management.commands.rename_tag import ModifyTag
 from ..views import search_for_tag_name_ids
-
-
-
+from django.core.management.base import CommandError
 
 
 class RenameTagTest(TestCase):
@@ -20,7 +18,29 @@ class RenameTagTest(TestCase):
     def tearDown(self):
         pass
 
+    def test_raise_error_if_old_tag_does_not_exist(self):
+        """Test that an error is raised if the old tag is not already in the database."""
+
+        old_tag = 'people/no_name'
+
+        with self.assertRaises(CommandError):
+            ModifyTag._raise_error_if_old_tag_does_not_exist(old_tag)
+
+
+    def test_raise_error_if_old_tag_same_as_new(self):
+        """Test that an error is raised if the old tag name is the same as the new tag name (not concerning the importer
+         here from Tag)."""
+
+        old_tag = 'people/john_doe'
+        new_tag = 'people/john_doe'
+
+        with self.assertRaises(CommandError):
+            ModifyTag._raise_error_if_old_tag_same_as_new(old_tag, new_tag)
+
+
     def test_rename_tag_destination_tag_does_not_exist(self):
+        """Test the case where the new tag does not exist in the database."""
+
         old_tag = 'people/john_doe'
         new_tag = 'people/james_door'
 
@@ -70,6 +90,7 @@ class RenameTagTest(TestCase):
         self.assertEqual(TagRenamed.objects.filter(old_name=old_tag, new_name=new_tag).count(), 1)
 
     def test_rename_tag_destination_tag_does_exist(self):
+        """Test the case where the new tag does exist in the database."""
 
         old_tag = 'people/john_doe'
         new_tag = 'people/john_dawes'

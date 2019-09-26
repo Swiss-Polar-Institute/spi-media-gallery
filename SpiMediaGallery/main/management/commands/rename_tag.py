@@ -61,7 +61,8 @@ class ModifyTag:
             return new_tag
 
 
-    def _raise_error_if_old_tag_does_not_exist(self, old):
+    @staticmethod
+    def _raise_error_if_old_tag_does_not_exist(old):
         """ Check if old tag name exists in the database. If it does not, raise command error. If it does, continue.
 
         :param old: old tag name (string)
@@ -70,7 +71,8 @@ class ModifyTag:
         if TagName.objects.filter(name=old).count() == 0:
             raise CommandError('Old tag name does not exist: aborting.')
 
-    def _raise_error_if_old_tag_same_as_new(self, old, new):
+    @staticmethod
+    def _raise_error_if_old_tag_same_as_new(old, new):
         """Check if the old and new tags are the same. If they are, abort.
 
         :param old: old tag name (string)
@@ -78,7 +80,6 @@ class ModifyTag:
 
         if old == new:
             raise CommandError('Old tag is the same as the new tag: aborting.')
-
 
     def rename(self, old, new):
         """Check to see if new tag exists. If it exists, abort. If it does not exist, rename the old tag with the new
