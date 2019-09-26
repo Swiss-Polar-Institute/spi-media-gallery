@@ -32,7 +32,7 @@ class ModifyTag:
     def __init__(self):
         pass
 
-
+    @staticmethod
     def _tag_name_is_in_database(self, tag_name_str):
         """Test if tag name is in the database. Return True or False.
 
@@ -45,7 +45,7 @@ class ModifyTag:
         except ObjectDoesNotExist:
             return False
 
-
+    @staticmethod
     def _get_or_create_tag_in_database(self, tag_name, importer):
         """Get the tag object from the database if it already exists, then return it. If not, create the tag and return it.
 
@@ -59,7 +59,6 @@ class ModifyTag:
             new_tag = Tag(name=tag_name, importer=importer)
             new_tag.save()
             return new_tag
-
 
     @staticmethod
     def _raise_error_if_old_tag_does_not_exist(old):
@@ -93,7 +92,7 @@ class ModifyTag:
 
         self._raise_error_if_old_tag_does_not_exist(old)
 
-        if self._tag_name_is_in_database(new):
+        if self._tag_name_is_in_database(self, new):
 
             tag_name = TagName.objects.get(name=new)
             new_tag = self._get_or_create_tag_in_database(tag_name, Tag.RENAMED)
