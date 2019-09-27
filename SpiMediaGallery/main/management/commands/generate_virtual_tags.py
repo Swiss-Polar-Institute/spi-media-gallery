@@ -2,6 +2,7 @@ from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
+from django.db.models import ProtectedError
 
 from ...models import Medium, Tag, TagName
 from ...progress_report import ProgressReport
@@ -16,12 +17,26 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         generator = GenerateTags()
 
+        generator.delete_generated_tags()
         generator.generate_tags()
 
 
 class GenerateTags(object):
     def __init__(self):
         pass
+
+    def delete_generated_tags(self):
+        """Delete all generated tags (before the new ones are generated to avoid them becoming orphan tags when renaming
+            is done). """
+
+        for tag in Tag.objects.filter(importer=Tag.GENERATED):
+            tagname = tag.name  # gets the associated tag name
+            tag.delete()  # deleted tag from Tag
+
+            try:
+                tagname.delete()  # deletes tagname from Tagname where is was GENERATED but only if there isn't another tag in Tag with this same name
+            except ProtectedError:  # catches the error to stop the delete of the Tagname if there is another tag with this name but with a different importer
+                pass
 
     def generate_tags(self):
         media = Medium.objects.all()
@@ -33,8 +48,8 @@ class GenerateTags(object):
 
 
 def generate_virtual_tags(medium: Medium):
-    """For each tag of :param medium checks that the parent tag exists. If it does not exist creates it
-    with the tag.type == Tag.GENERATED. E.g. if "people/john_doe" is a tag in :param medium creates
+    """For each tag of :param medium it checks that the parent tag exists. If it does not exist it creates it
+    with the tag.type == Tag.GENERATED. E.g. if "people/john_doe" is a tag in :param medium it creates
     "people" (type is generated)
     """
     for tag in medium.tags.all():

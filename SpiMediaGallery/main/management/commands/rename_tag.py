@@ -70,8 +70,8 @@ class ModifyTag:
                 old_tag = tags[0]
                 new_tag = tags[1]
 
-                self.rename(old_tag, new_tag)
                 print('Renaming: ', old_tag, ' to ', new_tag)
+                self.rename(old_tag, new_tag)
 
 
     @staticmethod
