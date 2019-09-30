@@ -1,3 +1,4 @@
+from django.core.management import CommandError
 from django.test import TestCase
 
 from main.management.commands.delete_tag import DeleteTag
@@ -43,4 +44,12 @@ class DeleteTagTest(TestCase):
         tags_not_deleted = deleter.tags_not_deleted()
 
         self.assertListEqual(tags_not_deleted, expected_list)
+
+    def test_raise_error_if_generated_tag(self):
+        """Test that an error is raised if the tag if it has an importer GENERATED"""
+
+        tag_name = 'people'
+
+        with self.assertRaises(CommandError):
+            DeleteTag._raise_error_if_generated_tag(tag_name)
 

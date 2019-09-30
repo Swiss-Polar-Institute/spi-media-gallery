@@ -1,5 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from main.models import TagName, Tag
 
@@ -14,7 +14,6 @@ class Command(BaseCommand):
 
         TODO: It can also be run to delete tag names that are not used by a medium.
         """
-
         subparsers = parser.add_subparsers(help='sub-command help', required='True')
 
         # parser for the command to use an old name and new name
@@ -77,19 +76,38 @@ class DeleteTag:
         else:
             return False
 
+    @staticmethod
+    def _raise_error_if_generated_tag(tag_name_str):
+        """If the tag name has a type of GENERATED then abort."""
+
+        if Tag.objects.filter(name__name=tag_name_str, importer=Tag.GENERATED).count() != 0:
+            raise CommandError('This tag {} cannot be deleted: it was GENERATED. Aborting.'.format(tag_name_str))
+
+    def delete_tag(self, tag_name_str):
+        """Delete a tag from the database.
+
+        :param tag_name_str: Name of the tag (string)
+        """
+
+        print("Deleting tag: ", tag_name_str)
+        Tag.objects.filter(name__name=tag_name_str).delete()
+        TagName.objects.get(name=tag_name_str).delete()
 
     def tags_not_deleted(self):
         """Returns the list of tags that do not exist in the database and therefore have not been deleted."""
 
         return self._tags_not_deleted
 
-
     def delete(self, tag_name):
+
+        self._raise_error_if_generated_tag(tag_name)
 
         if self._add_tag_to_list_if_does_not_exist(
                 tag_name):  # if a tag doesn't exist and it is added to a list, it will return True
             return  # skips the rest of this function (so in effect moves to the next pairing of tags)
 
-        # Delete the  tag from the database
-        Tag.objects.filter(name__name=tag_name).delete()
-        TagName.objects.get(name=tag_name).delete()
+        if self._tag_name_is_in_database(self, tag_name):
+
+            # Delete the tag from the database
+            self.delete_tag(tag_name)
+

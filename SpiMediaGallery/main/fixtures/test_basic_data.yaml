@@ -24,6 +24,10 @@
     pk: 4
     fields:
         name: "people/john_dawes"
+    model: main.tagname
+    pk: 5
+    fields:
+        name: people
 -   model: main.tag
     pk: 1
     fields:
@@ -44,6 +48,11 @@
     fields:
         name: 4
         importer: X
+    model: main.tag
+    pk: 5
+    fields:
+        name: 5
+        importer: G
 -   model: main.file
     pk: 1
     fields:
@@ -69,3 +78,4 @@
         tags:
         - 1
         - 2
+        - 5
