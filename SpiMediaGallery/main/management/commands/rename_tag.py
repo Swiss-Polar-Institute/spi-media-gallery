@@ -27,7 +27,8 @@ class Command(BaseCommand):
         subparsers = parser.add_subparsers(help='sub-command help', required='True')
 
         # parser for the command to use an old name and new name
-        parser_rename_from_command_line = subparsers.add_parser('command_line', help='renames from the command line with an old and new name')
+        parser_rename_from_command_line = subparsers.add_parser('command_line',
+                                                                help='renames from the command line with an old and new name')
         parser_rename_from_command_line.set_defaults(dest='command_line')
 
         parser_rename_from_command_line.add_argument('old_tag', type=str, help='Tag to be renamed.')
@@ -59,10 +60,9 @@ class Command(BaseCommand):
             print(modifier.tags_not_renamed())
 
 
-
 class ModifyTag:
     def __init__(self):
-        self._tags_do_not_exist = [] # the list of tags that do not exist
+        self._tags_do_not_exist = []  # the list of tags that do not exist
 
     def rename_from_file(self, file_path):
         """Get the old and new tag names from a file.
@@ -73,7 +73,6 @@ class ModifyTag:
             tag_row = csv.reader(csvfile)
 
             for tags in tag_row:
-
                 old_tag = tags[0]
                 new_tag = tags[1]
 
@@ -109,7 +108,8 @@ class ModifyTag:
             return new_tag
 
     def _add_old_tag_to_list_if_does_not_exist(self, old):
-        """ Check if old tag name exists in the database. If it does not, add it to a list (that will be printed at the end). If it does, continue.
+        """ Check if old tag name exists in the database. If it does not, add it to a list (that will be printed at the
+        end). If it does, continue.
 
         :param old: old tag name (string)
         """
@@ -145,8 +145,9 @@ class ModifyTag:
 
         self._raise_error_if_old_tag_same_as_new(old, new)
 
-        if self._add_old_tag_to_list_if_does_not_exist(old): # if an old tag doesn't exist and it is added to a list, it will return True
-            return # skips the rest of this function (so in effect moves to the next pairing of tags)
+        if self._add_old_tag_to_list_if_does_not_exist(
+                old):  # if an old tag doesn't exist and it is added to a list, it will return True
+            return  # skips the rest of this function (so in effect moves to the next pairing of tags)
 
         if self._tag_name_is_in_database(self, new):
 
