@@ -72,7 +72,7 @@ class DeleteTag:
         """
 
         if TagName.objects.filter(name=tag_name_str).count() == 0:
-            self._tags_do_not_exist.append(tag_name_str)
+            self._tags_not_deleted.append(tag_name_str)
             return True
         else:
             return False
