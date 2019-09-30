@@ -47,15 +47,22 @@ class Command(BaseCommand):
             modifier = ModifyTag()
             modifier.rename(old_tag, new_tag)
 
+            print('The following tags have not been renamed: ')
+            print(modifier.tags_not_renamed())
+
         elif options['dest'] == 'file':
             modifier = ModifyTag()
             file_path = options['file_path']
             modifier.rename_from_file(file_path)
 
+            print('The following tags have not been renamed: ')
+            print(modifier.tags_not_renamed())
+
+
 
 class ModifyTag:
     def __init__(self):
-        pass
+        self._tags_do_not_exist = [] # the list of tags that do not exist
 
     def rename_from_file(self, file_path):
         """Get the old and new tag names from a file.
@@ -72,7 +79,6 @@ class ModifyTag:
 
                 print('Renaming: ', old_tag, ' to ', new_tag)
                 self.rename(old_tag, new_tag)
-
 
     @staticmethod
     def _tag_name_is_in_database(self, tag_name_str):
@@ -102,15 +108,22 @@ class ModifyTag:
             new_tag.save()
             return new_tag
 
-    @staticmethod
-    def _raise_error_if_old_tag_does_not_exist(old):
-        """ Check if old tag name exists in the database. If it does not, raise command error. If it does, continue.
+    def _add_old_tag_to_list_if_does_not_exist(self, old):
+        """ Check if old tag name exists in the database. If it does not, add it to a list (that will be printed at the end). If it does, continue.
 
         :param old: old tag name (string)
         """
 
         if TagName.objects.filter(name=old).count() == 0:
-            raise CommandError('Old tag {} name does not exist: aborting.'.format(old))
+            self._tags_do_not_exist.append(old)
+            return True
+        else:
+            return False
+
+    def tags_not_renamed(self):
+        """Returns the list of tags that do not exist."""
+
+        return self._tags_do_not_exist
 
     @staticmethod
     def _raise_error_if_old_tag_same_as_new(old, new):
@@ -132,7 +145,8 @@ class ModifyTag:
 
         self._raise_error_if_old_tag_same_as_new(old, new)
 
-        self._raise_error_if_old_tag_does_not_exist(old)
+        if self._add_old_tag_to_list_if_does_not_exist(old): # if an old tag doesn't exist and it is added to a list, it will return True
+            return # skips the rest of this function (so in effect moves to the next pairing of tags)
 
         if self._tag_name_is_in_database(self, new):
 

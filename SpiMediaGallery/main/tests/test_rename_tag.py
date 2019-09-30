@@ -18,14 +18,6 @@ class RenameTagTest(TestCase):
     def tearDown(self):
         pass
 
-    def test_raise_error_if_old_tag_does_not_exist(self):
-        """Test that an error is raised if the old tag is not already in the database."""
-
-        old_tag = 'people/no_name'
-
-        with self.assertRaises(CommandError):
-            ModifyTag._raise_error_if_old_tag_does_not_exist(old_tag)
-
 
     def test_raise_error_if_old_tag_same_as_new(self):
         """Test that an error is raised if the old tag name is the same as the new tag name (not concerning the importer
@@ -148,6 +140,22 @@ class RenameTagTest(TestCase):
 
         # Check that the renaming of the tag has been added to the TagRenamed table
         self.assertEqual(TagRenamed.objects.filter(old_name=old_tag, new_name=new_tag).count(), 1)
+
+    def test_rename_old_tag_does_not_exist(self):
+        """Test the case where the old tag does not exist in the database. Returns a list of tags not renamed."""
+
+        old_tag = 'people/no_name'
+        new_tag = 'people/john_doe'
+
+        expected_list = ['people/no_name']
+
+        # Do the renaming of the tag
+        modifier = ModifyTag()
+        modifier.rename(old_tag, new_tag)
+
+        tags_do_not_exist = modifier.tags_not_renamed()
+
+        self.assertListEqual(tags_do_not_exist, expected_list)
 
 
 
