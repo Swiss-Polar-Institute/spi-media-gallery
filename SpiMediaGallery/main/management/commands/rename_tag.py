@@ -146,8 +146,9 @@ class ModifyTag:
 
             # Tag all of these media with the new tag name, then delete the tags using the old name
             for medium in old_media:
-                medium.tags.add(new_tag)
-                medium.tags.remove(*old_tags)
+                if medium.tags.filter(name__name=tag_name).count() == 0:
+                    medium.tags.add(new_tag)
+                    medium.tags.remove(*old_tags)
 
             # Delete the old tag from the database
             Tag.objects.filter(name__name=old).delete()
