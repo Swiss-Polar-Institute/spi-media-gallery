@@ -28,6 +28,10 @@
     pk: 5
     fields:
         name: people
+-   model: main.tagname
+    pk: 6
+    fields:
+        name: aerial
 -   model: main.tag
     pk: 1
     fields:
@@ -53,6 +57,11 @@
     fields:
         name: 5
         importer: G
+-   model: main.tag
+    pk: 6
+    fields:
+        name: 6
+        importer: X
 -   model: main.file
     pk: 1
     fields:
