@@ -156,6 +156,51 @@ class RenameTagTest(TestCase):
 
         self.assertListEqual(tags_do_not_exist, expected_list)
 
+    def test_rename_tag_to_different_case(self):
+        """Test the case where the new tag is the same but with a different case and the lower case version does exist in the database."""
 
+        old_tag = 'people/john_doe' # equivalent to the case of public/public
+        new_tag = 'people/John_Doe' # to Public/public
+
+        # Check that the old name exists in the database before renaming
+        old_tag_name_count = TagName.objects.filter(name=old_tag).count()
+        self.assertEqual(old_tag_name_count, 1)
+
+        # Check that the new name does not exist in the database before renaming
+        new_tag_name_count = TagName.objects.filter(name=new_tag).count()
+        self.assertEqual(new_tag_name_count, 0)
+
+        # Do the renaming of the tag
+        modifier = ModifyTag()
+        modifier.rename(old_tag, new_tag)
+
+        # Check that the new name exists in the database after renaming
+        new_tag_item = Tag.objects.get(name__name=new_tag)
+        new_tag_name = new_tag_item.name.name
+        print('New tag name: ', new_tag_name)
+        self.assertEqual(new_tag_name, 'John_Doe')
+
+    def test_rename_tag_different_case_tag_already_exists(self):
+        """Test the case where the new tag is different but already exists in the database with a letter in a different case."""
+
+        old_tag = 'aerial'
+        new_tag = 'Aerial'
+
+        # Check that the old name exists in the database before renaming
+        old_tag_name_count = TagName.objects.filter(name=old_tag).count()
+        self.assertEqual(old_tag_name_count, 1)
+
+        # Check that the new name does exist in the database before renaming
+        new_tag_name_count = TagName.objects.filter(name=new_tag).count()
+        self.assertEqual(new_tag_name_count, 1)
+
+        # Do the renaming of the tag
+        modifier = ModifyTag()
+        modifier.rename(old_tag, new_tag)
+
+        new_tag_item = Tag.objects.get(name__name=new_tag)
+        new_tag_name = new_tag_item.name.name
+        print('New tag name: ', new_tag_name)
+        self.assertEqual(new_tag_name, 'Aerial')
 
 
