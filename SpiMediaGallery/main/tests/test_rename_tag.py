@@ -29,7 +29,6 @@ class RenameTagTest(TestCase):
         with self.assertRaises(CommandError):
             ModifyTag._raise_error_if_old_tag_same_as_new(old_tag, new_tag)
 
-
     def test_rename_tag_destination_tag_does_not_exist(self):
         """Test the case where the new tag does not exist in the database."""
 
