@@ -163,11 +163,11 @@ class RenameTagTest(TestCase):
         new_tag = 'people/John_Doe' # to Public/public
 
         # Check that the old name exists in the database before renaming
-        old_tag_name_count = TagName.objects.filter(name=old_tag).count()
+        old_tag_name_count = self._tag_name_objects_filter_case_sensitive_count(name=old_tag)
         self.assertEqual(old_tag_name_count, 1)
 
         # Check that the new name does not exist in the database before renaming
-        new_tag_name_count = TagName.objects.filter(name=new_tag).count()
+        new_tag_name_count = self._tag_name_objects_filter_case_sensitive_count(name=new_tag)
         self.assertEqual(new_tag_name_count, 0)
 
         # Do the renaming of the tag
@@ -177,30 +177,39 @@ class RenameTagTest(TestCase):
         # Check that the new name exists in the database after renaming
         new_tag_item = Tag.objects.get(name__name=new_tag)
         new_tag_name = new_tag_item.name.name
-        print('New tag name: ', new_tag_name)
-        self.assertEqual(new_tag_name, 'John_Doe')
+        self.assertEqual(new_tag_name, 'people/John_Doe')
 
     def test_rename_tag_different_case_tag_already_exists(self):
         """Test the case where the new tag is different but already exists in the database with a letter in a different case."""
 
-        old_tag = 'aerial'
-        new_tag = 'Aerial'
+        old_tag = 'air'
+        new_tag = 'aerial'
 
         # Check that the old name exists in the database before renaming
-        old_tag_name_count = TagName.objects.filter(name=old_tag).count()
+        old_tag_name_count = self._tag_name_objects_filter_case_sensitive_count(name=old_tag)
         self.assertEqual(old_tag_name_count, 1)
 
         # Check that the new name does exist in the database before renaming
-        new_tag_name_count = TagName.objects.filter(name=new_tag).count()
-        self.assertEqual(new_tag_name_count, 1)
+        new_tag_name_count = self._tag_name_objects_filter_case_sensitive_count(name=new_tag)
+        self.assertEqual(new_tag_name_count, 0)
+
+        new_tag_name_count_case_sensitive = self._tag_name_objects_filter_case_sensitive_count(name='Aerial')
+        self.assertEqual(new_tag_name_count_case_sensitive, 1)
 
         # Do the renaming of the tag
         modifier = ModifyTag()
         modifier.rename(old_tag, new_tag)
 
-        new_tag_item = Tag.objects.get(name__name=new_tag)
-        new_tag_name = new_tag_item.name.name
-        print('New tag name: ', new_tag_name)
-        self.assertEqual(new_tag_name, 'Aerial')
+        self.assertEqual(Tag.objects.filter(name__name=new_tag).count(), 2)
 
+        self.assertEqual(TagName.objects.get(name=new_tag).name, 'Aerial')
 
+    @staticmethod
+    def _tag_name_objects_filter_case_sensitive_count(name=''):
+        count = 0
+
+        for tag_name in TagName.objects.filter(name=name):
+            if tag_name.name == name:
+                count += 1
+
+        return count

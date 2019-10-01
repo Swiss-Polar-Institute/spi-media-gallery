@@ -31,7 +31,11 @@
 -   model: main.tagname
     pk: 6
     fields:
-        name: aerial
+        name: Aerial
+-   model: main.tagname
+    pk: 7
+    fields:
+        name: air
 -   model: main.tag
     pk: 1
     fields:
@@ -62,6 +66,11 @@
     fields:
         name: 6
         importer: X
+-   model: main.tag
+    pk: 7
+    fields:
+        name: 7
+        importer: X
 -   model: main.file
     pk: 1
     fields:
@@ -88,3 +97,4 @@
         - 1
         - 2
         - 5
+        - 7
