@@ -31,7 +31,7 @@
 -   model: main.tagname
     pk: 6
     fields:
-        name: aerial
+        name: Aerial
 -   model: main.tag
     pk: 1
     fields:
