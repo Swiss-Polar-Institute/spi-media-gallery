@@ -152,7 +152,7 @@ class ModifyTag:
         try:
             destination_tag_name = TagName.objects.get(name=new)
             destination_tag_name_str = destination_tag_name.name
-            print('Warning, renaming from {} to {} instead of {}'.old, destination_tag_name_str, new)
+            print('Warning, renaming from {} to {} instead of {}'.format(old, destination_tag_name_str, new))
         except ObjectDoesNotExist:
             destination_tag_name_str = new
 
