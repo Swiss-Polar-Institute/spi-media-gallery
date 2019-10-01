@@ -149,10 +149,16 @@ class ModifyTag:
                 old):  # if an old tag doesn't exist and it is added to a list, it will return True
             return  # skips the rest of this function (so in effect moves to the next pairing of tags)
 
-        if self._tag_name_is_in_database(self, new):
+        try:
+            destination_tag_name = TagName.objects.get(name=new)
+            destination_tag_name_str = destination_tag_name.name
+            print('Warning, renaming from {} to {} instead of {}'.old, destination_tag_name_str, new)
+        except ObjectDoesNotExist:
+            destination_tag_name_str = new
 
-            tag_name = TagName.objects.get(name=new)
-            new_tag = ModifyTag._get_or_create_tag_in_database(tag_name, Tag.RENAMED)
+        if self._tag_name_is_in_database(self, destination_tag_name_str):
+            tag_name = TagName.objects.get(name=destination_tag_name_str)
+            new_destination_tag = ModifyTag._get_or_create_tag_in_database(tag_name, Tag.RENAMED)
 
             # Get list of all media tagged with old tag name
             old_id = TagName.objects.get(name=old).id
@@ -162,7 +168,7 @@ class ModifyTag:
             # Tag all of these media with the new tag name, then delete the tags using the old name
             for medium in old_media:
                 if medium.tags.filter(name__name=tag_name).count() == 0:
-                    medium.tags.add(new_tag)
+                    medium.tags.add(new_destination_tag)
                     medium.tags.remove(*old_tags)
 
             # Delete the old tag from the database
@@ -172,7 +178,7 @@ class ModifyTag:
         else:
             # Rename the tag with the new name
             tag_name = TagName.objects.get(name=old)
-            tag_name.name = new
+            tag_name.name = destination_tag_name_str
             tag_name.save()
 
         # Add a row to the TagRenamed table to record each change or renaming of tags. This includes tags that are
