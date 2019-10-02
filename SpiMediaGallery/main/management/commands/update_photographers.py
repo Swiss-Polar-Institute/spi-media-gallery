@@ -55,11 +55,7 @@ class PhotographerUpdater(object):
 
     @staticmethod
     def _get_photographer(string):
-        # if string.count(' ') != 1: # name is expected in the format name_surname where a space joins two names together for example john_doe brown
-        #     print('Invalid photographer tag format: {}'.format(string))
-        #     return None
-
-        # create the name of the photographer from the tag name and find the correct photographer in the database
+        """Create the name of the photographer from the tag name and find the correct photographer in the database"""
         first_name, last_name = string.split(' ', 1)
         photographer = Photographer.objects.filter(first_name=first_name).filter(last_name=last_name)
 
@@ -74,6 +70,7 @@ class PhotographerUpdater(object):
 
     @staticmethod
     def _get_photographer_string(tags):
+        """Get the tags beginning with Photographer"""
         prefix = 'Photographer/'
         for tag in tags:
             if tag.name.name.startswith(prefix):
