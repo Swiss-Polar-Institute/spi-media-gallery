@@ -9,7 +9,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         """Define the commands to be used by the user.
 
-        The command can be used using an object storage key (file path) and tag name on the command line. Give the option of dry-run to check media that would be modified. 
+        The command can be used using an object storage key (file path) and tag name on the command line. Give the option of dry-run to check media that would be modified.
 
         It can also be used with a file containing a list of the media to which the tags can be assigned.
         """
@@ -19,7 +19,7 @@ class Command(BaseCommand):
                                                              help='adds tag from command line using the object storage key and tag name')
         assign_tag_from_command_line.set_defaults(dest='command_line')
 
-        assign_tag_from_command_line.add_argument('object_storage_key', type=str, help='Regular expression of object storage key')
+        assign_tag_from_command_line.add_argument('object_storage_key_regex', type=str, help='Regular expression of object storage key')
         assign_tag_from_command_line.add_argument('tagname', type=str, help='Tag name to assign')
         assign_tag_from_command_line.add_argument('--dry-run', action='store_true')
 
@@ -31,12 +31,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options['dest'] == 'command_line':
-            object_storage_key = options['object_storage_key']
+            object_storage_key_regex = options['object_storage_key_regex']
             tagname = options['tagname']
             dry_run = options['dry_run']
 
             assigner = AssignTag()
-            assigner.add_tag(object_storage_key, tagname, dry_run)
+            assigner.add_tag(object_storage_key_regex, tagname, dry_run)
 
         elif options['dest'] == 'file':
             assigner = AssignTag()
@@ -48,7 +48,7 @@ class AssignTag():
     def __init__(self):
         pass
 
-    def add_tag(self, object_storage_key, tagname_str, dry_run):
+    def add_tag(self, object_storage_key_regex, tagname_str, dry_run):
         """Assign the tag with tagname to the media with the defined object storage key."""
 
         # Get or create tag
@@ -61,13 +61,11 @@ class AssignTag():
             importer=Tag.MANUAL
         )
 
-        # Check that object storage key exists
-
         total_number_media = 0
         total_number_media_modified = 0
 
         # Add the tag to the medium
-        for medium in Medium.objects.filter(file__object_storage_key=object_storage_key):
+        for medium in Medium.objects.filter(file__object_storage_key__iregex=object_storage_key_regex):
 
             number_tags_before_adding_tag = medium.tags.all().count()
 
