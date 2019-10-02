@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from ...models import Medium, Tag, TagName
+import csv
 
 
 class Command(BaseCommand):
@@ -28,25 +29,32 @@ class Command(BaseCommand):
 
         assign_tag_from_file.add_argument('file_path', type=str,
                                           help='Full file path of file containing media and tags to be assigned')
+        assign_tag_from_file.add_argument('--dry-run', action='store_true')
+
 
     def handle(self, *args, **options):
+        assigner = AssignTag()
+
         if options['dest'] == 'command_line':
             object_storage_key_regex = options['object_storage_key_regex']
             tagname = options['tagname']
             dry_run = options['dry_run']
 
-            assigner = AssignTag()
             assigner.add_tag(object_storage_key_regex, tagname, dry_run)
 
         elif options['dest'] == 'file':
-            assigner = AssignTag()
             file_path = options['file_path']
-            assigner.add_tag_from_file(file_path)
+            dry_run = options['dry_run']
+            assigner.add_tag_from_file(file_path, dry_run)
+
+            print('Total number of media', assigner.total_number_media)
+            print('Total number of media modified', assigner.total_number_media_modified)
 
 
 class AssignTag():
     def __init__(self):
-        pass
+        self.total_number_media = 0
+        self.total_number_media_modified = 0
 
     def add_tag(self, object_storage_key_regex, tagname_str, dry_run):
         """Assign the tag with tagname to the media with the defined object storage key."""
@@ -61,8 +69,8 @@ class AssignTag():
             importer=Tag.MANUAL
         )
 
-        total_number_media = 0
-        total_number_media_modified = 0
+        total_number_media_tag = 0
+        total_number_media_tag_modified = 0
 
         # Add the tag to the medium
         for medium in Medium.objects.filter(file__object_storage_key__iregex=object_storage_key_regex):
@@ -75,9 +83,25 @@ class AssignTag():
                 medium.tags.add(tag)
 
                 if medium.tags.all().count() != number_tags_before_adding_tag:
-                    total_number_media_modified += 1
+                    total_number_media_tag_modified += 1
 
-            total_number_media += 1
+            total_number_media_tag += 1
 
-        print('Total number media queried:', total_number_media)
-        print('Total number media to which tags were added:', total_number_media_modified)
+        self.total_number_media_modified += total_number_media_tag_modified
+        self.total_number_media += total_number_media_tag
+
+        print('Total number of media for this object storage key and tag', total_number_media_tag)
+        print('Total number of media modified for this object storage key and tag', total_number_media_tag_modified)
+
+    def add_tag_from_file(self, file_path, dry_run):
+        """Add tag to media that are listed in a csv file with a regular expression for the object storage and a tag name"""
+
+        with open(file_path) as csvfile:
+            object_storage_to_tag = csv.reader(csvfile)
+
+            for rows in object_storage_to_tag:
+                object_storage_key_regex = rows[0]
+                tagname_str = rows[1]
+
+                print("-----Adding tags to media that have an object storage key that meets the following expression:", object_storage_key_regex, "-----")
+                self.add_tag(object_storage_key_regex, tagname_str, dry_run)

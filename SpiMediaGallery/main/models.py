@@ -13,7 +13,7 @@ from .spi_s3_utils import SpiS3Utils
 class Photographer(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
-    first_name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, null=True)
     last_name = models.CharField(max_length=100)
 
     def __str__(self):
