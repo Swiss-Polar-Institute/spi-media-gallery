@@ -56,7 +56,13 @@ class PhotographerUpdater(object):
     @staticmethod
     def _get_photographer(string):
         """Create the name of the photographer from the tag name and find the correct photographer in the database"""
-        first_name, last_name = string.split(' ', 1)
+        photographer_name = string.split(' ', 1)
+        if len(photographer_name) == 1:
+            first_name = None
+            last_name = photographer_name[0]
+        else:
+            first_name, last_name = photographer_name
+
         photographer = Photographer.objects.filter(first_name=first_name).filter(last_name=last_name)
 
         if len(photographer) == 1:
