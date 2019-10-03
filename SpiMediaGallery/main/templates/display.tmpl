@@ -48,6 +48,7 @@
                         <b>Photographer:</b> {{ medium.photographer_name }}<br>
                         <b>License of use:</b> <br>
                         {{ medium.license_text | safe }}<p>
+                        <p class="text-muted">If you require another license to use this medium in a different way, please contact the photographer or SPI.</p>
                     </small>
                     <!--
                     <div align="left">
@@ -81,13 +82,9 @@
                     <p>
                     {% if medium.latitude and medium.longitude %}
                     Latitude: {{ medium.latitude|floatformat:3 }} Longitude: {{ medium.longitude|floatformat:3 }}<br>
+
                     <a href="{% url 'search' %}?latitude={{ medium.latitude }}&longitude={{ medium.longitude }}&km=10">Nearby (10 km) photos</a>
-                    {% endif %}
-                    <p>
-                    Go to random:
-                    {% include "_random_selection.tmpl" %}
-                    <p>
-                    {% if medium.latitude and medium.longitude %}
+
                         {% leaflet_map "photo_map" %}
                         <script language="javascript">
                               window.addEventListener("map:init", function (event) {
@@ -96,13 +93,19 @@
                                 var marker = L.marker([{{ medium.latitude }}, {{ medium.longitude }}]).addTo(map);
                               });
                         </script>
+                        <p class="text-muted"><small>Date, time and location of the medium are an approximation and unverified. For information only.</small></p>
+
                     {% else %}
                         Photo doesn't have location information at the moment.
                     {% endif %}
+                    Go to random:
+                    {% include "_random_selection.tmpl" %}
+                    <p>
                     <p>
                     <small>
                         File path: {{ medium.file.object_storage_key }}
                     </small>
+                    <p>
 
                     </div>
             </div>
