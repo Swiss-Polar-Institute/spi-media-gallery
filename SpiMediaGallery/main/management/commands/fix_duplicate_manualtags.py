@@ -21,7 +21,7 @@ class FixDuplicatedTags:
         pass
 
     def run(self):
-        qs = Medium.objects.filter(file__object_storage_key__icontains='Carles')
+        qs = Medium.objects.all()
 
         progress_report = ProgressReport(qs.count(), unit='media')
 
