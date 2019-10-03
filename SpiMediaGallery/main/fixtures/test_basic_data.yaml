@@ -36,6 +36,14 @@
     pk: 7
     fields:
         name: air
+-   model: main.tagname
+    pk: 8
+    fields:
+        name: "Photographer/John Doe"
+-   model: main.tagname
+    pk: 9
+    fields:
+        name: "Photographer/Alpha Surname Beta"
 -   model: main.tag
     pk: 1
     fields:
@@ -71,6 +79,16 @@
     fields:
         name: 7
         importer: X
+-   model: main.tag
+    pk: 8
+    fields:
+        name: 8
+        importer: X
+-   model: main.tag
+    pk: 9
+    fields:
+        name: 9
+        importer: X
 -   model: main.file
     pk: 1
     fields:
@@ -78,6 +96,16 @@
         md5: 94fef567e2cb803d492c70a2c9ac3d1b
         size: 4243152
         bucket: O
+-   model: main.photographer
+    pk: 1
+    fields:
+        first_name: John
+        last_name: Doe
+-   model: main.photographer
+    pk: 2
+    fields:
+        first_name: Alpha
+        last_name: "Surname Beta"
 -   model: main.medium
     pk: 1
     fields:
@@ -98,3 +126,5 @@
         - 2
         - 5
         - 7
+        - 8
+        - 9
