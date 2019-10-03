@@ -31,7 +31,6 @@ class Command(BaseCommand):
                                           help='Full file path of file containing media and tags to be assigned')
         assign_tag_from_file.add_argument('--dry-run', action='store_true')
 
-
     def handle(self, *args, **options):
         assigner = AssignTag()
 
