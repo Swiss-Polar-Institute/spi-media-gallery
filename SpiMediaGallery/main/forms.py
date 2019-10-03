@@ -58,7 +58,7 @@ class LocationEntryCoordinates(forms.ModelForm):
         model = Medium
         exclude = []
         fields = ('file', 'medium_type', 'height', 'width', 'duration', 'datetime_taken',
-                  'datetime_imported', 'location', 'latitude', 'longitude', 'tags', 'license', 'copyright',)
+                  'datetime_imported', 'location', 'latitude', 'longitude', 'tags', 'photographer', 'license', 'copyright',)
         readonly_fields = ('preview',)
 
     def __init__(self, *args, **kwargs):

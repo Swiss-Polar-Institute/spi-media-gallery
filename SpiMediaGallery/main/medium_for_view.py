@@ -173,7 +173,8 @@ class MediumForView(Medium):
         if self.copyright is None:
             return 'Unknown'
         else:
-            return self.copyright.public_text
+            return str.replace(self.copyright.public_text,
+                               '$PHOTOGRAPHER_NAME', self.photographer_name())
 
     def license_text(self) -> str:
         if self.license is None:
@@ -185,7 +186,10 @@ class MediumForView(Medium):
         if self.photographer is None:
             return 'Unknown'
         else:
-            return '{} {}'.format(self.photographer.first_name, self.photographer.last_name)
+            if self.photographer.first_name is None:
+                return self.photographer.last_name
+            else:
+                return '{} {}'.format(self.photographer.first_name, self.photographer.last_name)
 
     def is_photo(self) -> bool:
         return self.medium_type == self.PHOTO
