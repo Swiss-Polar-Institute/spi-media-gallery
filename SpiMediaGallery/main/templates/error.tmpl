@@ -3,13 +3,13 @@
 {% block title %}SPI Media Gallery - Error{% endblock %}
 
 {% block body_contents %}
-    <p>
-        <div class="container">
-            {% include "_logo.tmpl" %}
-            <p></p>
+    <div class="container">
+        {% include "_logo.tmpl" %}
+        <p>
             {{ error_message }}
-            <p>
-                <a href="/">Home page</a>
-            </p>
-        </div>
+        </p>
+        <p>
+            <a href="/">Home page</a>
+        </p>
+    </div>
 {% endblock %}

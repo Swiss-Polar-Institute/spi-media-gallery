@@ -4,50 +4,51 @@
 {% block body_attributes %}class="d-flex flex-column h-100"{% endblock %}
 
 {% block body_contents %}
-        <div class="container theme-showcase" role="main">
-            {% include "_logo.tmpl" %} <h3>{{ tags_list }}</h3>
-            {{ search_explanation }} (Total: {{ media.paginator.count }})
-            <div class="container">
-                <table border="1">
-                    <thead>
+    <div class="container theme-showcase" role="main">
+        {% include "_logo.tmpl" %} <h3>{{ tags_list }}</h3>
+        {{ search_explanation }} (Total: {{ media.paginator.count }})
+        <div class="container">
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Duration</th>
+                        <th>Small</th>
+                        <th>Large</th>
+                        <th>Original</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for medium in media %}
                         <tr>
-                            <th>Id</th>
-                            <th>Name</th>
-                            <th>Duration</th>
-                            <th>Small</th>
-                            <th>Large</th>
-                            <th>Original</th>
+                            <td><a href="{{ medium.get_absolute_url }}">{{ medium.pk }}</a></td>
+                            <td>{{ medium.file.object_storage_key }} </td>
+                            <td>{{ medium.duration_in_minutes_seconds }} </td>
+
+                            {% if medium.is_small_resolution_available %}
+                                <td><a href="{{ medium.small_resolution_url }}">Play ({{ medium.file_size_small }})</a></td>
+                            {% else %}
+                                <td>Not available</td>
+                            {% endif %}
+
+                            {% if medium.is_large_resolution_available %}
+                                <td><a href="{{ medium.large_resolution_url }}">Play ({{ medium.file_size_large }})</a></td>
+                            {% else %}
+                                <td>Not available</td>
+                            {% endif %}
+
+                            <td><a href="{{ medium.original_file_attachment_url }}">Download ({{ medium.file_size_original }})</a></td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {% for medium in media %}
-                            <tr>
-                                <td><a href="{{ medium.get_absolute_url }}">{{ medium.pk }}</a></td>
-                                <td>{{ medium.file.object_storage_key }} </td>
-                                <td>{{ medium.duration_in_minutes_seconds }} </td>
-
-                                {% if medium.is_small_resolution_available %}
-                                    <td><a href="{{ medium.small_resolution_url }}">Play ({{ medium.file_size_small }})</a></td>
-                                {% else %}
-                                    <td>Not available</td>
-                                {% endif %}
-
-                                {% if medium.is_large_resolution_available %}
-                                    <td><a href="{{ medium.large_resolution_url }}">Play ({{ medium.file_size_large }})</a></td>
-                                {% else %}
-                                    <td>Not available</td>
-                                {% endif %}
-
-                                <td><a href="{{ medium.original_file_attachment_url }}">Download ({{ medium.file_size_original }})</a></td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <p></p>
-            </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p></p>
+        </div>
 
         {% include "_pagination.tmpl" %}
         <p>
             <a href="{% url 'list_videos_export_csv' %}">Download CSV file with all the videos.</a>
-        </div>
+        </p>
+    </div>
 {% endblock %}

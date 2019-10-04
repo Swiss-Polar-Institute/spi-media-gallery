@@ -5,8 +5,9 @@
     <p>
         <div class="container">
             {% include "_logo.tmpl" %}
-            <p></p>
-            Medium ID not found: {{ medium_id_not_found }}
+            <p>
+                Medium ID not found: {{ medium_id_not_found }}
+            </p>
 
             Try a different one:
             <form action="{% url 'search' %}" method="GET">
