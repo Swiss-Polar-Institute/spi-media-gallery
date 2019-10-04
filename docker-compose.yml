@@ -20,8 +20,6 @@ services:
     image: nginx:1.17
     secrets:
       - spi_media_gallery_htpasswd
-    ports:
-      - 1234:1234
     expose:
       - "1234"
     environment:
