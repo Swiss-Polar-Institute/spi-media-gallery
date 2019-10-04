@@ -8,16 +8,16 @@
 {% endblock %}
 
 {% block body_contents %}
-    <p>
         <div class="container">
             {% include "_logo.tmpl" %}
-            <p></p>
 
-            <a href="/">Home</a> >
-            {% if search_query %}
-                <a href="/media/?{{ search_query }}">Search results</a> >
-            {% endif %}
-            <b>{{ medium.file_name }}</b>
+            <p>
+                <a href="/">Home</a> >
+                {% if search_query %}
+                    <a href="/media/?{{ search_query }}">Search results</a> >
+                {% endif %}
+                <b>{{ medium.file_name }}</b>
+            </p>
 
             <div class="row">
                 <div class="col-md-6">
@@ -47,7 +47,7 @@
                         <b>Copyright:</b> {{ medium.copyright_text }}<br>
                         <b>Photographer:</b> {{ medium.photographer_name }}<br>
                         <b>License of use:</b> <br>
-                        {{ medium.license_text | safe }}<p>
+                        {{ medium.license_text | safe }}<br>
                         <p class="text-muted">If you require another license to use this medium in a different way, please contact the photographer or SPI.</p>
                     </small>
                     <!--
@@ -58,13 +58,16 @@
 
                 </div>
                 <div class="col-md-6">
-                    {% for photo_size in medium.list_of_resized %}
-                        <a href="{{ photo_size.image_link }}">{{ photo_size.label }}</a> ({{ photo_size.resolution }}, {{ photo_size.size }})<br>
-                    {% endfor %}
+                    <p>
+                        {% for photo_size in medium.list_of_resized %}
+                            <a href="{{ photo_size.image_link }}">{{ photo_size.label }}</a> ({{ photo_size.resolution }}, {{ photo_size.size }})<br>
+                        {% endfor %}
+                    </p>
                     <p>
                         <a href="{{ medium.original_file_attachment_url }}">Download original file</a> ({{ medium.resolution_for_original }}, {{ medium.file_size_original }})</a>
-                    <p>
+                    </p>
                     Tags:
+                    <p>
                         {% if medium.list_of_tags %}
                             {% for tag in medium.list_of_tags %}
                                 <a href="{% url 'search' %}?tags={{ tag.id }}">{{tag.tag}}</a>{% if not forloop.last %}, {% endif %}
@@ -72,14 +75,14 @@
                         {% else %}
                                 none at the moment
                         {% endif %}
+                    </p>
                     <p>
-
                     {% if medium.datetime_taken %}
                         Date taken: {{ medium.datetime_taken }}
                     {% else %}
                         Date taken: unknown
                     {% endif %}
-                    <p>
+                    </p>
                     {% if medium.latitude and medium.longitude %}
                     Latitude: {{ medium.latitude|floatformat:3 }} Longitude: {{ medium.longitude|floatformat:3 }}<br>
 
@@ -101,13 +104,11 @@
                     Go to random:
                     {% include "_random_selection.tmpl" %}
                     <p>
-                    <p>
                     <small>
                         File path: {{ medium.file.object_storage_key }}
                     </small>
-                    <p>
-
-                    </div>
+                    </p>
+                </div>
             </div>
         </div>
 {% endblock %}

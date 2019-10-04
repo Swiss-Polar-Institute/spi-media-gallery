@@ -5,7 +5,8 @@
 
 {% block body_contents %}
         <div class="container theme-showcase" role="main">
-            {% include "_logo.tmpl" %} <h3>{{ tags_list }}</h3>
+            {% include "_logo.tmpl" %}
+            <h3>{{ tags_list }}</h3>
 
             <a href="/">Home</a> > {{ search_query_human }} ({{ current_results_information }})<br>
             <p class="text-muted">(darker border around the thumbnail when it is a video)</p>
