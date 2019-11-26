@@ -15,6 +15,11 @@ services:
       - "8000"
     networks:
       - nginx-proxy
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: spi-media-gallery.django
 
   reverse-proxy:
     image: nginx:1.17
@@ -34,6 +39,11 @@ services:
       - spi-media-gallery
     networks:
       - nginx-proxy
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: spi-media-gallery.nginx
 
 volumes:
   static_volume: {}
