@@ -25,15 +25,19 @@ First part of the homepage:
 <img src="documentation/images/media-gallery-homepage-01.png" width="500">
 
 Tags with hierarchy:
+
 <img src="documentation/images/media-gallery-homepage-02.png" width="500">
 
 Second part of the homepage:
+
 <img src="documentation/images/media-gallery-homepage-03.png" width="500">
 
 Section to select multiple tags and see media with those tags:
+
 <img src="documentation/images/media-gallery-multiple-tags-01.png" width="500">
 
 Photos intersection of two tags:
+
 <img src="documentation/images/media-gallery-thumbnails-01.png" width="500">
 
 Example of a photo:
