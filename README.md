@@ -21,19 +21,20 @@ The tool could be used by other projects with similar needs (organise huge amoun
 Currently, in order to add new media, it's needed to use Django commands: it's not possible to add media using or the web interface.
 
 First part of the homepage:
-![Homepage](documentation/images/media-gallery-homepage-01.png)
+
+<img src="documentation/images/media-gallery-homepage-01.png" width="500">
 
 Tags with hierarchy:
-![Homepage](documentation/images/media-gallery-homepage-02.png)
+<img src="documentation/images/media-gallery-homepage-02.png" width="500">
 
 Second part of the homepage:
-![Homepage](documentation/images/media-gallery-homepage-03.png)
+<img src="documentation/images/media-gallery-homepage-03.png" width="500">
 
 Section to select multiple tags and see media with those tags:
-![Multiple tags](documentation/images/media-gallery-multiple-tags-01.png)
+<img src="documentation/images/media-gallery-multiple-tags-01.png" width="500">
 
 Photos intersection of two tags:
-![Multiple tags](documentation/images/media-gallery-thumbnails-01.png)
+<img src="documentation/images/media-gallery-thumbnails-01.png" width="500">
 
 Example of a photo:
-![Multiple tags](documentation/images/media-gallery-photo-01.png)
+<img src="documentation/images/media-gallery-photo-01.png" width="500">
