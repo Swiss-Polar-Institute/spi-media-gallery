@@ -41,4 +41,5 @@ Photos intersection of two tags:
 <img src="documentation/images/media-gallery-thumbnails-01.png" width="500">
 
 Example of a photo:
+
 <img src="documentation/images/media-gallery-photo-01.png" width="500">
