@@ -4,7 +4,7 @@ botocore==1.12.167
 certifi==2019.3.9
 chardet==3.0.4
 decorator==4.4.0
-Django==2.2.4
+Django==2.2.8
 django-leaflet==0.24.0
 docutils==0.14
 geographiclib==1.49
