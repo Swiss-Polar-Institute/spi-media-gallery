@@ -390,8 +390,8 @@ class GetFile(View):
         filename = request.GET['filename']
 
         try:
-            file = File.objects.get(md5=md5, bucket=bucket_name)
-        except ObjectDoesNotExist:
+            file = File.objects.filter(md5=md5, bucket=bucket_name)[0]
+        except IndexError:
             return HttpResponseNotFound('File not found')
 
         spi_s3 = SpiS3Utils(file.bucket_name())
