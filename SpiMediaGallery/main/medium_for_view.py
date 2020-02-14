@@ -1,7 +1,7 @@
 import math
 from typing import List, Dict, Any, Optional
 
-from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.templatetags.static import static
 from django.db import models
 
 from . import utils
