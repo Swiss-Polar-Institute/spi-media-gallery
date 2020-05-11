@@ -21,7 +21,7 @@ jobs:
         sudo gcc -o /usr/bin/dcraw -O4 external/dcraw.c -lm -DNODEPS
     - name: Install dependencies for sqlite GIS
       run: |
-        sudo apt-get install libspatialite7 libsqlite3-mod-spatialite
+        sudo apt-get install libspatialite7 libsqlite3-mod-spatialite spatialite-bin
     - name: Install Python dependencies
       run: |
         python3 -m pip install --upgrade pip
