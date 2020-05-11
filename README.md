@@ -1,6 +1,10 @@
 # spi-media-gallery
 
-spi-media-gallery is a Django application developed for SPI, currently used internally.
+spi-media-gallery is a Django application developed for Swiss Polar Institute (SPI), currently used internally.
+
+This is a Django application developed by the Swiss Polar Institute (SPI) and used internally since September 2019. The license is MIT: feel free to use it. If you need any help (there are no installation documentation at the moment) contact Carles Pina i Estany (https://github.com/cpina, github@pina.cat) or leave an issue.
+
+project used internally by the Swiss Polar Institute
 
 SPI has media stored in an object storage bucket (it's a in-house bucket but it could be an S3 bucket). It has more than 45000 photos (JPEG and different raw formats, about 0.5 TB) and more than 5000 videos (about 3.5 TB).
 
@@ -54,3 +58,6 @@ Example of a photo:
 <table><tr><td>
 <img src="documentation/images/media-gallery-photo-01.png" width="500">
 </td></tr></table
+
+
+Please feel free to contact Carles Pina i Estany (https://github.com/cpina, github@pina.cat) for any help or in-depth information.
