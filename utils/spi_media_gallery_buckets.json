@@ -1,0 +1,14 @@
+{
+	"original": {
+		"name": "photos",
+		"endpoint": "http://localhost:9000",
+		"access_key": "minio",
+		"secret_key": "minio123"
+	},
+	"processed": {
+		"name": "processed",
+		"endpoint": "http://localhost:9000",
+		"access_key": "minio",
+		"secret_key": "minio123"
+	}
+}

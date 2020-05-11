@@ -27,6 +27,7 @@ jobs:
       env:
         FORCE_SQLITE3_DATABASE: 1
       run: |
+        cp utils/spi_media_gallery.json .
         cd SpiMediaGallery
         coverage erase
         coverage run manage.py test
