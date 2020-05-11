@@ -50,7 +50,7 @@ pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==7.0.0
 prompt-toolkit==3.0.3
-psutil==5.6.3
+psutil==5.6.6
 psycopg2==2.8.4
 ptyprocess==0.6.0
 pyasn1==0.4.6
