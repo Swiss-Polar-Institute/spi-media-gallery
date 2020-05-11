@@ -10,7 +10,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install Python dependencies
       run: |
-        sudo apt-get install --no-install-recommends --yes --quiet python3-pip python3-setuptools python3-wheel libpython3.7-dev
+        sudo apt-get install --no-install-recommends --yes --quiet python3-pip python3-setuptools python3-wheel libpython3.7-dev python3-venv
     - name: Install system dependencies
       run: |
         sudo apt-get install --no-install-recommends --yes --quiet gcc-7 gcc gdal-bin imagemagick ffmpeg libmediainfo0v5 exiftool libjpeg-progs libexempi3
