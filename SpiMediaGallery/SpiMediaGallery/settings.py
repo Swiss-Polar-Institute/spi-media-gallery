@@ -103,7 +103,7 @@ def find_file(file_name):
 
 
 if os.getenv('FORCE_SQLITE3_DATABASE', False):
-    SPATIALITE_LIBRARY_PATH = 'mod_spatialite'
+    SPATIALITE_LIBRARY_PATH = 'mod_spatialite.so'
 
     DATABASES = {
         'default': {
