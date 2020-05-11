@@ -12,6 +12,7 @@ certifi==2019.11.28
 cffi==1.12.3
 cfn-lint==0.23.3
 chardet==3.0.4
+coverage==5.1
 cryptography==2.7
 DateTime==4.3
 decorator==4.4.1
