@@ -65,4 +65,4 @@ Example of a photo:
 </td></tr></table
 
 
-Please feel free to contact Carles Pina i Estany (https://github.com/cpina, github@pina.cat) for any help or in-depth information.
+Please feel free to contact Carles Pina i Estany (https://github.com/cpina, carles.pinaestany@epfl.ch) for any help or in-depth information.
