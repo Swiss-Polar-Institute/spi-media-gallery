@@ -28,6 +28,7 @@ jobs:
         pip3 install wheel
         pip3 install -r requirements.txt
         cp utils/spi_media_gallery_buckets.json "$HOME/.spi_media_gallery_buckets.json"
+        rm -rf SpiMediaGallery/main/migrations/*
         echo "HOME: $HOME"
         echo "pwd: $(pwd)"
         cd SpiMediaGallery
