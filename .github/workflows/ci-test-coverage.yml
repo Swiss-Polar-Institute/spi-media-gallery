@@ -16,6 +16,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install --no-install-recommends --yes gcc-7 gcc gdal-bin imagemagick ffmpeg libmediainfo0v5 exiftool libjpeg-progs libexempi3
         wget -o /tmp/dcraw.c https://www.dechifro.org/dcraw/dcraw.c
+        head -10 /tmp/dcraw.c
         sudo gcc -o /usr/bin/dcraw -O4 /tmp/dcraw.c -lm -DNODEPS
         rm /tmp/dcraw
     - name: Set up Python
