@@ -15,6 +15,9 @@ jobs:
       run: |
         sudo apt-get install --no-install-recommends --yes --quiet gcc-7 gcc gdal-bin imagemagick ffmpeg libmediainfo0v5 exiftool libjpeg-progs libexempi3
         sudo gcc -o /usr/bin/dcraw -O4 external/dcraw.c -lm -DNODEPS
+    - name: Install dependencies needed on Github Action (it tries to compile wxpython)
+      run: |
+        sudo apt-get install build-essential libgtk-3-dev
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
