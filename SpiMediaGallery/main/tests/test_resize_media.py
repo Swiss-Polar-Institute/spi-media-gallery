@@ -121,5 +121,5 @@ class ResizeMediaTest(TestCase):
         large = MediumResized.objects.get(medium=medium, size_label="L")
         self.assertEqual(large.width, 1920)
         self.assertEqual(large.height, 1080)
-        self.assertGreater(large.file.size, 100000)
+        self.assertGreater(large.file.size, 80000)
         self.assertEqual(large.file.bucket, File.PROCESSED)

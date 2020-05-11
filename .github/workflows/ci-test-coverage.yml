@@ -5,30 +5,32 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install --no-install-recommends --yes gcc-7 gcc gdal-bin imagemagick ffmpeg libmediainfo0v5 exiftool libjpeg-progs libexempi3
-        wget -o /tmp/dcraw.c https://www.dechifro.org/dcraw/dcraw.c
-        head -10 /tmp/dcraw.c
-        sudo gcc -o /usr/bin/dcraw -O4 /tmp/dcraw.c -lm -DNODEPS
-        rm /tmp/dcraw
-    - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
     - name: Install Python dependencies
       run: |
-        python3 -m pip install --upgrade pip
-        pip3 install -r requirements.txt
-    - name: Test with pytest
+        sudo apt-get install --no-install-recommends --yes --quiet python3-pip python3-setuptools python3-wheel libpython3.7-dev python3-venv
+    - name: Install system dependencies
       run: |
+        sudo apt-get install --no-install-recommends --yes --quiet gcc-7 gcc gdal-bin imagemagick ffmpeg libmediainfo0v5 exiftool libjpeg-progs libexempi3
+        sudo gcc -o /usr/bin/dcraw -O4 external/dcraw.c -lm -DNODEPS
+    - name: Install dependencies for sqlite GIS
+      run: |
+        sudo apt-get install libspatialite7 libsqlite3-mod-spatialite spatialite-bin
+    - name: Installs Python packages and runs test
+      env:
+        FORCE_SQLITE3_DATABASE: 1
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m venv venv
+        . venv/bin/activate
+        pip3 install wheel
+        pip3 install -r requirements.txt
+        cp utils/spi_media_gallery_buckets.json "$HOME/.spi_media_gallery_buckets.json"
+        rm -rf SpiMediaGallery/main/migrations/*
+        echo "HOME: $HOME"
+        echo "pwd: $(pwd)"
         cd SpiMediaGallery
         coverage erase
         coverage run manage.py test
