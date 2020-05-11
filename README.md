@@ -2,7 +2,7 @@
 
 spi-media-gallery is a Django application developed for Swiss Polar Institute (SPI), currently used internally.
 
-This is a Django application developed by the Swiss Polar Institute (SPI) and used internally since September 2019. The license is MIT: feel free to use it. If you need any help (there are no installation documentation at the moment) contact Carles Pina i Estany (https://github.com/cpina, github@pina.cat) or leave an issue.
+This is a Django application developed by the Swiss Polar Institute (SPI) and used internally since September 2019. The license is MIT: feel free to use it. If you need any help (there are no installation documentation at the moment) contact Carles Pina i Estany (https://github.com/cpina, carles.pinaestany@epfl.ch) or leave an issue.
 
 project used internally by the Swiss Polar Institute
 
