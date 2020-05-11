@@ -27,7 +27,9 @@ jobs:
       env:
         FORCE_SQLITE3_DATABASE: 1
       run: |
-        cp utils/spi_media_gallery_buckets.json .spi_media_gallery_buckets.json
+        cp utils/spi_media_gallery_buckets.json "$HOME/.spi_media_gallery_buckets.json"
+        echo "HOME: $HOME"
+        echo "pwd: $(pwd)"
         cd SpiMediaGallery
         coverage erase
         coverage run manage.py test
