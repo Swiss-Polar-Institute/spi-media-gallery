@@ -1,4 +1,6 @@
 from django.test import TestCase
+
+from SpiMediaGallery import settings
 from ..models import TagName, TagRenamed, Tag
 from ..management.commands.rename_tag import ModifyTag
 from ..views import search_for_tag_name_ids
@@ -180,6 +182,9 @@ class RenameTagTest(TestCase):
         self.assertEqual(new_tag_name, 'people/John_Doe')
 
     def test_rename_tag_different_case_tag_already_exists(self):
+        if settings.FORCE_SQLITE3_DATABASE:
+            self.skipTest('This test relies on Mysql behaviour for index and case sensitivity')
+
         """Test the case where the new tag is different but already exists in the database with a letter in a different case."""
 
         old_tag = 'air'

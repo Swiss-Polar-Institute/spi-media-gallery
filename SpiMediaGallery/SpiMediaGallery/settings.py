@@ -104,6 +104,7 @@ def find_file(file_name):
 
 if os.getenv('FORCE_SQLITE3_DATABASE', False):
     SPATIALITE_LIBRARY_PATH = 'mod_spatialite.so'
+    FORCE_SQLITE3_DATABASE = True
 
     DATABASES = {
         'default': {
@@ -112,6 +113,7 @@ if os.getenv('FORCE_SQLITE3_DATABASE', False):
         }
     }
 else:
+    FORCE_SQLITE3_DATABASE = False
     DATABASES = {
         'default': {
             'ENGINE': 'django.contrib.gis.db.backends.mysql',
