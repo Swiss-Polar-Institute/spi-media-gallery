@@ -31,38 +31,38 @@ Currently, in order to add new media, it's needed to use Django commands: it's n
 
 First part of the homepage:
 <table><tr><td>
-<img src="documentation/images/media-gallery-homepage-01.png" width="500" style="border: 1px">
-</td></tr></table
+<img src="documentation/images/media-gallery-homepage-01.png" width="500">
+</td></tr></table>
  
 Tags with hierarchy:
 
 <table><tr><td>
 <img src="documentation/images/media-gallery-homepage-02.png" width="500">
-</td></tr></table
+</td></tr></table>
 
 Second part of the homepage:
 
 <table><tr><td>
 <img src="documentation/images/media-gallery-homepage-03.png" width="500">
-</td></tr></table
+</td></tr></table>
 
 Section to select multiple tags and see media with those tags:
 
 <table><tr><td>
 <img src="documentation/images/media-gallery-multiple-tags-01.png" width="500">
-</td></tr></table
+</td></tr></table>
 
 Photos intersection of two tags:
 
 <table><tr><td>
 <img src="documentation/images/media-gallery-thumbnails-01.png" width="500">
-</td></tr></table
+</td></tr></table>
 
 Example of a photo:
 
 <table><tr><td>
 <img src="documentation/images/media-gallery-photo-01.png" width="500">
-</td></tr></table
+</td></tr></table>
 
 
 Please feel free to contact Carles Pina i Estany (https://github.com/cpina, carles.pinaestany@epfl.ch) for any help or in-depth information.
