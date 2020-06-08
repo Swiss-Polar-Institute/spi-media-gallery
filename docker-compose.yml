@@ -22,7 +22,7 @@ services:
         tag: spi-media-gallery.django
 
   reverse-proxy:
-    image: nginx:1.17
+    image: nginx:1.19
     secrets:
       - spi_media_gallery_htpasswd
     expose:
