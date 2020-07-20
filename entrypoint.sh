@@ -10,10 +10,10 @@ tail -n 0 -f /srv/logs/*.log &
 
 gunicorn SpiMediaGallery.wsgi:application \
 	--bind 0.0.0.0:8000 \
-	--workers 3 \
+	--workers 20 \
 	--log-level=info \
 	--log-file=/srv/logs/gunicorn.log \
-	--timeout=300 \
+	--timeout=7200 \
 	--access-logfile=/srv/logs/access.log
 	"$@"
 
