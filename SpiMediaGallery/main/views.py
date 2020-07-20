@@ -402,6 +402,7 @@ class GetFile(View):
         r.raise_for_status()
 
         response = StreamingHttpResponse(r.raw, content_type=content_type)
+        response['Content-Length'] = str(file.size)
         response['Content-Disposition'] = '{}; filename={}'.format(content_disposition_type, filename)
         return response
 
