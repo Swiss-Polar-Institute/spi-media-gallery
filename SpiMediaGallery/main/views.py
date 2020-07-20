@@ -12,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.db.models import Sum
-from django.http import HttpResponse, HttpResponseNotFound, Http404
+from django.http import HttpResponse, HttpResponseNotFound, Http404, StreamingHttpResponse
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -401,7 +401,7 @@ class GetFile(View):
         r = requests.get(url=url, stream=True)
         r.raise_for_status()
 
-        response = HttpResponse(r.raw, content_type=content_type)
+        response = StreamingHttpResponse(r.raw, content_type=content_type)
         response['Content-Disposition'] = '{}; filename={}'.format(content_disposition_type, filename)
         return response
 
