@@ -1,11 +1,8 @@
 # from django.db import models
 from django.contrib.gis.db import models
-from django.dispatch import receiver
 from django.urls import reverse
-from django.utils.safestring import mark_safe
 from django.utils.html import escape
-
-from botocore.exceptions import ClientError
+from django.utils.safestring import mark_safe
 
 from .spi_s3_utils import SpiS3Utils
 
@@ -122,8 +119,8 @@ class File(models.Model):
         return mark_safe('<a href="{}">Download</a>'.format(escape(url)))
 
 
-#@receiver(models.signals.post_delete, sender=File)
-#def delete_file(sender, instance, *args, **kwargs):
+# @receiver(models.signals.post_delete, sender=File)
+# def delete_file(sender, instance, *args, **kwargs):
 #    spi_s3_utils = SpiS3Utils(instance.bucket_name())
 #    try:
 #        spi_s3_utils.delete(instance.object_storage_key)
@@ -234,8 +231,25 @@ class TagRenamed(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
     old_name = models.CharField(max_length=255, null=True, blank=True)
-    new_name= models.CharField(max_length=255, null=True, blank=True)
-    datetime_renamed= models.DateTimeField()
+    new_name = models.CharField(max_length=255, null=True, blank=True)
+    datetime_renamed = models.DateTimeField()
 
     def __str__(self):
         return 'O: {} - N: {}'.format(self.old_name, self.new_name)
+
+
+class RemoteMedium(models.Model):
+    class ApiSource(models.TextChoices):
+        PROJECT_APPLICATION_API = 'PROJECT_APPLICATION', 'Project Application'
+
+    medium = models.ForeignKey(Medium, on_delete=models.PROTECT)
+    remote_id = models.IntegerField(help_text='ID of this Medium on the remote side')
+
+    api_source = models.IntegerField(choices=ApiSource.choices,
+                                     default=ApiSource.PROJECT_APPLICATION_API,
+                                     help_text='Which API this photos was fetched from')
+    remote_blob = models.TextField(help_text='Remote information for this Medium. The format depends on the '
+                                             'api_source. Kept in case that we need to re-process photos')
+
+    class Meta:
+        verbose_name_plural = 'RemoteMedia'

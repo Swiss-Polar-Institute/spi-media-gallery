@@ -1,5 +1,5 @@
 appdirs==1.4.3
-asgiref==3.2.3
+asgiref==3.2.10
 asn1crypto==0.24.0
 attrs==19.1.0
 aws-sam-translator==1.13.2
@@ -17,7 +17,7 @@ cryptography==2.7
 DateTime==4.3
 decorator==4.4.1
 distlib==0.3.0
-Django==3.0.10
+Django==3.1.2
 django-leaflet==0.26.0
 docker==4.0.2
 docutils==0.15.2
