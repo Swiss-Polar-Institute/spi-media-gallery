@@ -24,6 +24,9 @@ class License(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
     name = models.CharField(max_length=255, unique=True)
+    spdx_identifier = models.CharField(max_length=100,
+                                       help_text='Identifier as per https://spdx.org/licenses/ CC-BY-NC-SA-4.0',
+                                       unique=True, null=True, blank=True)
     public_text = models.TextField()
 
     def __str__(self):
@@ -84,10 +87,12 @@ class File(models.Model):
 
     ORIGINAL = 'O'
     PROCESSED = 'P'
+    IMPORTED = 'I'
 
     BUCKET_NAMES = (
         (ORIGINAL, 'Original'),
         (PROCESSED, 'Processed'),
+        (IMPORTED, 'Imported'),
     )
 
     object_storage_key = models.CharField(max_length=1024)
@@ -103,6 +108,8 @@ class File(models.Model):
             return 'original'
         elif self.bucket == File.PROCESSED:
             return 'processed'
+        elif self.bucket == File.IMPORTED:
+            return 'imported'
         else:
             assert False
 
@@ -243,6 +250,7 @@ class RemoteMedium(models.Model):
         PROJECT_APPLICATION_API = 'PROJECT_APPLICATION', 'Project Application'
 
     medium = models.ForeignKey(Medium, on_delete=models.PROTECT)
+    remote_modified_on = models.DateTimeField(help_text='Remote modified_on')
     remote_id = models.IntegerField(help_text='ID of this Medium on the remote side')
 
     api_source = models.IntegerField(choices=ApiSource.choices,

@@ -181,6 +181,12 @@ with open(secrets_file("spi_media_gallery_buckets.json")) as json_file:
         "endpoint": "http://localhost:9000",
         "access_key": "minio",
         "secret_key": "minio123"
+    },
+    "imported": {
+        "name": "imported",
+        "endpoint": "http://localhost:9000",
+        "access_key": "minio",
+        "secret_key": "minio123"
     }
 }
     """
@@ -245,6 +251,8 @@ DATETIME_POSITIONS_SQLITE3_PATH = find_file("gps.sqlite3")
 PROXY_TO_OBJECT_STORAGE = False
 
 SITE_ADMINISTRATOR = "Carles Pina"
+
+PROJECT_APPLICATION_API_KEY = os.environ['PROJECT_APPLICATION_API_KEY']
 
 try:
     from local_settings import *
