@@ -1,14 +1,20 @@
 {
 	"original": {
-		"name": "photos",
+		"name": "spi-media-gallery-original",
 		"endpoint": "http://localhost:9000",
 		"access_key": "minio",
 		"secret_key": "minio123"
 	},
 	"processed": {
-		"name": "processed",
+		"name": "spi-media-gallery-processed",
 		"endpoint": "http://localhost:9000",
 		"access_key": "minio",
 		"secret_key": "minio123"
-	}
+	},
+        "imported": {
+                "name": "spi-media-gallery-imported",
+                "endpoint": "http://localhost:9000",
+                "access_key": "minio",
+                "secret_key": "minio123"
+        }
 }
