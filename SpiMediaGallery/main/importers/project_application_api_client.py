@@ -19,14 +19,22 @@ class ProjectApplicationApiClient:
         self._bucket_name = bucket_name
         self._imported_bucket = spi_s3_utils.SpiS3Utils(bucket_name)
 
-    def import_media_after(self, last_modified):
+    @staticmethod
+    def _latest_modified_time():
+        try:
+            latest_remote_date_time = RemoteMedium.objects.latest('remote_modified_on').remote_modified_on
+        except ObjectDoesNotExist:
+            latest_remote_date_time = '1970-01-01T00:00:00+00:00'
+
+        return latest_remote_date_time
+
+    def import_new_media(self):
         headers = {'ApiKey': settings.PROJECT_APPLICATION_API_KEY}
         parameters = {}
 
-        if last_modified:
-            parameters['modified_since'] = last_modified.isoformat()
-        else:
-            parameters['modified_since'] = '1970-01-01T00:00:00+00:00'
+        last_modified = ProjectApplicationApiClient._latest_modified_time()
+
+        parameters['modified_since'] = last_modified
 
         r = requests.get(f'{self._hostname}/api/media/list/', headers=headers, params=parameters)
 
