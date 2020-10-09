@@ -30,11 +30,11 @@ class ResizeMediaTest(TestCase):
 
         self._spi_s3_utils_original = SpiS3Utils('original')
         spi_s3_utils_resource_original = self._spi_s3_utils_original.resource()
-        spi_s3_utils_resource_original.create_bucket(Bucket='photos')
+        spi_s3_utils_resource_original.create_bucket(Bucket='spi-media-gallery-original')
 
         self._spi_s3_utils_processed = SpiS3Utils('processed')
         spi_s3_utils_resource_processed = self._spi_s3_utils_processed.resource()
-        spi_s3_utils_resource_processed.create_bucket(Bucket='processed')
+        spi_s3_utils_resource_processed.create_bucket(Bucket='spi-media-gallery-processed')
 
         MediumResized.objects.all().delete()
         Medium.objects.all().delete()
@@ -62,7 +62,7 @@ class ResizeMediaTest(TestCase):
         self.assertEqual(MediumResized.objects.count(), 0)
         self.assertEqual(len(self._spi_s3_utils_processed.list_files('')), 0)
 
-        resizer = Resizer('original', 'processed', ['T', 'S', 'L'], 'Photos')
+        resizer = Resizer('processed', ['T', 'S', 'L'], 'Photos')
         resizer.resize_media()
 
         self.assertEqual(MediumResized.objects.count(), 3)
@@ -96,7 +96,7 @@ class ResizeMediaTest(TestCase):
         self.assertEqual(medium.height, None)
         self.assertEqual(medium.width, None)
 
-        resizer = Resizer('original', 'processed', ['S', 'L'], 'Videos')
+        resizer = Resizer('processed', ['S', 'L'], 'Videos')
         resizer.resize_media()
 
         self.assertEqual(MediumResized.objects.count(), 2)

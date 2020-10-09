@@ -18,14 +18,18 @@ class GenerateTagsTest(TestCase):
         self._mock = mock_s3()
         self._mock.start()
 
-        super(GenerateTagsTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # mock_s3 only works with the default endpoint
         settings.BUCKETS_CONFIGURATION['original']['endpoint'] = None
+        settings.BUCKETS_CONFIGURATION['processed']['endpoint'] = None
+        settings.BUCKETS_CONFIGURATION['imported']['endpoint'] = None
 
         self._spi_s3_utils = SpiS3Utils('original')
         spi_s3_utils_resource = self._spi_s3_utils.resource()
-        spi_s3_utils_resource.create_bucket(Bucket='photos')
+        spi_s3_utils_resource.create_bucket(Bucket='spi-media-gallery-original')
+        spi_s3_utils_resource.create_bucket(Bucket='spi-media-gallery-processed')
+        spi_s3_utils_resource.create_bucket(Bucket='spi-media-gallery-imported')
 
     @classmethod
     def setUpClass(cls):
