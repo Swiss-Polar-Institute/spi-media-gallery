@@ -55,7 +55,7 @@ class MediaImporter(object):
 
     @transaction.atomic
     def _process_s3_object(self, s3_object):
-        file_extension = utils.file_extension(s3_object.key).lower()
+        file_extension = utils.get_file_extension(s3_object.key).lower()
 
         if file_extension not in self._valid_extensions:
             return
@@ -99,7 +99,7 @@ class MediaImporter(object):
             assert medium.file
 
         except ObjectDoesNotExist:
-            file_extension = utils.file_extension(s3_object_key).lower()
+            file_extension = utils.get_file_extension(s3_object_key).lower()
             medium = Medium()
 
             file = File()

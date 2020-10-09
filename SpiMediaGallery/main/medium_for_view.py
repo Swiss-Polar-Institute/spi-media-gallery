@@ -38,7 +38,7 @@ class MediumForView(Medium):
         if medium_resized is None:
             return self.URL_THUMBNAIL_DO_NOT_EXIST
 
-        resized_extension = utils.file_extension(medium_resized.file.object_storage_key)
+        resized_extension = utils.get_file_extension(medium_resized.file.object_storage_key)
 
         return utils.link_for_medium(medium_resized.file, 'inline',
                                utils.filename_for_resized_medium(self.pk, size_label, resized_extension))
@@ -59,8 +59,8 @@ class MediumForView(Medium):
             return self.URL_SMALL_DO_NOT_EXIST
 
         return utils.link_for_medium(resized.file, 'inline',
-                               utils.filename_for_resized_medium(self.pk, size_label,
-                                                           utils.file_extension(resized.file.object_storage_key)))
+                                     utils.filename_for_resized_medium(self.pk, size_label,
+                                                                       utils.get_file_extension(resized.file.object_storage_key)))
 
     def file_size_original(self) -> str:
         return utils.bytes_to_human_readable(self.file.size)
@@ -130,7 +130,7 @@ class MediumForView(Medium):
         return '{}x{}'.format(self.width, self.height)
 
     def file_name(self) -> str:
-        return 'SPI-{}.{}'.format(self.pk, utils.file_extension(self.file.object_storage_key))
+        return 'SPI-{}.{}'.format(self.pk, utils.get_file_extension(self.file.object_storage_key))
 
     def list_of_tags(self) -> List[Dict[str, Any]]:
         list_of_tags = []
@@ -161,7 +161,7 @@ class MediumForView(Medium):
             size_information['resolution'] = utils.human_readable_resolution_for_medium(medium_resized)
 
             filename = utils.filename_for_resized_medium(self.pk, medium_resized.size_label,
-                                                   utils.file_extension(medium_resized.file.object_storage_key))
+                                                         utils.get_file_extension(medium_resized.file.object_storage_key))
 
             size_information['image_link'] = utils.link_for_medium(medium_resized.file, 'inline', filename)
 

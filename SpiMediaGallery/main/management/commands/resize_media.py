@@ -162,7 +162,7 @@ class Resizer(object):
             # Download Media file from the bucket
             print('Will resize:', medium.file.object_storage_key)
 
-            suffix = utils.file_extension(medium.file.object_storage_key)
+            suffix = utils.get_file_extension(medium.file.object_storage_key)
             medium_file = tempfile.NamedTemporaryFile(suffix='.' + suffix, delete=False)
             medium_file.close()
             start_download = time.time()
@@ -237,7 +237,7 @@ class Resizer(object):
                 continue
 
             md5_resized_file = utils.hash_of_file_path(file_resized)
-            resized_file_extension = utils.file_extension(file_resized).lower()
+            resized_file_extension = utils.get_file_extension(file_resized).lower()
 
             # Upload medium to bucket
             resized_key = os.path.join(settings.RESIZED_PREFIX,
@@ -302,7 +302,7 @@ class ResizeMedium:
             assert False
 
     def _resize_photo(self, width_wanted: int):
-        file_extension = utils.file_extension(self._medium_local_file).lower()
+        file_extension = utils.get_file_extension(self._medium_local_file).lower()
         file_format = settings.PHOTO_FORMATS[file_extension]
 
         if file_format.dcraw_preprocessing and self._file_pre_processed is None:

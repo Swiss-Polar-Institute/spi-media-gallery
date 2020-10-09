@@ -110,13 +110,13 @@ class CheckOrphanes:
 
                 medium_file = key[0:-(len('.xmp'))]
 
-                medium_file_extension = utils.file_extension(medium_file).lower()
+                medium_file_extension = utils.get_file_extension(medium_file).lower()
 
                 if medium_file_extension in recognised_file_extensions and medium_file not in all_keys:
                     xmps_without_medium += 1
                     xmps_without_medium_list.append(key)
 
-            if utils.file_extension(key).lower() in recognised_file_extensions:
+            if utils.get_file_extension(key).lower() in recognised_file_extensions:
                 media_count += 1
                 xmp_file = key + '.xmp'
 

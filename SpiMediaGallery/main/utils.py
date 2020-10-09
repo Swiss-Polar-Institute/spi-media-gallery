@@ -173,7 +173,7 @@ def human_readable_resolution_for_medium(medium: Medium) -> str:
         return '{}x{}'.format(medium.width, medium.height)
 
 
-def file_extension(file_name: str) -> str:
+def get_file_extension(file_name: str) -> str:
     _, extension = os.path.splitext(file_name)
 
     if len(extension) > 0:

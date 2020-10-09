@@ -34,7 +34,7 @@ class UpdateTime(object):
 
         for medium in media:
             # Download Media file from the bucket
-            suffix = utils.file_extension(medium.file.object_storage_key)
+            suffix = utils.get_file_extension(medium.file.object_storage_key)
             local_media_file = tempfile.NamedTemporaryFile(suffix='.' + suffix, delete=False)
             local_media_file.close()
             self._media_bucket.bucket().download_file(medium.file.object_storage_key, local_media_file.name)

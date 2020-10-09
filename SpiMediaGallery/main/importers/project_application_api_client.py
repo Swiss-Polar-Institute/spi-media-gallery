@@ -42,7 +42,7 @@ class ProjectApplicationApiClient:
             url = remote_medium_json['file_url']
             download_request = requests.get(url, allow_redirects=True)
 
-            file_extension = utils.file_extension(remote_medium_json['original_file_path'])
+            file_extension = utils.get_file_extension(remote_medium_json['original_file_path'])
 
             output_file = tempfile.NamedTemporaryFile(suffix=f'.{file_extension}')
             output_file.write(download_request.content)
