@@ -32,6 +32,7 @@ jobs:
         . venv/bin/activate
         cp utils/spi_media_gallery_buckets.json "$HOME/.spi_media_gallery_buckets.json"
         rm -rf SpiMediaGallery/main/migrations/*
+        source tools/environment-variables-for-test.sh
         cd SpiMediaGallery
         coverage run manage.py test
         coverage xml

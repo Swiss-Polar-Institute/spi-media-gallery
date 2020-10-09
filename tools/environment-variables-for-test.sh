@@ -1,0 +1,1 @@
+PROJECT_APPLICATION_API_KEY=a_string_shared_with_project_application
