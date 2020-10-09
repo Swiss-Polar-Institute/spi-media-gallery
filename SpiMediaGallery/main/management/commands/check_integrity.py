@@ -18,8 +18,8 @@ class Command(BaseCommand):
         parser.add_argument('elements', type=str, choices=['files', 'tags', 'xmp_files', 'everything'],
                             help='')
 
-        parser.add_argument('--bucket', type=str, choices=['original', 'processed'],
-                            help='Does the file checks only the specified bucket. If not specified: both buckets')
+        parser.add_argument('--bucket', type=str, choices=['original', 'processed', 'imported'],
+                            help='Does the file checks only the specified bucket. If not specified: all the buckets')
 
     def handle(self, *args, **options):
         bucket = options['bucket']

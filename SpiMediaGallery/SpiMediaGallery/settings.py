@@ -213,6 +213,7 @@ PHOTO_FORMATS = {
     'jpeg': Format('image/jpeg', False),
     'jpg': Format('image/jpeg', False),
     'nef': Format('image/x-nikon-nef', True),
+    'png': Format('image/png', False)
 }
 
 # ffmpeg needs to deal with the format

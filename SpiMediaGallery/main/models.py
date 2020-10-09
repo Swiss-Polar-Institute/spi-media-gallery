@@ -193,14 +193,18 @@ class Medium(models.Model):
         else:
             assert False
 
-    class Meta:
-        verbose_name_plural = 'Media'
+    def update_fields(self, fields):
+        for field_name, value in fields.items():
+            setattr(self, field_name, value)
 
     def get_absolute_url(self):
         return reverse('medium', args=[str(self.pk)])
 
     def __str__(self):
         return '{}'.format(self.pk)
+
+    class Meta:
+        verbose_name_plural = 'Media'
 
 
 class MediumResized(models.Model):
