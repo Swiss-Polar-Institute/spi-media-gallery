@@ -14,10 +14,9 @@ from main.utils import hash_of_file_path
 
 
 class ProjectApplicationApiClient:
-    def __init__(self, hostname, bucket_name):
-        self._hostname = hostname
-        self._bucket_name = bucket_name
-        self._imported_bucket = spi_s3_utils.SpiS3Utils(bucket_name)
+    def __init__(self, ):
+        self._hostname = settings.PROJECT_APPLICATION_BASE_URL
+        self._imported_bucket = spi_s3_utils.SpiS3Utils(bucket_name='imported')
 
     @staticmethod
     def _latest_modified_time():

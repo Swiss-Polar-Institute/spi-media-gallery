@@ -5,9 +5,9 @@ from ..management.commands.generate_virtual_tags import GenerateTags
 from ..management.commands.resize_media import Resizer
 
 
-def import_resize_update_tags_from_project_application(hostname, bucket_name):
+def import_resize_update_tags_from_project_application():
     # Creates the new Medium objects
-    media_importer = ProjectApplicationApiClient(hostname, bucket_name)
+    media_importer = ProjectApplicationApiClient()
     media_importer.import_new_media()
 
     # Resizes the photos

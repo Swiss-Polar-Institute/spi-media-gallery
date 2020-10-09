@@ -1,6 +1,7 @@
 import csv
 import datetime
 import json
+import os
 import re
 import urllib
 from typing import Dict, Tuple, Union, List
@@ -12,7 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.db.models import Sum
-from django.http import HttpResponse, HttpResponseNotFound, Http404, StreamingHttpResponse
+from django.http import HttpResponse, HttpResponseNotFound, StreamingHttpResponse
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -20,6 +21,7 @@ from django.urls import reverse
 from django.views.generic import TemplateView, View
 
 from . import utils
+from .decorators import api_key_required
 from .forms import MediumIdForm, FileNameForm, MultipleTagsSearchForm, MediaTypeForm, AddReferrerForm
 from .medium_for_view import MediumForView
 from .models import Medium, MediumResized, TagName, File, RemoteMedium
@@ -240,7 +242,8 @@ class Search(TemplateView):
             return redirect(reverse('medium', kwargs={'media_id': medium.pk}))
 
         else:
-            error = {'error_message': 'Invalid parameters received. If searching by multiple tags, did you select at least one tag?'}
+            error = {
+                'error_message': 'Invalid parameters received. If searching by multiple tags, did you select at least one tag?'}
             return render(request, 'error.tmpl', error, status=400)
 
         number_results_per_page = 100
@@ -269,11 +272,12 @@ class Search(TemplateView):
         if paginator_count <= number_results_per_page:
             information['current_results_information'] = '{} results'.format(paginator_count)
         else:
-            maximum_number = min(page_number*number_results_per_page, paginator_count)
+            maximum_number = min(page_number * number_results_per_page, paginator_count)
 
-            information['current_results_information'] = '{}-{} of {} results'.format((page_number-1)*number_results_per_page+1,
-                                                                              maximum_number,
-                                                                              paginator_count)
+            information['current_results_information'] = '{}-{} of {} results'.format(
+                (page_number - 1) * number_results_per_page + 1,
+                maximum_number,
+                paginator_count)
 
         return render(request, 'search.tmpl', information)
 
@@ -478,6 +482,19 @@ class Stats(TemplateView):
         context['duration_videos'] = duration_of_videos
 
         context['total_number_media_from_project_application'] = RemoteMedium.objects.count()
-        context['latest_photo_imported_from_project_application'] = RemoteMedium.objects.latest('remote_modified_on').remote_modified_on
+        context['latest_photo_imported_from_project_application'] = RemoteMedium.objects.latest(
+            'remote_modified_on').remote_modified_on
 
         return context
+
+
+class ImportFromProjectApplicationCallback(View):
+    @api_key_required
+    def get(self, request):
+        # Testing - testing code
+        # This is a test function - avoid doing this
+        # Celery seems the way to go or some other way to launch jobs and get results
+        # This can take long time so it cannot be processed in the view (e.g. download and resize a video)
+        os.system('python3 manage.py import_from_project_application &')
+
+        return JsonResponse(status=200, data={'status': 'ok'})

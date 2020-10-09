@@ -3,7 +3,7 @@ from django.views.decorators.cache import cache_page
 
 from main.views import Homepage, ListVideos, \
     ListVideosExportCsv, Display, Map, PhotosGeojson, TrackGeojson, GetFile, \
-    DisplayRandom, Search, Stats, SearchByMultipleTags
+    DisplayRandom, Search, Stats, SearchByMultipleTags, ImportFromProjectApplicationCallback
 
 urlpatterns = [
     path('', cache_page(60 * 15)(Homepage.as_view())),
@@ -18,4 +18,6 @@ urlpatterns = [
     path('map/', Map.as_view()),
     path('map/track.geojson', TrackGeojson.as_view()),
     path('get/file/<str:bucket_name>/<str:md5>', GetFile.as_view(), name='get_file'),
+    path('api/project_application/callback/import', ImportFromProjectApplicationCallback.as_view(),
+         name='project-application-import-callback')
 ]
