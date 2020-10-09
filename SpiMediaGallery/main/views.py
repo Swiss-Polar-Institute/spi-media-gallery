@@ -22,8 +22,9 @@ from django.views.generic import TemplateView, View
 from . import utils
 from .forms import MediumIdForm, FileNameForm, MultipleTagsSearchForm, MediaTypeForm, AddReferrerForm
 from .medium_for_view import MediumForView
-from .models import Medium, MediumResized, TagName, File
+from .models import Medium, MediumResized, TagName, File, RemoteMedium
 from .spi_s3_utils import SpiS3Utils
+from .utils import percentage_of
 
 
 def create_dictionary_tag_name_to_id() -> Dict[str, str]:
@@ -426,7 +427,7 @@ class Stats(TemplateView):
     template_name = 'stats.tmpl'
 
     def get_context_data(self, **kwargs):
-        context = super(TemplateView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         total_number_photos = Medium.objects.filter(medium_type=Medium.PHOTO).count()
         total_number_videos = Medium.objects.filter(medium_type=Medium.VIDEO).count()
@@ -465,15 +466,18 @@ class Stats(TemplateView):
         context['size_of_photos'] = utils.bytes_to_human_readable(size_of_photos)
         context['size_of_videos'] = utils.bytes_to_human_readable(size_of_videos)
 
-        context['percentage_number_photos_resized'] = (total_number_photos_resized / total_number_photos) * 100.0
-        context['percentage_number_videos_resized'] = (total_number_videos_resized / total_number_videos) * 100.0
+        context['percentage_number_photos_resized'] = percentage_of(total_number_photos_resized, total_number_photos)
+        context['percentage_number_videos_resized'] = percentage_of(total_number_videos_resized, total_number_videos)
 
         context['size_photos_resized'] = utils.bytes_to_human_readable(size_of_photos_resized)
         context['size_videos_resized'] = utils.bytes_to_human_readable(size_of_videos_resized)
 
-        context['percentage_size_photos_resized'] = (size_of_photos_resized / size_of_photos) * 100.0
-        context['percentage_size_videos_resized'] = (size_of_videos_resized / size_of_videos) * 100.0
+        context['percentage_size_photos_resized'] = percentage_of(size_of_photos_resized, size_of_photos)
+        context['percentage_size_videos_resized'] = percentage_of(size_of_videos_resized, size_of_videos)
 
         context['duration_videos'] = duration_of_videos
+
+        context['total_number_media_from_project_application'] = RemoteMedium.objects.count()
+        context['latest_photo_imported_from_project_application'] = RemoteMedium.objects.latest('remote_modified_on').remote_modified_on
 
         return context

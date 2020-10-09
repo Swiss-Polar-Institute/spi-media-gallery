@@ -287,3 +287,9 @@ def get_type(extension):
         return Medium.VIDEO
     else:
         assert False
+
+
+def percentage_of(count, total):
+    if total == 0 or total is None:
+        return 'N/A'
+    return (count / total) * 100.0

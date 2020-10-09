@@ -14,5 +14,9 @@
             <li>Size of videos: {{ size_of_videos }} (resized: {{ size_videos_resized }}, {{ percentage_size_videos_resized|floatformat:-2 }}%)</li>
             <li>Total duration: {{ duration_videos }}</li>
         </ul>
+        <ul>
+            <li>Total number of media imported from project application: {{ total_number_media_from_project_application }}</li>
+            <li>Most recent photo imported from project application: {{ latest_photo_imported_from_project_application }}</li>
+        </ul>
     </div>
 {% endblock %}
