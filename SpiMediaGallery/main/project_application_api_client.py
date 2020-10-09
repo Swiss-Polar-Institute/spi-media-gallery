@@ -54,7 +54,8 @@ class ProjectApplicationApiClient:
                                            bucket=File.IMPORTED)
 
                 license, created = License.objects.get_or_create(spdx_identifier=remote_medium_json['license'],
-                                                                 defaults={'name': remote_medium_json['license']})
+                                                                 defaults={'name': remote_medium_json['license'],
+                                                                           'public_text': remote_medium_json['license']})
 
                 copyright_holder = remote_medium_json['copyright']
                 copyright, created = Copyright.objects.get_or_create(holder=copyright_holder)
