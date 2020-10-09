@@ -14,6 +14,9 @@ class Photographer(models.Model):
     last_name = models.CharField(max_length=100)
 
     def __str__(self):
+        return self.full_name()
+
+    def full_name(self):
         return '{} {}'.format(self.first_name, self.last_name)
 
     class Meta:
@@ -194,8 +197,7 @@ class Medium(models.Model):
             assert False
 
     def update_fields(self, fields):
-        for field_name, value in fields.items():
-            setattr(self, field_name, value)
+        set_fields(self, fields)
 
     def get_absolute_url(self):
         return reverse('medium', args=[str(self.pk)])
@@ -264,5 +266,13 @@ class RemoteMedium(models.Model):
     remote_blob = models.TextField(help_text='Remote information for this Medium. The format depends on the '
                                              'api_source. Kept in case that we need to re-process photos')
 
+    def update_fields(self, fields):
+        set_fields(self, fields)
+
     class Meta:
         verbose_name_plural = 'RemoteMedia'
+
+
+def set_fields(obj, fields):
+    for field_name, value in fields.items():
+        setattr(obj, field_name, value)

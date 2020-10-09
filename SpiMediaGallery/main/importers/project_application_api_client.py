@@ -74,14 +74,16 @@ class ProjectApplicationApiClient:
                                                                            'public_text': remote_medium_json[
                                                                                'license']})
 
-                copyright_holder = remote_medium_json['copyright']
-                copyright, created = Copyright.objects.get_or_create(holder=copyright_holder)
-                copyright.public_text = copyright_holder
-                copyright.save()
-
                 photographer_remote = remote_medium_json['photographer']
                 photographer, created = Photographer.objects.get_or_create(first_name=photographer_remote['first_name'],
                                                                            last_name=photographer_remote['last_name'])
+
+                copyright_holder = remote_medium_json['copyright']
+                if not copyright_holder:
+                    copyright_holder = photographer.full_name()
+                copyright, created = Copyright.objects.get_or_create(holder=copyright_holder)
+                copyright.public_text = copyright_holder
+                copyright.save()
 
                 medium_fields = {'file': file,
                                  'license': license,
@@ -109,12 +111,17 @@ class ProjectApplicationApiClient:
 
                 remote_modified_on = dateutil.parser.isoparse(remote_medium_json['modified_on'])
 
-                if remote_medium is None:
-                    remote_medium = RemoteMedium.objects.create(medium=medium, remote_id=remote_id,
-                                                                api_source=RemoteMedium.ApiSource.PROJECT_APPLICATION_API)
+                remote_medium_fields = {}
+                remote_medium_fields['medium'] = medium
+                remote_medium_fields['remote_id'] = remote_id
+                remote_medium_fields['api_source'] = RemoteMedium.ApiSource.PROJECT_APPLICATION_API
+                remote_medium_fields['remote_blob'] = str(remote_medium_json)
+                remote_medium_fields['remote_modified_on'] = remote_modified_on
 
-                remote_medium.remote_blob = str(remote_medium_json)
-                remote_medium.remote_modified_on = remote_modified_on
-                remote_medium.save()
+                if remote_medium is None:
+                    remote_medium = RemoteMedium.objects.create(**remote_medium_fields)
+                else:
+                    remote_medium.update_fields(remote_medium_fields)
+                    remote_medium.save()
 
             output_file.close()
