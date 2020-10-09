@@ -9,10 +9,11 @@ import urllib
 from typing import Dict, List, Optional
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import File, Medium
+from .models import File, Medium, TagName, Tag
 from .spi_s3_utils import SpiS3Utils
 
 
@@ -254,3 +255,35 @@ def link_for_medium(file: File, content_disposition: str, filename: str) -> str:
         bucket = SpiS3Utils(file.bucket_name())
 
         return bucket.get_presigned_link(file.object_storage_key, content_type, content_disposition, filename)
+
+
+def set_tags(medium, tags):
+    # Delete existing tags of the Medium to import it again
+    medium.tags.clear()
+
+    for tag in tags:
+        # Find or create the tag_name
+        try:
+            tag_name = TagName.objects.get(name=tag)
+        except ObjectDoesNotExist:
+            tag_name = TagName()
+            tag_name.name = tag
+            tag_name.save()
+
+        # Find or create the tag_name tag with XMP
+        try:
+            tag = Tag.objects.get(name=tag_name, importer=Tag.XMP)
+        except ObjectDoesNotExist:
+            tag = Tag(name=tag_name, importer=Tag.XMP)
+            tag.save()
+
+        medium.tags.add(tag)
+
+
+def get_type(extension):
+    if extension in settings.PHOTO_FORMATS:
+        return Medium.PHOTO
+    elif extension in settings.VIDEO_FORMATS:
+        return Medium.VIDEO
+    else:
+        assert False

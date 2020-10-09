@@ -66,7 +66,7 @@ class MediaImporter(object):
 
         tags = self._download_xmp_read_tags(xmp_file)
         medium = self._create_or_found_medium(s3_object.key, size_of_medium)
-        self._set_tags(medium, tags)
+        utils.set_tags(medium, tags)
         generate_virtual_tags(medium)
 
     def _download_xmp_read_tags(self, xmp_key):
@@ -112,12 +112,7 @@ class MediaImporter(object):
 
             medium.file = file
 
-            if file_extension in settings.PHOTO_FORMATS:
-                medium.medium_type = Medium.PHOTO
-            elif file_extension in settings.VIDEO_FORMATS:
-                medium.medium_type = Medium.VIDEO
-            else:
-                assert False
+            medium.medium_type = utils.get_type(file_extension)
 
             medium.datetime_imported = datetime.datetime.now(tz=timezone.utc)
             medium.save()
@@ -127,26 +122,3 @@ class MediaImporter(object):
             raise error
 
         return medium
-
-    @staticmethod
-    def _set_tags(medium, tags):
-        # Delete existing tags of the Medium to import it again
-        medium.tags.clear()
-
-        for tag in tags:
-            # Find or create the tag_name
-            try:
-                tag_name = TagName.objects.get(name=tag)
-            except ObjectDoesNotExist:
-                tag_name = TagName()
-                tag_name.name = tag
-                tag_name.save()
-
-            # Find or create the tag_name tag with XMP
-            try:
-                tag = Tag.objects.get(name=tag_name, importer=Tag.XMP)
-            except ObjectDoesNotExist:
-                tag = Tag(name=tag_name, importer=Tag.XMP)
-                tag.save()
-
-            medium.tags.add(tag)

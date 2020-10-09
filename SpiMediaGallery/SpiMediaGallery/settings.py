@@ -146,9 +146,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CACHE_ENABLED = True
+CACHE_ENABLED = os.getenv('CACHE_ENABLED', '1')
 
-if CACHE_ENABLED:
+if CACHE_ENABLED == 1:
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',

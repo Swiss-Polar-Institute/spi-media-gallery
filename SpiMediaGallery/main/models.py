@@ -253,9 +253,10 @@ class RemoteMedium(models.Model):
     remote_modified_on = models.DateTimeField(help_text='Remote modified_on')
     remote_id = models.IntegerField(help_text='ID of this Medium on the remote side')
 
-    api_source = models.IntegerField(choices=ApiSource.choices,
-                                     default=ApiSource.PROJECT_APPLICATION_API,
-                                     help_text='Which API this photos was fetched from')
+    api_source = models.CharField(choices=ApiSource.choices,
+                                  default=ApiSource.PROJECT_APPLICATION_API,
+                                  help_text='Which API this photos was fetched from',
+                                  max_length=20)
     remote_blob = models.TextField(help_text='Remote information for this Medium. The format depends on the '
                                              'api_source. Kept in case that we need to re-process photos')
 

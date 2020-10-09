@@ -8,7 +8,6 @@ from typing import Optional, Dict, Any, List
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
 from pymediainfo import MediaInfo
@@ -29,7 +28,6 @@ class Command(BaseCommand):
                             help='Type of resizing (T for thumbnail, S for small, M for medium, L for large, O for original). Original changes the format to JPEG, potential rotation')
 
     def handle(self, *args, **options):
-        bucket_name_media = 'original'
         bucket_name_resized = 'processed'
         media_type = options['media_type']
         sizes_type = options['sizes_type']
@@ -39,7 +37,7 @@ class Command(BaseCommand):
                 raise CommandError(
                     'Invalid size, needs to be T (Thumbnail), S (Small), M (Medium), L (Large) or O (Original)')
 
-        resizer = Resizer(bucket_name_media, bucket_name_resized, sizes_type, media_type)
+        resizer = Resizer(bucket_name_resized, sizes_type, media_type)
 
         resizer.resize_media()
 
@@ -72,9 +70,9 @@ def get_information_from_video(video_file: str) -> Dict[str, Any]:
 class Resizer(object):
     _medium_type: str
 
-    def __init__(self, bucket_name_media: str, bucket_name_resizes: str, sizes_type: List[str],
+    def __init__(self, bucket_name_resizes: str, sizes_type: List[str],
                  medium_type: str) -> None:
-        self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name_media)
+        self._media_buckets = {}
         self._resizes_bucket = spi_s3_utils.SpiS3Utils(bucket_name_resizes)
         self._sizes_type = sizes_type
 
@@ -133,8 +131,8 @@ class Resizer(object):
             else:
                 medium_totally_resized = medium_totally_resized.intersection(set(qs))
 
-
-        media_to_be_resized = Medium.objects.filter(medium_type=self._medium_type).exclude(id__in=medium_totally_resized)
+        media_to_be_resized = Medium.objects.filter(medium_type=self._medium_type).exclude(
+            id__in=medium_totally_resized)
 
         return media_to_be_resized
 
@@ -168,8 +166,9 @@ class Resizer(object):
             medium_file = tempfile.NamedTemporaryFile(suffix='.' + suffix, delete=False)
             medium_file.close()
             start_download = time.time()
+
             try:
-                self._media_bucket.bucket().download_file(medium.file.object_storage_key, medium_file.name)
+                self._download_medium(medium, medium_file.name)
             except ClientError:
                 print('Cannot download: {}'.format(medium.file.object_storage_key))
                 continue
@@ -269,6 +268,15 @@ class Resizer(object):
 
         if file_to_delete is not None:
             os.remove(file_to_delete)
+
+    def _download_medium(self, medium, download_path):
+        bucket = medium.file.bucket
+        bucket_name = medium.file.bucket_name()
+
+        if bucket_name not in self._media_buckets:
+            self._media_buckets[bucket_name] = spi_s3_utils.SpiS3Utils(bucket_name)
+
+        self._media_buckets[bucket_name].bucket().download_file(medium.file.object_storage_key, download_path)
 
 
 class ResizeMedium:
