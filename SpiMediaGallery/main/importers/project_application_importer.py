@@ -10,6 +10,8 @@ def import_resize_update_tags_from_project_application():
     media_importer = ProjectApplicationApiClient()
     media_importer.import_new_media()
 
+    media_importer.delete_deleted_media()
+
     # Resizes the photos
     bucket_name_resized = 'processed'
     sizes_type = ['T', 'S', 'L']

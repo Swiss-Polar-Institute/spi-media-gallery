@@ -273,6 +273,14 @@ class RemoteMedium(models.Model):
         verbose_name_plural = 'RemoteMedia'
 
 
+class SyncToken(models.Model):
+    class TokenNames(models.TextChoices):
+        DELETED_MEDIA_LAST_SYNC = 'DELETED_MEDIA_LAST_SYNC', 'Deleted Media Last Sync'
+
+    token_name = models.CharField(max_length=32, choices=TokenNames.choices)
+    token_value = models.CharField(max_length=128, null=True, blank=True)
+
+
 def set_fields(obj, fields):
     for field_name, value in fields.items():
         setattr(obj, field_name, value)

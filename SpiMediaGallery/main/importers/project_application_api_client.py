@@ -9,21 +9,23 @@ from django.utils import timezone
 
 from SpiMediaGallery import settings
 from main import spi_s3_utils, utils
-from main.models import File, Medium, License, Copyright, RemoteMedium, Photographer
+from main.models import File, Medium, License, Copyright, RemoteMedium, Photographer, SyncToken, MediumResized
 from main.utils import hash_of_file_path
 
 
 class ProjectApplicationApiClient:
+    _OLDER_LAST_SYNC_POSSIBLE = '1970-01-01T00:00:00+00:00'
+
     def __init__(self, ):
         self._hostname = settings.PROJECT_APPLICATION_BASE_URL
         self._imported_bucket = spi_s3_utils.SpiS3Utils(bucket_name='imported')
 
     @staticmethod
-    def _latest_modified_time():
+    def _latest_modified_time(Model):
         try:
-            latest_remote_date_time = RemoteMedium.objects.latest('remote_modified_on').remote_modified_on
+            latest_remote_date_time = Model.objects.latest('remote_modified_on').remote_modified_on
         except ObjectDoesNotExist:
-            latest_remote_date_time = '1970-01-01T00:00:00+00:00'
+            latest_remote_date_time = ProjectApplicationApiClient._OLDER_LAST_SYNC_POSSIBLE
 
         return latest_remote_date_time
 
@@ -31,7 +33,7 @@ class ProjectApplicationApiClient:
         headers = {'ApiKey': settings.PROJECT_APPLICATION_API_KEY}
         parameters = {}
 
-        last_modified = ProjectApplicationApiClient._latest_modified_time()
+        last_modified = ProjectApplicationApiClient._latest_modified_time(RemoteMedium)
 
         parameters['modified_since'] = last_modified
 
@@ -61,6 +63,10 @@ class ProjectApplicationApiClient:
             with transaction.atomic():
                 object_storage_key = f'project_application/remote_id-{remote_medium_json["id"]}.{file_extension}'
                 md5 = hash_of_file_path(output_file.name)
+                remote_file_md5 = remote_medium_json['file_md5']
+
+                assert md5 == remote_file_md5
+
                 file_size = os.stat(output_file.name).st_size
 
                 self._imported_bucket.upload_file(output_file.name, object_storage_key)
@@ -124,3 +130,39 @@ class ProjectApplicationApiClient:
                     remote_medium.save()
 
             output_file.close()
+
+    def delete_deleted_media(self):
+        headers = {'ApiKey': settings.PROJECT_APPLICATION_API_KEY}
+        parameters = {}
+
+        try:
+            last_deleted_media_token = SyncToken.objects.get(token_name=SyncToken.TokenNames.DELETED_MEDIA_LAST_SYNC)
+        except ObjectDoesNotExist:
+            last_deleted_media_token = ProjectApplicationApiClient._OLDER_LAST_SYNC_POSSIBLE
+
+        parameters['modified_since'] = last_deleted_media_token
+
+        r = requests.get(f'{self._hostname}/api/media/list/deleted/', headers=headers, params=parameters)
+
+        newer_last_deleted = ProjectApplicationApiClient._OLDER_LAST_SYNC_POSSIBLE
+
+        for remote_medium_deleted_json in r.json():
+            remote_id = remote_medium_deleted_json['id']
+            deleted_on = remote_medium_deleted_json['deleted_on']
+
+            try:
+                remote_medium = RemoteMedium.objects.get(remote_id=remote_id)
+                medium = remote_medium.medium
+            except ObjectDoesNotExist:
+                # The Project Application Medium was created and deleted before SPI Media Gallery ever imported it
+                continue
+
+            with transaction.atomic():
+                MediumResized.objects.filter(medium=medium).delete()
+                RemoteMedium.objects.filter(medium=medium).delete()
+
+                medium.delete()
+                remote_medium.delete()
+
+            if newer_last_deleted < deleted_on:
+                newer_last_deleted = deleted_on
