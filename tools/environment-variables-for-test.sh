@@ -1,1 +1,2 @@
 export PROJECT_APPLICATION_API_KEY=a_string_shared_with_project_application
+export PROJECT_APPLICATION_BASE_URL=http://localhost:8010
