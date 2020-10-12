@@ -281,6 +281,7 @@ def set_tags(medium, tags):
 
 
 def get_type(extension):
+    extension = extension.lower()
     if extension in settings.PHOTO_FORMATS:
         return Medium.PHOTO
     elif extension in settings.VIDEO_FORMATS:
