@@ -23,13 +23,18 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-# Note: If in production change this in the local_settings.py
-SECRET_KEY = 'w0!0umbw+uq$#e943ezmvny1!jo-*72q%#ds+v1=g2rz)#aamj'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ['DEBUG'] == '1'
 
 ALLOWED_HOSTS = []
+
+i = 1
+while f'ALLOWED_HOST_{i}' in os.environ:
+    ALLOWED_HOSTS.append(os.environ[f'ALLOWED_HOST_{i}'])
+    i += 1
+
 
 # Application definition
 
@@ -247,19 +252,37 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 TRACK_MAP_FILEPATH = '/tmp/test.geojson'
 
-DATETIME_POSITIONS_SQLITE3_PATH = find_file("gps.sqlite3")
+DATETIME_POSITIONS_SQLITE3_PATH = find_file('gps.sqlite3')
 
 PROXY_TO_OBJECT_STORAGE = False
 
-SITE_ADMINISTRATOR = "Carles Pina"
+ADMINS = []
+i = 1
+while f'ADMIN_{i}' in os.environ:
+    name_email = os.environ[f'ADMIN_{i}']
+    ADMINS.append(name_email.split(','))
+    i += 1
+
+DEFAULT_FROM_EMAIL = SERVER_EMAIL = os.environ['FROM_EMAIL']
+EMAIL_HOST = os.environ['EMAIL_HOST']
+EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+EMAIL_SUBJECT_PREFIX = os.environ['EMAIL_SUBJECT_PREFIX']
+EMAIL_USE_TLS = True
+
+SECURE_SSL_REDIRECT = os.environ['SECURE_SSL_REDIRECT'] == '1'
+SECURE_REFERRER_POLICY = 'same-origin'
+
+if SECURE_SSL_REDIRECT:
+    SECURE_HSTS_PRELOAD = True
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_SECONDS = 3600
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+
 
 PROJECT_APPLICATION_API_KEY = os.environ['PROJECT_APPLICATION_API_KEY']
 PROJECT_APPLICATION_BASE_URL = os.environ['PROJECT_APPLICATION_BASE_URL']
 
 # The same one is used for now
 API_SECRET_KEY = PROJECT_APPLICATION_API_KEY
-
-try:
-    from local_settings import *
-except ImportError:
-    pass
