@@ -35,7 +35,6 @@ while f'ALLOWED_HOST_{i}' in os.environ:
     ALLOWED_HOSTS.append(os.environ[f'ALLOWED_HOST_{i}'])
     i += 1
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -79,6 +78,10 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'SpiMediaGallery.wsgi.application'
+
+# https://docs.djangoproject.com/en/3.0/ref/settings/#secure-proxy-ssl-header
+# Make sure that nginx is doing what's described in the link above
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 def secrets_file(file_name):
@@ -279,7 +282,6 @@ if SECURE_SSL_REDIRECT:
     SECURE_HSTS_SECONDS = 3600
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
-
 
 PROJECT_APPLICATION_API_KEY = os.environ['PROJECT_APPLICATION_API_KEY']
 PROJECT_APPLICATION_BASE_URL = os.environ['PROJECT_APPLICATION_BASE_URL']
