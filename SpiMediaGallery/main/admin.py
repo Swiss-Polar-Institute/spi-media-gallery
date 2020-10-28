@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.contrib.gis.admin.options import OSMGeoAdmin
 
-from .models import Medium, Tag, TagName, MediumResized, Photographer, License, Copyright, File, TagRenamed, RemoteMedium
-from .utils import seconds_to_minutes_seconds, bytes_to_human_readable
 from main.forms import LocationEntryCoordinates
+from .models import Medium, Tag, TagName, MediumResized, Photographer, License, Copyright, File, TagRenamed, \
+    RemoteMedium
+from .utils import seconds_to_minutes_seconds, bytes_to_human_readable
 
 
 class MediumAdmin(OSMGeoAdmin):
@@ -45,9 +46,9 @@ class PhotographerAdmin(admin.ModelAdmin):
 
 
 class LicenseAdmin(admin.ModelAdmin):
-    list_display = ('name', 'public_text', )
-    ordering = ('name', 'public_text', )
-    search_fields = ('name', 'public_text', )
+    list_display = ('name', 'public_text',)
+    ordering = ('name', 'public_text',)
+    search_fields = ('name', 'public_text',)
 
 
 class CopyrightAdmin(admin.ModelAdmin):
@@ -129,8 +130,9 @@ class TagRenamedAdmin(admin.ModelAdmin):
 
 class RemoteMediumAdmin(admin.ModelAdmin):
     list_display = ('medium', 'remote_id', 'api_source', 'remote_blob')
-    ordering = ('medium', 'remote_id', 'api_source', )
-    search_fields = ('remote_blob', )
+    ordering = ('medium', 'remote_id', 'api_source',)
+    search_fields = ('remote_blob',)
+
 
 admin.site.register(Medium, MediumAdmin)
 admin.site.register(Tag, TagAdmin)
