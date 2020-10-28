@@ -74,10 +74,13 @@ class ProjectApplicationApiClient:
                 file = File.objects.create(object_storage_key=object_storage_key, md5=md5, size=file_size,
                                            bucket=File.IMPORTED)
 
-                license, created = License.objects.get_or_create(spdx_identifier=remote_medium_json['license'],
-                                                                 defaults={'name': remote_medium_json['license'],
-                                                                           'public_text': remote_medium_json[
-                                                                               'license']})
+                remote_license = remote_medium_json['license']
+
+                if remote_license:
+                    license, created = License.objects.get_or_create(name=remote_license,
+                                                                     defaults={'public_text': remote_license})
+                else:
+                    license = None
 
                 photographer_remote = remote_medium_json['photographer']
                 photographer, created = Photographer.objects.get_or_create(first_name=photographer_remote['first_name'],
@@ -136,7 +139,8 @@ class ProjectApplicationApiClient:
         parameters = {}
 
         try:
-            last_deleted_media_token = SyncToken.objects.get(token_name=SyncToken.TokenNames.DELETED_MEDIA_LAST_SYNC)
+            last_deleted_media_token = SyncToken.objects.get(
+                token_name=SyncToken.TokenNames.DELETED_MEDIA_LAST_SYNC).token_value
         except ObjectDoesNotExist:
             last_deleted_media_token = ProjectApplicationApiClient._OLDER_LAST_SYNC_POSSIBLE
 
@@ -166,3 +170,6 @@ class ProjectApplicationApiClient:
 
             if newer_last_deleted < deleted_on:
                 newer_last_deleted = deleted_on
+
+        SyncToken.objects.update_or_create(token_name=SyncToken.TokenNames.DELETED_MEDIA_LAST_SYNC,
+                                           defaults={'token_value': newer_last_deleted})

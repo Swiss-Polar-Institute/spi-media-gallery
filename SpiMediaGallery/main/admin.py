@@ -45,9 +45,9 @@ class PhotographerAdmin(admin.ModelAdmin):
 
 
 class LicenseAdmin(admin.ModelAdmin):
-    list_display = ('name',)
-    ordering = ('name',)
-    search_fields = ('name',)
+    list_display = ('name', 'public_text', )
+    ordering = ('name', 'public_text', )
+    search_fields = ('name', 'public_text', )
 
 
 class CopyrightAdmin(admin.ModelAdmin):

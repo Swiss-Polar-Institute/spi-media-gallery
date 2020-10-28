@@ -26,10 +26,7 @@ class Photographer(models.Model):
 class License(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
-    name = models.CharField(max_length=255, unique=True)
-    spdx_identifier = models.CharField(max_length=100,
-                                       help_text='Identifier as per https://spdx.org/licenses/ CC-BY-NC-SA-4.0',
-                                       unique=True, null=True, blank=True)
+    name = models.CharField(max_length=255, unique=True, help_text='If it exists: identifier as per https://spdx.org/licenses/ CC-BY-NC-SA-4.0')
     public_text = models.TextField()
 
     def __str__(self):
