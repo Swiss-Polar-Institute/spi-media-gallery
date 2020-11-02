@@ -12,6 +12,9 @@ class DeleteMedium:
 
     @staticmethod
     def _delete_instance_if_orphaned(obj):
+        if obj is None:
+            return
+
         if hasattr(obj, 'medium_set'):
             fk = 'medium_set'
         elif hasattr(obj, 'tag_set'):
