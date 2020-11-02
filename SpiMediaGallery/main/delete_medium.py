@@ -11,19 +11,18 @@ class DeleteMedium:
         self._files_to_delete = []
 
     @staticmethod
-    def _delete_tag_if_orphaned(tag):
-        if not tag.medium_set.all().exists():
-            print(f'Tag deleted: {tag}')
-            tag.delete()
+    def _delete_instance_if_orphaned(obj):
+        if hasattr(obj, 'medium_set'):
+            fk = 'medium_set'
+        elif hasattr(obj, 'tag_set'):
+            fk = 'tag_set'
+        else:
+            assert False
+
+        if not getattr(obj, fk).all().exists():
+            obj.delete()
             return True
-
         return False
-
-    @staticmethod
-    def _delete_tag_name_if_orphaned(tag_name):
-        if not tag_name.tag_set.all().exists():
-            print(f'Tag name deleted: {tag_name}')
-            tag_name.delete()
 
     def _delete_medium_and_file(self, medium):
         file = medium.file
@@ -44,6 +43,8 @@ class DeleteMedium:
         try:
             with transaction.atomic():
                 tags = list(self._medium.tags.all())
+                copyright = self._medium.copyright
+                photographer = self._medium.photographer
 
                 for medium_resized in self._medium.mediumresized_set.all():
                     self._delete_medium_and_file(medium_resized)
@@ -52,14 +53,18 @@ class DeleteMedium:
 
                 self._delete_medium_and_file(self._medium)
 
+                DeleteMedium._delete_instance_if_orphaned(copyright)
+                DeleteMedium._delete_instance_if_orphaned(photographer)
+
                 tag_names = []
 
                 for tag in tags:
-                    if DeleteMedium._delete_tag_if_orphaned(tag):
+                    if DeleteMedium._delete_instance_if_orphaned(tag):
                         tag_names.append(tag.name)
 
                 for tag_name in tag_names:
-                    DeleteMedium._delete_tag_name_if_orphaned(tag_name)
+                    DeleteMedium._delete_instance_if_orphaned(tag_name)
+
         except DatabaseError:
             transaction_success = False
 

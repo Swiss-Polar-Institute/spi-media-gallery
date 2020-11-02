@@ -24,4 +24,4 @@ class Command(BaseCommand):
         delete_medium = DeleteMedium(medium)
         delete_medium.delete()
 
-        print('Medium deleted')
+        print(f'Medium deleted: {medium_id}')
