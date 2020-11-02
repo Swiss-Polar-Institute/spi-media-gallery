@@ -1,8 +1,9 @@
 from django.db import transaction
 
-
 # Should this class be implemented from Medium.delete() ?
 # Would we expect that Medium.delete() also deletes MediumResized, Tags, etc.?
+from main.spi_s3_utils import SpiS3Utils
+
 
 class DeleteMedium:
     def __init__(self, medium):
@@ -30,7 +31,13 @@ class DeleteMedium:
         medium.delete()
 
         if file:
+            bucket_name = file.bucket_name()
+            object_storage_key = file.object_storage_key
+
             file.delete()
+
+            spi_s3_utils = SpiS3Utils(bucket_name)
+            spi_s3_utils.delete(object_storage_key)
 
     def delete(self):
         if self._medium is None:
