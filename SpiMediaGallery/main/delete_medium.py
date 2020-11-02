@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import transaction, DatabaseError
 
 # Should this class be implemented from Medium.delete() ?
 # Would we expect that Medium.delete() also deletes MediumResized, Tags, etc.?
@@ -25,39 +25,45 @@ class DeleteMedium:
             print(f'Tag name deleted: {tag_name}')
             tag_name.delete()
 
-    @staticmethod
-    def _delete_medium_and_file(medium):
+    def _delete_medium_and_file(self, medium):
         file = medium.file
         medium.delete()
 
         if file:
-            bucket_name = file.bucket_name()
-            object_storage_key = file.object_storage_key
-
+            self._files_to_delete.append(
+                {'bucket_name': file.bucket_name(),
+                 'object_storage_key': file.object_storage_key
+                 })
             file.delete()
-
-            spi_s3_utils = SpiS3Utils(bucket_name)
-            spi_s3_utils.delete(object_storage_key)
 
     def delete(self):
         if self._medium is None:
             return
 
-        with transaction.atomic():
-            tags = list(self._medium.tags.all())
+        transaction_success = True
+        try:
+            with transaction.atomic():
+                tags = list(self._medium.tags.all())
 
-            for medium_resized in self._medium.mediumresized_set.all():
-                DeleteMedium._delete_medium_and_file(medium_resized)
+                for medium_resized in self._medium.mediumresized_set.all():
+                    self._delete_medium_and_file(medium_resized)
 
-            self._medium.remotemedium_set.all().delete()
+                self._medium.remotemedium_set.all().delete()
 
-            DeleteMedium._delete_medium_and_file(self._medium)
+                self._delete_medium_and_file(self._medium)
 
-            tag_names = []
+                tag_names = []
 
-            for tag in tags:
-                if DeleteMedium._delete_tag_if_orphaned(tag):
-                    tag_names.append(tag.name)
+                for tag in tags:
+                    if DeleteMedium._delete_tag_if_orphaned(tag):
+                        tag_names.append(tag.name)
 
-            for tag_name in tag_names:
-                DeleteMedium._delete_tag_name_if_orphaned(tag_name)
+                for tag_name in tag_names:
+                    DeleteMedium._delete_tag_name_if_orphaned(tag_name)
+        except DatabaseError:
+            transaction_success = False
+
+        if transaction_success:
+            for file_to_delete in self._files_to_delete:
+                spi_s3_utils = SpiS3Utils(file_to_delete['bucket_name'])
+                spi_s3_utils.delete(file_to_delete['object_storage_key'])
