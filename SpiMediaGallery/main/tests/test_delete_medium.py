@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from main.delete_medium import DeleteMedium
-from main.models import Medium, File, MediumResized, Tag, TagName, Copyright, Photographer
+from main.models import Medium, File, Tag, TagName, Copyright, Photographer
 
 
 class DeleteMediumTest(TestCase):
