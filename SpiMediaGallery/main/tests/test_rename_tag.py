@@ -10,10 +10,6 @@ from django.core.management.base import CommandError
 class RenameTagTest(TestCase):
     fixtures = ['test_basic_data.yaml']
 
-    @classmethod
-    def setUpClass(cls):
-        super(RenameTagTest, cls).setUpClass()
-
     def setUp(self):
         pass
 

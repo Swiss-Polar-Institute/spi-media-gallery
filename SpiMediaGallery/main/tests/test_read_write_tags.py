@@ -7,10 +7,6 @@ from ..xmp_utils import XmpUtils
 
 
 class XmpUtilsTest(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super(XmpUtilsTest, cls).setUpClass()
-
     def setUp(self):
         pass
 

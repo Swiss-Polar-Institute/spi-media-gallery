@@ -31,10 +31,6 @@ class GenerateTagsTest(TestCase):
         spi_s3_utils_resource.create_bucket(Bucket='spi-media-gallery-processed')
         spi_s3_utils_resource.create_bucket(Bucket='spi-media-gallery-imported')
 
-    @classmethod
-    def setUpClass(cls):
-        super(GenerateTagsTest, cls).setUpClass()
-
     def setUp(self):
         pass
 

@@ -14,15 +14,11 @@ from ..models import *
 
 class ResizeMediaTest(TestCase):
     def __init__(self, *args, **kwargs) -> None:
-        super(ResizeMediaTest, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # mock_s3 only works with the default endpoint
         settings.BUCKETS_CONFIGURATION['original']['endpoint'] = None
         settings.BUCKETS_CONFIGURATION['processed']['endpoint'] = None
-
-    @classmethod
-    def setUpClass(cls):
-        super(ResizeMediaTest, cls).setUpClass()
 
     def setUp(self):
         self._mock = mock_s3()

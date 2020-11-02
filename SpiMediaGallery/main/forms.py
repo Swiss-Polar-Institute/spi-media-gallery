@@ -14,7 +14,7 @@ def media_type_field():
 class MultipleTagsSearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         tags = kwargs.pop('tags')
-        super(MultipleTagsSearchForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         for i, tag in enumerate(tags):
             self.fields[tag['id']] = forms.BooleanField(label='{} ({})'.format(tag['tag'], tag['count']), required=False)
@@ -23,7 +23,7 @@ class MultipleTagsSearchForm(forms.Form):
 class AddReferrerForm(forms.Form):
     def __init__(self, *args, **kwargs):
         referrer = kwargs.pop('referrer')
-        super(AddReferrerForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.fields[referrer] = forms.CharField(widget=forms.HiddenInput(), initial='1')
 

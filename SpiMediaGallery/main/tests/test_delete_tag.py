@@ -8,10 +8,6 @@ from main.models import TagName
 class DeleteTagTest(TestCase):
     fixtures = ['test_basic_data.yaml']
 
-    @classmethod
-    def setUpClass(cls):
-        super(DeleteTagTest, cls).setUpClass()
-
     def setUp(self):
         pass
 

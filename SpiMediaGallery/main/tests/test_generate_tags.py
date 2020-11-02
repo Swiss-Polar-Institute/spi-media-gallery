@@ -8,10 +8,6 @@ import datetime
 class GenerateTagsTest(TestCase):
     fixtures = ['test_basic_data.yaml']
 
-    @classmethod
-    def setUpClass(cls):
-        super(GenerateTagsTest, cls).setUpClass()
-
     def setUp(self):
         pass
 

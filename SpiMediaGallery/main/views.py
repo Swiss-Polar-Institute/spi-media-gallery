@@ -75,7 +75,7 @@ class Homepage(TemplateView):
     template_name = 'homepage.tmpl'
 
     def get_context_data(self, **kwargs):
-        context = super(Homepage, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         list_of_tags = get_tags_with_extra_information()
 
@@ -368,7 +368,7 @@ class Map(TemplateView):
     template_name = 'map.tmpl'
 
     def get_context_data(self, **kwargs):
-        context = super(TemplateView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         return context
 
@@ -416,7 +416,7 @@ class SearchByMultipleTags(TemplateView):
     template_name = 'search_by_multiple_tags.html'
 
     def get_context_data(self, **kwargs):
-        context = super(TemplateView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         tags = get_tags_with_extra_information()
 

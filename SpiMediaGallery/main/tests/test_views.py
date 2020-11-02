@@ -5,10 +5,6 @@ from django.test import TestCase
 class ViewsTest(TestCase):
     fixtures = ['test_basic_data.yaml']
 
-    @classmethod
-    def setUpClass(cls):
-        super(ViewsTest, cls).setUpClass()
-
     def setUp(self):
         pass
 

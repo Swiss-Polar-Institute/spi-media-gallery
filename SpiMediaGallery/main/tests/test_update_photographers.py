@@ -6,10 +6,6 @@ from ..management.commands.update_photographers import PhotographerUpdater
 class PhotographerUpdaterTest(TestCase):
     fixtures = ['test_basic_data.yaml']
 
-    @classmethod
-    def setUpClass(cls):
-        super(PhotographerUpdaterTest, cls).setUpClass()
-
     def setUp(self):
         pass
 

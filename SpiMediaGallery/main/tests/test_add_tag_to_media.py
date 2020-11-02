@@ -5,10 +5,6 @@ from ..management.commands.add_tag_to_media import AssignTag
 class RenameTagTest(TestCase):
     fixtures = ['test_basic_data.yaml']
 
-    @classmethod
-    def setUpClass(cls):
-        super(RenameTagTest, cls).setUpClass()
-
     def setUp(self):
         pass
 
