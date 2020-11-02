@@ -66,7 +66,7 @@ class MediaImporter(object):
 
         tags = self._download_xmp_read_tags(xmp_file)
         medium = self._create_or_found_medium(s3_object.key, size_of_medium)
-        utils.set_tags(medium, tags)
+        utils.set_tags(medium, tags, Tag.XMP)
         generate_virtual_tags(medium)
 
     def _download_xmp_read_tags(self, xmp_key):

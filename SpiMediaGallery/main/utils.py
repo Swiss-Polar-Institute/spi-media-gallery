@@ -257,7 +257,7 @@ def link_for_medium(file: File, content_disposition: str, filename: str) -> str:
         return bucket.get_presigned_link(file.object_storage_key, content_type, content_disposition, filename)
 
 
-def set_tags(medium, tags):
+def set_tags(medium, tags, importer):
     # Delete existing tags of the Medium to import it again
     medium.tags.clear()
 
@@ -270,11 +270,11 @@ def set_tags(medium, tags):
             tag_name.name = tag
             tag_name.save()
 
-        # Find or create the tag_name tag with XMP
+        # Find or create the tag_name tag with importer
         try:
-            tag = Tag.objects.get(name=tag_name, importer=Tag.XMP)
+            tag = Tag.objects.get(name=tag_name, importer=importer)
         except ObjectDoesNotExist:
-            tag = Tag(name=tag_name, importer=Tag.XMP)
+            tag = Tag(name=tag_name, importer=importer)
             tag.save()
 
         medium.tags.add(tag)

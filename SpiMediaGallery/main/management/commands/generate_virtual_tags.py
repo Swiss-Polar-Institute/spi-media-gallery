@@ -2,7 +2,7 @@ from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.management.base import BaseCommand
-from django.db.models import ProtectedError
+from django.db.models import ProtectedError, Q
 
 from ...models import Medium, Tag, TagName
 from ...progress_report import ProgressReport

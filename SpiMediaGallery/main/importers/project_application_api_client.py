@@ -9,7 +9,8 @@ from django.utils import timezone
 
 from SpiMediaGallery import settings
 from main import spi_s3_utils, utils
-from main.models import File, Medium, License, Copyright, RemoteMedium, Photographer, SyncToken, MediumResized
+from main.delete_medium import DeleteMedium
+from main.models import File, Medium, License, Copyright, RemoteMedium, Photographer, SyncToken, MediumResized, Tag
 from main.utils import hash_of_file_path
 
 
@@ -115,7 +116,7 @@ class ProjectApplicationApiClient:
                         f'Imported/Project Application/title/{project_title}'
                         }
 
-                utils.set_tags(medium, tags)
+                utils.set_tags(medium, tags, Tag.IMPORTED)
 
                 remote_modified_on = dateutil.parser.isoparse(remote_medium_json['modified_on'])
 
@@ -148,7 +149,7 @@ class ProjectApplicationApiClient:
 
         r = requests.get(f'{self._hostname}/api/media/list/deleted/', headers=headers, params=parameters)
 
-        newer_last_deleted = ProjectApplicationApiClient._OLDER_LAST_SYNC_POSSIBLE
+        newer_last_deleted = last_deleted_media_token
 
         for remote_medium_deleted_json in r.json():
             remote_id = remote_medium_deleted_json['id']
@@ -161,14 +162,10 @@ class ProjectApplicationApiClient:
                 # The Project Application Medium was created and deleted before SPI Media Gallery ever imported it
                 continue
 
-            with transaction.atomic():
-                MediumResized.objects.filter(medium=medium).delete()
-                RemoteMedium.objects.filter(medium=medium).delete()
+            delete_medium = DeleteMedium(medium.id)
+            delete_medium.delete()
 
-                medium.delete()
-                remote_medium.delete()
-
-            if newer_last_deleted < deleted_on:
+            if deleted_on > newer_last_deleted:
                 newer_last_deleted = deleted_on
 
         SyncToken.objects.update_or_create(token_name=SyncToken.TokenNames.DELETED_MEDIA_LAST_SYNC,

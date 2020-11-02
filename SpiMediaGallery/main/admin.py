@@ -3,7 +3,7 @@ from django.contrib.gis.admin.options import OSMGeoAdmin
 
 from main.forms import LocationEntryCoordinates
 from .models import Medium, Tag, TagName, MediumResized, Photographer, License, Copyright, File, TagRenamed, \
-    RemoteMedium
+    RemoteMedium, SyncToken
 from .utils import seconds_to_minutes_seconds, bytes_to_human_readable
 
 
@@ -134,6 +134,12 @@ class RemoteMediumAdmin(admin.ModelAdmin):
     search_fields = ('remote_blob',)
 
 
+class SyncTokenAdmin(admin.ModelAdmin):
+    list_display = ('token_name', 'token_value',)
+    ordering = ('token_name', 'token_value',)
+    search_fields = ('token_name', 'token_value',)
+
+
 admin.site.register(Medium, MediumAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(TagName, TagNameAdmin)
@@ -144,3 +150,4 @@ admin.site.register(Copyright, CopyrightAdmin)
 admin.site.register(File, FileAdmin)
 admin.site.register(TagRenamed, TagRenamedAdmin)
 admin.site.register(RemoteMedium, RemoteMediumAdmin)
+admin.site.register(SyncToken, SyncTokenAdmin)

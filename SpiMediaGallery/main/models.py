@@ -26,7 +26,8 @@ class Photographer(models.Model):
 class License(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
-    name = models.CharField(max_length=255, unique=True, help_text='If it exists: identifier as per https://spdx.org/licenses/ CC-BY-NC-SA-4.0')
+    name = models.CharField(max_length=255, unique=True,
+                            help_text='If it exists: identifier as per https://spdx.org/licenses/ CC-BY-NC-SA-4.0')
     public_text = models.TextField()
 
     def __str__(self):
@@ -59,12 +60,14 @@ class Tag(models.Model):
     GENERATED = 'G'
     MANUAL = 'M'
     RENAMED = 'R'
+    IMPORTED = 'I'
 
     IMPORTER = (
         (XMP, 'XMP'),
         (GENERATED, 'Generated'),
         (MANUAL, 'Manual'),
-        (RENAMED, 'Renamed')
+        (RENAMED, 'Renamed'),
+        (IMPORTED, 'Imported')
     )
 
     name = models.ForeignKey(TagName, on_delete=models.PROTECT)
@@ -199,6 +202,10 @@ class Medium(models.Model):
     def get_absolute_url(self):
         return reverse('medium', args=[str(self.pk)])
 
+    # def delete(self, **kwargs):
+    #     See DeleteMedium class in delete_medium.py for a deletion of a medium and dependencies
+    #     pass
+
     def __str__(self):
         return '{}'.format(self.pk)
 
@@ -233,6 +240,9 @@ class MediumResized(models.Model):
     width = models.IntegerField(help_text='Width of this resized medium')
     medium = models.ForeignKey(Medium, on_delete=models.PROTECT, help_text='Medium that this Resized is from')
 
+    def __str__(self):
+        return f'MediumResized id: {self.id}'
+
     class Meta:
         verbose_name_plural = 'MediaResized'
 
@@ -266,6 +276,9 @@ class RemoteMedium(models.Model):
     def update_fields(self, fields):
         set_fields(self, fields)
 
+    def __str__(self):
+        return f'RemoteMedium id: {self.id}'
+
     class Meta:
         verbose_name_plural = 'RemoteMedia'
 
@@ -276,6 +289,9 @@ class SyncToken(models.Model):
 
     token_name = models.CharField(max_length=32, choices=TokenNames.choices)
     token_value = models.CharField(max_length=128, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.token_name} {self.token_value}'
 
 
 def set_fields(obj, fields):
