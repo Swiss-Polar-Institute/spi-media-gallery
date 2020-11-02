@@ -7,6 +7,7 @@ from django.db import transaction
 class DeleteMedium:
     def __init__(self, medium):
         self._medium = medium
+        self._files_to_delete = []
 
     @staticmethod
     def _delete_tag_if_orphaned(tag):
@@ -23,13 +24,27 @@ class DeleteMedium:
             print(f'Tag name deleted: {tag_name}')
             tag_name.delete()
 
+    @staticmethod
+    def _delete_medium_and_file(medium):
+        file = medium.file
+        medium.delete()
+
+        if file:
+            file.delete()
+
     def delete(self):
+        if self._medium is None:
+            return
+
         with transaction.atomic():
             tags = list(self._medium.tags.all())
 
-            self._medium.mediumresized_set.all().delete()
+            for medium_resized in self._medium.mediumresized_set.all():
+                DeleteMedium._delete_medium_and_file(medium_resized)
+
             self._medium.remotemedium_set.all().delete()
-            self._medium.delete()
+
+            DeleteMedium._delete_medium_and_file(self._medium)
 
             tag_names = []
 

@@ -162,7 +162,7 @@ class ProjectApplicationApiClient:
                 # The Project Application Medium was created and deleted before SPI Media Gallery ever imported it
                 continue
 
-            delete_medium = DeleteMedium(medium.id)
+            delete_medium = DeleteMedium(medium)
             delete_medium.delete()
 
             if deleted_on > newer_last_deleted:
