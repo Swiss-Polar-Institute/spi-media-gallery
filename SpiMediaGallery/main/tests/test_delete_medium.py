@@ -24,6 +24,9 @@ class DeleteMediumTest(TestCase):
         delete_medium.delete()
         self.assertEqual(Medium.objects.all().count(), 0)
 
+        # This unit test could test that objects that are not related are not being destroyed
+        # Actually, thanks for the models.PROTECT in the models it would just fail instead of deleting them
+        # (in case that it was tried to delete them)
         self.assertEqual(File.objects.count(), 0)
 
         # in the test_basic_data there are 9 tags and tagnames. 6 of them are assigned to the Medium
