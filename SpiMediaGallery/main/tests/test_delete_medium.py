@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from main.delete_medium import DeleteMedium
-from main.models import Medium, File, MediumResized, Tag, TagName, Copyright
+from main.models import Medium, File, MediumResized, Tag, TagName, Copyright, Photographer
 
 
 class DeleteMediumTest(TestCase):
@@ -19,7 +19,12 @@ class DeleteMediumTest(TestCase):
         self.assertEqual(TagName.objects.count(), 9)
         self.assertEqual(Copyright.objects.count(), 1)
 
+        photographer = Photographer.objects.get(id=1)
+
         medium = Medium.objects.get(id=1)
+        medium.photographer = photographer
+        medium.save()
+
         delete_medium = DeleteMedium(medium)
         delete_medium.delete()
         self.assertEqual(Medium.objects.all().count(), 0)
@@ -35,3 +40,5 @@ class DeleteMediumTest(TestCase):
         self.assertEqual(Tag.objects.count(), 3)
         self.assertEqual(TagName.objects.count(), 3)
         self.assertEqual(Copyright.objects.count(), 0)
+
+        self.assertEqual(Photographer.objects.filter(id=1).exists(), False)
