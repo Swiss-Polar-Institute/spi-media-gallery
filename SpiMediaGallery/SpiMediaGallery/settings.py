@@ -257,7 +257,7 @@ TRACK_MAP_FILEPATH = '/tmp/test.geojson'
 
 DATETIME_POSITIONS_SQLITE3_PATH = find_file('gps.sqlite3')
 
-PROXY_TO_OBJECT_STORAGE = False
+PROXY_TO_OBJECT_STORAGE = os.settings['PROXY_TO_OBJECT_STORAGE'] == '1'
 
 ADMINS = []
 i = 1
