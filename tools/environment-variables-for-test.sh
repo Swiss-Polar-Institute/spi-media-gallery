@@ -13,3 +13,4 @@ export ALLOWED_HOST_1=127.0.0.1
 export SECRET_KEY="NOT-USED-ONLY-TESTS-zz!c&6qne#+x8(03_q30wz%z93)0&h9&(%)=5+e+6bn-87ok^g"
 export SECURE_SSL_REDIRECT=0
 export PROXY_TO_OBJECT_STORAGE=0
+export SITE_ADMINISTRATOR="Admin name"
