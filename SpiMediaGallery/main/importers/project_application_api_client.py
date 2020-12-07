@@ -110,10 +110,12 @@ class ProjectApplicationApiClient:
 
                 project_info = remote_medium_json['project']
                 project_key = project_info['key']
-                project_title = project_info['title']
+                funding_instrument = project_info['funding_instrument']
+                finance_year = project_info['finance_year']
 
-                tags = {f'Imported/Project Application/key/{project_key}',
-                        f'Imported/Project Application/title/{project_title}'
+                tags = {
+                        f'SPI Project/{funding_instrument}/{finance_year}/key/{project_key}',
+                        f'Photographer/{photographer.full_name()}'
                         }
 
                 utils.set_tags(medium, tags, Tag.IMPORTED)
