@@ -51,14 +51,14 @@ class GenerateTags(object):
             if tag.medium_set.count() == 0:
                 tag_name = tag.name
 
-                if tag_name.tag_set.count() == 0:
-                    tag_name.delete()
-
                 tag.delete()
 
-    def generate_tags_for_media(self, media):
-        for medium in media:
-            generate_virtual_tags_from_medium(medium)
+                if tag_name.tag_set.count() == 0:
+                    # Used only by the one that we are deleting
+                    tag_name.delete()
+
+    def generate_tags_for_medium(self, medium):
+        generate_virtual_tags_from_medium(medium)
 
 
 def generate_virtual_tags_from_medium(medium: Medium):

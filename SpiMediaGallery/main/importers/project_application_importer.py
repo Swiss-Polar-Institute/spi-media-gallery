@@ -25,10 +25,9 @@ def import_resize_update_tags_from_project_application():
     resizer = Resizer(bucket_name_resized, sizes_type, media_type)
     resizer.resize_media()
 
-    # Re-generate tags
+    # Tags cleanup
     generator = GenerateTags()
     generator.delete_tags_if_orphaned(tags_deleted_media)
-    generator.generate_tags_for_media(imported_media)
 
     # Clears the cache: so the homepage tags are updated
     cache.clear()

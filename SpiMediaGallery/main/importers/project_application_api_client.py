@@ -6,6 +6,7 @@ import requests
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
+from ..management.commands.generate_virtual_tags import GenerateTags
 
 from SpiMediaGallery import settings
 from main import spi_s3_utils, utils
@@ -42,6 +43,7 @@ class ProjectApplicationApiClient:
         r = requests.get(f'{self._hostname}/api/media/list/', headers=headers, params=parameters)
 
         imported_media = set()
+        generator = GenerateTags()
 
         for remote_medium_json in r.json():
             url = remote_medium_json['file_url']
@@ -121,7 +123,9 @@ class ProjectApplicationApiClient:
                         f'Photographer/{photographer.full_name()}'
                         }
 
+                old_tags = set(medium.tags.all())
                 utils.set_tags(medium, tags, Tag.IMPORTED)
+                new_tags = set(medium.tags.all())
 
                 remote_modified_on = dateutil.parser.isoparse(remote_medium_json['modified_on'])
 
@@ -138,7 +142,11 @@ class ProjectApplicationApiClient:
                     remote_medium.update_fields(remote_medium_fields)
                     remote_medium.save()
 
+                generator.generate_tags_for_medium(medium)
                 imported_media.add(medium)
+
+                deleted_tags = old_tags - new_tags
+                generator.delete_tags_if_orphaned(deleted_tags)
 
             output_file.close()
 
