@@ -1,8 +1,8 @@
 from typing import List
 
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
-from django.db.models import ProtectedError, Q
+from django.db.models import ProtectedError
 
 from ...models import Medium, Tag, TagName
 from ...progress_report import ProgressReport
@@ -43,11 +43,25 @@ class GenerateTags(object):
         progress_report = ProgressReport(len(media), extra_information="Adding virtual tags")
 
         for medium in media:
-            generate_virtual_tags(medium)
+            generate_virtual_tags_from_medium(medium)
             progress_report.increment_and_print_if_needed()
 
+    def delete_tags_if_orphaned(self, tags_to_maybe_delete):
+        for tag in tags_to_maybe_delete:
+            if tag.medium_set.count() == 0:
+                tag_name = tag.name
 
-def generate_virtual_tags(medium: Medium):
+                if tag_name.tag_set.count() == 0:
+                    tag_name.delete()
+
+                tag.delete()
+
+    def generate_tags_for_media(self, media):
+        for medium in media:
+            generate_virtual_tags_from_medium(medium)
+
+
+def generate_virtual_tags_from_medium(medium: Medium):
     """For each tag of :param medium it checks that the parent tag exists. If it does not exist it creates it
     with the tag.type == Tag.GENERATED. E.g. if "people/john_doe" is a tag in :param medium it creates
     "people" (type is generated)
@@ -66,7 +80,6 @@ def generate_virtual_tags(medium: Medium):
                 continue
             except ObjectDoesNotExist:
                 pass
-
 
             # Checks if TagName exists or creates it
             try:

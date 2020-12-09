@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction, OperationalError
 from django.utils import timezone
 
-from .generate_virtual_tags import generate_virtual_tags
+from .generate_virtual_tags import generate_virtual_tags_from_medium
 from ... import spi_s3_utils
 from ... import utils
 from ...models import Medium, Tag, TagName, File
@@ -67,7 +67,7 @@ class MediaImporter(object):
         tags = self._download_xmp_read_tags(xmp_file)
         medium = self._create_or_found_medium(s3_object.key, size_of_medium)
         utils.set_tags(medium, tags, Tag.XMP)
-        generate_virtual_tags(medium)
+        generate_virtual_tags_from_medium(medium)
 
     def _download_xmp_read_tags(self, xmp_key):
         tags = {}

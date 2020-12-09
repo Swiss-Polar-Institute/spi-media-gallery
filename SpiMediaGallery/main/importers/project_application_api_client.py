@@ -31,6 +31,7 @@ class ProjectApplicationApiClient:
         return latest_remote_date_time
 
     def import_new_media(self):
+        """ Returns list of tags of the imported media """
         headers = {'ApiKey': settings.PROJECT_APPLICATION_API_KEY}
         parameters = {}
 
@@ -39,6 +40,8 @@ class ProjectApplicationApiClient:
         parameters['modified_since'] = last_modified
 
         r = requests.get(f'{self._hostname}/api/media/list/', headers=headers, params=parameters)
+
+        imported_media = set()
 
         for remote_medium_json in r.json():
             url = remote_medium_json['file_url']
@@ -135,9 +138,14 @@ class ProjectApplicationApiClient:
                     remote_medium.update_fields(remote_medium_fields)
                     remote_medium.save()
 
+                imported_media.add(medium)
+
             output_file.close()
 
+        return imported_media
+
     def delete_deleted_media(self):
+        """ Returns list of tags of the deleted media """
         headers = {'ApiKey': settings.PROJECT_APPLICATION_API_KEY}
         parameters = {}
 
@@ -153,6 +161,8 @@ class ProjectApplicationApiClient:
 
         newer_last_deleted = last_deleted_media_token
 
+        tags_deleted = set()
+
         for remote_medium_deleted_json in r.json():
             remote_id = remote_medium_deleted_json['id']
             deleted_on = remote_medium_deleted_json['deleted_on']
@@ -164,6 +174,8 @@ class ProjectApplicationApiClient:
                 # The Project Application Medium was created and deleted before SPI Media Gallery ever imported it
                 continue
 
+            tags_deleted.update(medium.tags.all())
+
             delete_medium = DeleteMedium(medium)
             delete_medium.delete()
 
@@ -172,3 +184,5 @@ class ProjectApplicationApiClient:
 
         SyncToken.objects.update_or_create(token_name=SyncToken.TokenNames.DELETED_MEDIA_LAST_SYNC,
                                            defaults={'token_value': newer_last_deleted})
+
+        return tags_deleted
