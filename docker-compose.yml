@@ -47,8 +47,28 @@ services:
         fluentd-address: localhost:24224
         tag: spi-media-gallery.nginx
 
+  database:
+    image: mariadb:10.5
+    environment:
+      - MYSQL_DATABASE=spi_media_gallery
+      - MYSQL_USER=${SPI_MEDIA_GALLERY_DB_USER}
+      - MYSQL_PASSWORD=${SPI_MEDIA_GALLERY_DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${SPI_MEDIA_GALLERY_ROOT_DB_ROOT_PASSWORD}
+    volumes:
+      - database:/var/lib/mysql
+    expose:
+      - "3306"
+    networks:
+      - nginx-proxy
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: spi-media-gallery.mariadb
+
 volumes:
   static_volume: {}
+  database: {}
   tmp-for-spi-media-gallery:
 
 secrets:
