@@ -482,8 +482,12 @@ class Stats(TemplateView):
         context['duration_videos'] = duration_of_videos
 
         context['total_number_media_from_project_application'] = RemoteMedium.objects.count()
-        context['latest_photo_imported_from_project_application'] = RemoteMedium.objects.latest(
-            'remote_modified_on').remote_modified_on
+
+        if context['total_number_media_from_project_application'] > 0:
+            context['latest_photo_imported_from_project_application'] = RemoteMedium.objects.latest(
+                'remote_modified_on').remote_modified_on
+        else:
+            context['latest_photo_imported_from_project_application'] = 'N/A'
 
         return context
 
