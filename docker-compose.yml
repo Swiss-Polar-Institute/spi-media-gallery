@@ -6,6 +6,8 @@ services:
     secrets:
       - spi_media_gallery_mysql.conf
       - spi_media_gallery_buckets.json
+    links:
+      - database
     volumes:
       - ${SPI_MEDIA_GALLERY_GPS_SQLITE3_PATH}:/code/gps.sqlite3
       - ./SpiMediaGallery:/code/SpiMediaGallery
