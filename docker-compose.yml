@@ -24,6 +24,7 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: spi-media-gallery.django
+    restart: unless-stopped
 
   reverse-proxy:
     image: nginx:1.19
@@ -48,6 +49,7 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: spi-media-gallery.nginx
+    restart: unless-stopped
 
   database:
     image: mariadb:10.5
@@ -67,6 +69,7 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: spi-media-gallery.mariadb
+    restart: unless-stopped
 
 volumes:
   static_volume: {}
