@@ -20,7 +20,7 @@
                     {% else %}
                         <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
                             <a href="{{ medium.get_absolute_url }}">
-                                <video>
+                                <video preload="metadata">
                                     <source src="{{ medium.thumbnail_url }}" type="{{ medium.thumbnail_content_type }}">
                                 </video>
                             </a>
