@@ -90,6 +90,6 @@ class SpiS3Utils(object):
 
         return files_set
 
-    def delete(self, object_storage_key: str) -> None:
+    def delete(self, object_storage_key: str):
         file = self.resource().Object(self._bucket_configuration['name'], object_storage_key)
-        file.delete()
+        return file.delete()

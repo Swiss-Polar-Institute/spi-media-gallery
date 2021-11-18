@@ -85,5 +85,5 @@ class DeleteMedium:
         if transaction_success:
             for file_to_delete in self._files_to_delete:
                 spi_s3_utils = SpiS3Utils(file_to_delete['bucket_name'])
-                spi_s3_utils.delete(file_to_delete['object_storage_key'])
-                print(f'Deleted file: {file_to_delete["bucket_name"]}/{file_to_delete["object_storage_key"]}')
+                result = spi_s3_utils.delete(file_to_delete['object_storage_key'])
+                print(f'Deleted file: {file_to_delete["bucket_name"]}/{file_to_delete["object_storage_key"]}: {result}')
