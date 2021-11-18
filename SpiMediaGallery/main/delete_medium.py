@@ -2,6 +2,7 @@ from django.db import transaction, DatabaseError
 
 # Should this class be implemented from Medium.delete() ?
 # Would we expect that Medium.delete() also deletes MediumResized, Tags, etc.?
+from main.models import File
 from main.spi_s3_utils import SpiS3Utils
 
 
@@ -36,7 +37,16 @@ class DeleteMedium:
                 {'bucket_name': file.bucket_name(),
                  'object_storage_key': file.object_storage_key
                  })
-            print(f'Deleting {file.bucket_name()}/{file.object_storage_key}')
+            print(f'Added to delete {file.bucket_name()}/{file.object_storage_key}')
+
+            if file.bucket_name == File.ORIGINAL:
+                file_path_xmp = f'{file.object_storage_key}.xmp'
+                self._files_to_delete.append(
+                    {'bucket_name': file.bucket_name(),
+                     'object_storage_key': file_path_xmp
+                     })
+                print(f'Added to delete {file.bucket_name()}/{file_path_xmp}')
+
             file.delete()
 
     def delete(self):
@@ -76,4 +86,4 @@ class DeleteMedium:
             for file_to_delete in self._files_to_delete:
                 spi_s3_utils = SpiS3Utils(file_to_delete['bucket_name'])
                 spi_s3_utils.delete(file_to_delete['object_storage_key'])
-                print(f'Delete file: {file_to_delete["bucket_name"]}/{file_to_delete["object_storage_key"]}')
+                print(f'Deleted file: {file_to_delete["bucket_name"]}/{file_to_delete["object_storage_key"]}')
