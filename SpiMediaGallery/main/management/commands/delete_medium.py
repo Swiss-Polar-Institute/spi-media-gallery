@@ -37,7 +37,8 @@ class Command(BaseCommand):
             print('Please use --medium_id or --medium_file_path options')
             return
 
+        medium_id = medium.id
         delete_medium = DeleteMedium(medium)
         delete_medium.delete()
 
-        print(f'Medium deleted: {medium.id}')
+        print(f'Medium deleted: {medium_id}')
