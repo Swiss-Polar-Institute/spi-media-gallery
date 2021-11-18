@@ -15,7 +15,7 @@ class Command(BaseCommand):
                             help='File path of the file to delete')
 
     def handle(self, *args, **options):
-        if 'medium_id' in options:
+        if options['medium_id']:
             medium_id = options['medium_id']
             try:
                 medium = Medium.objects.get(id=medium_id)
@@ -23,7 +23,7 @@ class Command(BaseCommand):
                 print(f'Medium id {medium_id} does not exist')
                 return
 
-        elif 'medium_file_path' in options:
+        elif options['medium_file_path']:
             medium_file_path = options['medium_file_path']
             try:
                 medium = Medium.objects.get(file__object_storage_key=medium_file_path)
