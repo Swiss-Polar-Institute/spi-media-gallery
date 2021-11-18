@@ -39,7 +39,7 @@ class DeleteMedium:
                  })
             print(f'Added to delete {file.bucket_name()}/{file.object_storage_key}')
 
-            if file.bucket_name == File.ORIGINAL:
+            if file.bucket == File.ORIGINAL:
                 file_path_xmp = f'{file.object_storage_key}.xmp'
                 self._files_to_delete.append(
                     {'bucket_name': file.bucket_name(),
