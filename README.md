@@ -64,5 +64,11 @@ Example of a photo:
 <img src="documentation/images/media-gallery-photo-01.png" width="500">
 </td></tr></table>
 
+## Documentation
+More documentation is available in the [documentation](documentation/) directory.
 
-Please feel free to contact Carles Pina i Estany (https://github.com/cpina, carles.pinaestany@epfl.ch) for any help or in-depth information.
+## Contact
+
+Please feel free to contact Carles Pina i Estany (https://github.com/cpina, carles@pina.cat) for any help or in-depth information about the code in general. If you have any questions or
+comments about the Swiss Polar Institute installation or contents please send them to
+Swis Polar Institute IT.
