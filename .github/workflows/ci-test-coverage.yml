@@ -4,16 +4,16 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
     - name: Install Python dependencies
       run: |
-        sudo apt-get install --no-install-recommends --yes --quiet python3-pip python3-setuptools python3-wheel libpython3.7-dev python3-venv
+        sudo apt-get install --no-install-recommends --yes --quiet python3-pip python3-setuptools python3-wheel libpython3-dev python3-venv
     - name: Install system dependencies
       run: |
-        sudo apt-get install --no-install-recommends --yes --quiet gcc-7 gcc gdal-bin imagemagick ffmpeg libmediainfo0v5 exiftool libjpeg-progs libexempi3
+        sudo apt-get install --no-install-recommends --yes --quiet gcc-7 gcc gdal-bin imagemagick ffmpeg libmediainfo0v5 exiftool libjpeg-progs libexempi8
         sudo gcc -o /usr/bin/dcraw -O4 external/dcraw.c -lm -DNODEPS
     - name: Install dependencies for sqlite GIS
       run: |
