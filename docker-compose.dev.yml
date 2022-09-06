@@ -1,0 +1,72 @@
+version: '3.6'
+
+services:
+  spi-media-gallery:
+    build:
+      dockerfile: Dockerfile-dev
+      context: ./
+    secrets:
+      - spi_media_gallery_mysql.conf
+      - spi_media_gallery_buckets.json
+    links:
+      - database
+    volumes:
+      - ./SpiMediaGallery:/code/SpiMediaGallery
+      - static_volume:/code/SpiMediaGallery/staticfiles
+      - tmp-for-spi-media-gallery:/tmp
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+
+  database:
+    image: mariadb:10.5
+    environment:
+      - MYSQL_DATABASE=spi_media_gallery
+      - MYSQL_USER=spi
+      - MYSQL_PASSWORD=spi
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - database:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio:/data
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    command: server /data --console-address ":9001"
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 minio minio123;
+      /usr/bin/mc mb myminio/spi-media-gallery-original;
+      /usr/bin/mc policy set public myminio/spi-media-gallery-original;
+      /usr/bin/mc mb myminio/spi-media-gallery-processed
+      /usr/bin/mc policy set public myminio/spi-media-gallery-processed;
+      /usr/bin/mc mb myminio/spi-media-gallery-imported
+      /usr/bin/mc policy set public myminio/spi-media-gallery-imported;
+      exit 0;
+      "
+
+volumes:
+  static_volume:
+  database:
+  tmp-for-spi-media-gallery:
+  minio:
+
+secrets:
+  spi_media_gallery_buckets.json:
+    file: ./utils/spi_media_gallery_buckets.json
+  spi_media_gallery_mysql.conf:
+    file: ./utils/project_application_mysql.conf
