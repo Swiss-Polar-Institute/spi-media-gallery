@@ -24,12 +24,12 @@ services:
     container_name: database
     image: mariadb:10.5
     environment:
-      - MYSQL_DATABASE=spi_media_gallery
       - MYSQL_USER=spi
       - MYSQL_PASSWORD=spi
       - MYSQL_ROOT_PASSWORD=root
     volumes:
       - database:/var/lib/mysql
+      - ./database/mysql-dump:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
 
