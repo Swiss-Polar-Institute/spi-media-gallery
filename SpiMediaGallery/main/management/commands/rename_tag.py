@@ -1,17 +1,16 @@
+import csv
+from datetime import datetime
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
-
 from django.utils import timezone
 
-from ...models import Medium, TagName, Tag, TagRenamed
+from ...models import Tag, TagName, TagRenamed
 from ...views import search_for_tag_name_ids
-
-from datetime import datetime
-import csv
 
 
 class Command(BaseCommand):
-    help = 'Rename tags'
+    help = "Rename tags"
 
     def add_arguments(self, parser):
         """Define the arguments to be used by the user.
@@ -24,39 +23,49 @@ class Command(BaseCommand):
         """
 
         # use subparsers because a different number of arguments are required depending on the command used.
-        subparsers = parser.add_subparsers(help='sub-command help', required='True')
+        subparsers = parser.add_subparsers(help="sub-command help", required="True")
 
         # parser for the command to use an old name and new name
-        parser_rename_from_command_line = subparsers.add_parser('command_line',
-                                                                help='renames from the command line with an old and new name')
-        parser_rename_from_command_line.set_defaults(dest='command_line')
+        parser_rename_from_command_line = subparsers.add_parser(
+            "command_line",
+            help="renames from the command line with an old and new name",
+        )
+        parser_rename_from_command_line.set_defaults(dest="command_line")
 
-        parser_rename_from_command_line.add_argument('old_tag', type=str, help='Tag to be renamed.')
-        parser_rename_from_command_line.add_argument('new_tag', type=str, help='New tag name')
+        parser_rename_from_command_line.add_argument(
+            "old_tag", type=str, help="Tag to be renamed."
+        )
+        parser_rename_from_command_line.add_argument(
+            "new_tag", type=str, help="New tag name"
+        )
 
         # parser for the command to use old and new tag names from a csv file
-        parser_rename_from_file = subparsers.add_parser('file', help='renames from a file with old and new names')
-        parser_rename_from_file.set_defaults(dest='file')
+        parser_rename_from_file = subparsers.add_parser(
+            "file", help="renames from a file with old and new names"
+        )
+        parser_rename_from_file.set_defaults(dest="file")
 
-        parser_rename_from_file.add_argument('file_path', type=str, help='Full file path')
+        parser_rename_from_file.add_argument(
+            "file_path", type=str, help="Full file path"
+        )
 
     def handle(self, *args, **options):
-        if options['dest'] == 'command_line':
-            old_tag = options['old_tag']
-            new_tag = options['new_tag']
+        if options["dest"] == "command_line":
+            old_tag = options["old_tag"]
+            new_tag = options["new_tag"]
 
             modifier = ModifyTag()
             modifier.rename(old_tag, new_tag)
 
-            print('The following tags have not been renamed: ')
+            print("The following tags have not been renamed: ")
             print(modifier.tags_not_renamed())
 
-        elif options['dest'] == 'file':
+        elif options["dest"] == "file":
             modifier = ModifyTag()
-            file_path = options['file_path']
+            file_path = options["file_path"]
             modifier.rename_from_file(file_path)
 
-            print('The following tags have not been renamed: ')
+            print("The following tags have not been renamed: ")
             print(modifier.tags_not_renamed())
 
 
@@ -76,7 +85,7 @@ class ModifyTag:
                 old_tag = tags[0]
                 new_tag = tags[1]
 
-                print('Renaming: ', old_tag, ' to ', new_tag)
+                print("Renaming: ", old_tag, " to ", new_tag)
                 self.rename(old_tag, new_tag)
 
     @staticmethod
@@ -94,7 +103,8 @@ class ModifyTag:
 
     @staticmethod
     def _get_or_create_tag_in_database(tag_name, importer):
-        """Get the tag object from the database if it already exists, then return it. If not, create the tag and return it.
+        """Get the tag object from the database if it already exists, then return it.
+        If not, create the tag and return it.
 
         :param tag_name: tag_name object
         :param importer: importer method used when adding the tag to the database
@@ -108,7 +118,7 @@ class ModifyTag:
             return new_tag
 
     def _add_old_tag_to_list_if_does_not_exist(self, old):
-        """ Check if old tag name exists in the database. If it does not, add it to a list (that will be printed at the
+        """Check if old tag name exists in the database. If it does not, add it to a list (that will be printed at the
         end). If it does, continue.
 
         :param old: old tag name (string)
@@ -133,7 +143,7 @@ class ModifyTag:
         :param new: new tag name (string)"""
 
         if old == new:
-            raise CommandError('Old tag is the same as the new tag: aborting.')
+            raise CommandError("Old tag is the same as the new tag: aborting.")
 
     def rename(self, old, new):
         """Check to see if new tag exists. If it exists, abort. If it does not exist, rename the old tag with the new
@@ -146,18 +156,20 @@ class ModifyTag:
         self._raise_error_if_old_tag_same_as_new(old, new)
 
         if self._add_old_tag_to_list_if_does_not_exist(
-                old):  # if an old tag doesn't exist and it is added to a list, it will return True
+            old
+        ):  # if an old tag doesn't exist and it is added to a list, it will return True
             return  # skips the rest of this function (so in effect moves to the next pairing of tags)
 
-        if not self._tag_name_is_in_database(self, new) or \
-            old.lower() == new.lower():
+        if not self._tag_name_is_in_database(self, new) or old.lower() == new.lower():
             # Rename the tag with the new name
             tag_name = TagName.objects.get(name=old)
             tag_name.name = new
             tag_name.save()
         else:
             tag_name = TagName.objects.get(name=new)
-            new_destination_tag = ModifyTag._get_or_create_tag_in_database(tag_name, Tag.RENAMED)
+            new_destination_tag = ModifyTag._get_or_create_tag_in_database(
+                tag_name, Tag.RENAMED
+            )
 
             # Get list of all media tagged with old tag name
             old_id = TagName.objects.get(name=old).id
@@ -176,5 +188,7 @@ class ModifyTag:
 
         # Add a row to the TagRenamed table to record each change or renaming of tags. This includes tags that are
         # renamed, or those that are changed to be ones that already exist in the database.
-        renamed_tag = TagRenamed(old_name=old, new_name=new, datetime_renamed=datetime.now(tz=timezone.utc))
+        renamed_tag = TagRenamed(
+            old_name=old, new_name=new, datetime_renamed=datetime.now(tz=timezone.utc)
+        )
         renamed_tag.save()

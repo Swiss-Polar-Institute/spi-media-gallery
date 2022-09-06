@@ -10,21 +10,23 @@ from django.db.models import Sum
 from django.utils import timezone
 from pymediainfo import MediaInfo
 
-from ... import spi_s3_utils
-from ... import utils
+from ... import spi_s3_utils, utils
 from ...models import Medium
 from ...progress_report import ProgressReport
 
 
 class Command(BaseCommand):
-    help = 'Updates date time taken'
+    help = "Updates date time taken"
 
     def add_arguments(self, parser):
-        parser.add_argument('bucket_name_media', type=str,
-                            help='Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION')
+        parser.add_argument(
+            "bucket_name_media",
+            type=str,
+            help="Bucket name - it needs to exist in settings.py in BUCKETS_CONFIGURATION",
+        )
 
     def handle(self, *args, **options):
-        bucket_name_media = options['bucket_name_media']
+        bucket_name_media = options["bucket_name_media"]
 
         updater = UpdateDateTimeTaken(bucket_name_media)
 
@@ -37,17 +39,19 @@ def get_information_from_video(video_file):
     video_information = MediaInfo.parse(video_file)
 
     for track in video_information.tracks:
-        if track.track_type == 'Video':
-            information['width'] = track.width
-            information['height'] = track.height
-            information['duration'] = float(track.duration) / 1000
+        if track.track_type == "Video":
+            information["width"] = track.width
+            information["height"] = track.height
+            information["duration"] = float(track.duration) / 1000
             if track.encoded_date is not None:
-                dt = datetime.datetime.strptime(track.encoded_date, 'UTC %Y-%m-%d %H:%M:%S')
+                dt = datetime.datetime.strptime(
+                    track.encoded_date, "UTC %Y-%m-%d %H:%M:%S"
+                )
                 dt = dt.replace(tzinfo=timezone.utc)
-                information['date_encoded'] = dt
+                information["date_encoded"] = dt
 
             else:
-                information['date_encoded'] = None
+                information["date_encoded"] = None
 
     return information
 
@@ -58,42 +62,55 @@ class UpdateDateTimeTaken(object):
 
     @staticmethod
     def _update_information_from_video(video, video_file):
-        if video.width is None or video.height is None or video.duration is None or video.datetime_taken is None:
+        if (
+            video.width is None
+            or video.height is None
+            or video.duration is None
+            or video.datetime_taken is None
+        ):
             information = get_information_from_video(video_file)
 
-            video.width = information['width']
-            video.height = information['height']
-            video.duration = information['duration']
-            video.datetime_taken = information['date_encoded']
+            video.width = information["width"]
+            video.height = information["height"]
+            video.duration = information["duration"]
+            video.datetime_taken = information["date_encoded"]
 
             video.save()
 
     def update_media(self):
-        videos_to_update = Medium.objects.filter(datetime_taken__isnull=True).filter(width__isnull=False).filter(
-            medium_type=Medium.VIDEO)
+        videos_to_update = (
+            Medium.objects.filter(datetime_taken__isnull=True)
+            .filter(width__isnull=False)
+            .filter(medium_type=Medium.VIDEO)
+        )
 
-        total_bytes = videos_to_update.aggregate(Sum('file__size'))['file__size__sum']
+        total_bytes = videos_to_update.aggregate(Sum("file__size"))["file__size__sum"]
 
-        progress_report = ProgressReport(total_bytes,
-                                         extra_information='Updating medium',
-                                         steps_are_bytes=True)
+        progress_report = ProgressReport(
+            total_bytes, extra_information="Updating medium", steps_are_bytes=True
+        )
 
         for video in videos_to_update:
             # Download Media file from the bucket
             media_file = tempfile.NamedTemporaryFile(delete=False)
             media_file.close()
             start_download = time.time()
-            self._media_bucket.bucket().download_file(video.object_storage_key, media_file.name)
+            self._media_bucket.bucket().download_file(
+                video.object_storage_key, media_file.name
+            )
             download_time = time.time() - start_download
 
             assert os.stat(media_file.name).st_size == video.file.size
 
             download_speed = (video.file.size / 1024 / 1024) / download_time  # MB/s
-            print('Download Stats: Total size: {} Time: {} Speed: {:.2f} MB/s File: {}'.format(
-                utils.bytes_to_human_readable(video.file.size),
-                utils.seconds_to_human_readable(download_time),
-                download_speed,
-                video.object_storage_key))
+            print(
+                "Download Stats: Total size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(
+                    utils.bytes_to_human_readable(video.file.size),
+                    utils.seconds_to_human_readable(download_time),
+                    download_speed,
+                    video.object_storage_key,
+                )
+            )
 
             self._update_information_from_video(video, media_file.name)
 

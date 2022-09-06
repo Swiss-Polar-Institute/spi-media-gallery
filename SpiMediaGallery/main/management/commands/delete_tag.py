@@ -1,11 +1,11 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand, CommandError
 
-from main.models import TagName, Tag
+from main.models import Tag, TagName
 
 
 class Command(BaseCommand):
-    help = 'Delete tag(s)'
+    help = "Delete tag(s)"
 
     def add_arguments(self, parser):
         """Define the arguments to be used by the user.
@@ -14,35 +14,43 @@ class Command(BaseCommand):
 
         TODO: It can also be run to delete tag names that are not used by a medium.
         """
-        subparsers = parser.add_subparsers(help='sub-command help', required='True')
+        subparsers = parser.add_subparsers(help="sub-command help", required="True")
 
         # parser for the command to use an old name and new name
-        parser_delete_tag_wrong_name = subparsers.add_parser('name',
-                                                                help='Deletes tag because the name is wrong. '
-                                                                     'It should not be renamed. NOTE: If you want the '
-                                                                     'tag to be renamed instead, please use the command, '
-                                                                     'rename_tag')
-        parser_delete_tag_wrong_name.set_defaults(dest='name')
+        parser_delete_tag_wrong_name = subparsers.add_parser(
+            "name",
+            help="Deletes tag because the name is wrong. "
+            "It should not be renamed. NOTE: If you want the "
+            "tag to be renamed instead, please use the command, "
+            "rename_tag",
+        )
+        parser_delete_tag_wrong_name.set_defaults(dest="name")
 
-        parser_delete_tag_wrong_name.add_argument('tag_name', type=str, help='Tag to be deleted and untagged.')
+        parser_delete_tag_wrong_name.add_argument(
+            "tag_name", type=str, help="Tag to be deleted and untagged."
+        )
 
         # parser for the command to use a set of tags that need to be deleted TODO
-        parser_delete_set_tags = subparsers.add_parser('tags', help='deletes a number of tags')
-        parser_delete_set_tags.set_defaults(dest='tags')
+        parser_delete_set_tags = subparsers.add_parser(
+            "tags", help="deletes a number of tags"
+        )
+        parser_delete_set_tags.set_defaults(dest="tags")
 
-        parser_delete_set_tags.add_argument('tag_set', type=str, help='set of tags to delete TODO')
+        parser_delete_set_tags.add_argument(
+            "tag_set", type=str, help="set of tags to delete TODO"
+        )
 
     def handle(self, *args, **options):
-        if options['dest'] == 'name':
-            tag_name = options['tag_name']
+        if options["dest"] == "name":
+            tag_name = options["tag_name"]
 
             deleter = DeleteTag()
             deleter.delete(tag_name)
 
-            print('The following tag(s) have not been deleted: ')
+            print("The following tag(s) have not been deleted: ")
             print(deleter.tags_not_deleted())
 
-        elif options['dest'] == 'tags':
+        elif options["dest"] == "tags":
             pass
 
 
@@ -64,7 +72,7 @@ class DeleteTag:
             return False
 
     def _add_tag_to_list_if_does_not_exist(self, tag_name_str):
-        """ Check if tag name exists in the database. If it does not, add it to a list (that will be printed at the
+        """Check if tag name exists in the database. If it does not, add it to a list (that will be printed at the
         end). If it does, continue.
 
         :param tag_name_str: tag name (string)
@@ -80,8 +88,15 @@ class DeleteTag:
     def _raise_error_if_generated_tag(tag_name_str):
         """If the tag name has a type of GENERATED then abort."""
 
-        if Tag.objects.filter(name__name=tag_name_str, importer=Tag.GENERATED).count() != 0:
-            raise CommandError('This tag {} cannot be deleted: it was GENERATED. Aborting.'.format(tag_name_str))
+        if (
+            Tag.objects.filter(name__name=tag_name_str, importer=Tag.GENERATED).count()
+            != 0
+        ):
+            raise CommandError(
+                "This tag {} cannot be deleted: it was GENERATED. Aborting.".format(
+                    tag_name_str
+                )
+            )
 
     def delete_tag(self, tag_name_str):
         """Delete a tag from the database.
@@ -103,11 +118,11 @@ class DeleteTag:
         self._raise_error_if_generated_tag(tag_name)
 
         if self._add_tag_to_list_if_does_not_exist(
-                tag_name):  # if a tag doesn't exist and it is added to a list, it will return True
+            tag_name
+        ):  # if a tag doesn't exist and it is added to a list, it will return True
             return  # skips the rest of this function (so in effect moves to the next pairing of tags)
 
         if self._tag_name_is_in_database(self, tag_name):
 
             # Delete the tag from the database
             self.delete_tag(tag_name)
-

@@ -1,12 +1,13 @@
+import datetime
+
 from django.test import TestCase
 
 from ..management.commands.generate_virtual_tags import GenerateTags
-from ..models import *
-import datetime
+from ..models import Medium, Tag, TagName
 
 
 class GenerateTagsTest(TestCase):
-    fixtures = ['test_basic_data.yaml']
+    fixtures = ["test_basic_data.yaml"]
 
     def setUp(self):
         pass
@@ -15,11 +16,11 @@ class GenerateTagsTest(TestCase):
         pass
 
     def test_delete_generated_tags_one(self):
-        """Test the delete if there is only one Tag that is generated with that name"""
+        """Test delete if there is only one Tag that is generated with that name"""
 
         # create a TagName that only has one Tag that is generated
         tag_name = TagName()
-        tag_name.name = 'Person'
+        tag_name.name = "Person"
         tag_name.save()
 
         tag = Tag()
@@ -29,7 +30,7 @@ class GenerateTagsTest(TestCase):
 
         deleter = GenerateTags()
         deleter.delete_generated_tags()
-        resulting_tags = Tag.objects.filter(name__name='Person').count()
+        resulting_tags = Tag.objects.filter(name__name="Person").count()
 
         self.assertEqual(resulting_tags, 0)
 
@@ -38,7 +39,7 @@ class GenerateTagsTest(TestCase):
 
         # create a TagName that has a Tag that is generated and another that is xmp
         tag_name = TagName()
-        tag_name.name = 'Photographer'
+        tag_name.name = "Photographer"
         tag_name.save()
 
         tag = Tag()
@@ -53,14 +54,14 @@ class GenerateTagsTest(TestCase):
 
         deleter = GenerateTags()
         deleter.delete_generated_tags()
-        resulting_tags = Tag.objects.filter(name__name='Photographer').count()
+        resulting_tags = Tag.objects.filter(name__name="Photographer").count()
 
         self.assertEqual(resulting_tags, 1)
 
     def test_delete_generated_tags_with_media(self):
 
         tag_name = TagName()
-        tag_name.name = 'Photographer'
+        tag_name.name = "Photographer"
         tag_name.save()
 
         tag_x = Tag()
@@ -75,7 +76,6 @@ class GenerateTagsTest(TestCase):
 
         medium = Medium()
         medium.datetime_imported = datetime.datetime.now()
-        medium_type = medium.PHOTO
         medium.save()
 
         medium.tags.add(tag_x)
@@ -84,8 +84,10 @@ class GenerateTagsTest(TestCase):
 
         deleter = GenerateTags()
         deleter.delete_generated_tags()
-        resulting_tags = Tag.objects.filter(name__name='Photographer').count()
-        resulting_tagged_media = Medium.objects.filter(tags__name__name='Photographer').count()
+        resulting_tags = Tag.objects.filter(name__name="Photographer").count()
+        resulting_tagged_media = Medium.objects.filter(
+            tags__name__name="Photographer"
+        ).count()
 
         self.assertEqual(resulting_tags, 1)
         self.assertEqual(resulting_tagged_media, 1)
@@ -93,14 +95,13 @@ class GenerateTagsTest(TestCase):
     def test_generate_tags(self):
         tags_qs = Medium.objects.get(id=1).tags.all()
 
-        self.assertTrue(tags_qs.get(name__name='landscape', importer=Tag.XMP))
-        self.assertTrue(tags_qs.get(name__name='people/john_doe', importer=Tag.XMP))
+        self.assertTrue(tags_qs.get(name__name="landscape", importer=Tag.XMP))
+        self.assertTrue(tags_qs.get(name__name="people/john_doe", importer=Tag.XMP))
 
         generator = GenerateTags()
         generator.generate_tags()
 
         tags_qs = Medium.objects.get(id=1).tags
-        self.assertTrue(tags_qs.get(name__name='landscape', importer=Tag.XMP))
-        self.assertTrue(tags_qs.get(name__name='people/john_doe', importer=Tag.XMP))
-        self.assertTrue(tags_qs.get(name__name='people', importer=Tag.GENERATED))
-
+        self.assertTrue(tags_qs.get(name__name="landscape", importer=Tag.XMP))
+        self.assertTrue(tags_qs.get(name__name="people/john_doe", importer=Tag.XMP))
+        self.assertTrue(tags_qs.get(name__name="people", importer=Tag.GENERATED))

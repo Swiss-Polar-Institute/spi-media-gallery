@@ -6,30 +6,32 @@ from typing import Optional, Set
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
-from django.db import transaction, OperationalError
+from django.db import OperationalError, transaction
 from django.utils import timezone
 
-from .generate_virtual_tags import generate_virtual_tags_from_medium
-from ... import spi_s3_utils
-from ... import utils
-from ...models import Medium, Tag, TagName, File
+from ... import spi_s3_utils, utils
+from ...models import File, Medium, Tag
 from ...progress_report import ProgressReport
 from ...xmp_utils import XmpUtils
+from .generate_virtual_tags import generate_virtual_tags_from_medium
 
 
 class Command(BaseCommand):
-    help = 'From the "original" bucket: list the files (photos or videos), adds them into the database (only the name ' \
-           ' and file size since it is not downloading the files. It downloads the associated .xmp file and attach ' \
-           'the  digiKam tags into the medium. Note that it generates virtual tags: e.g. if a tag is ' \
-           '"people/john_doe" it will also add "people" '
+    help = (
+        'From the "original" bucket: list the files (photos or videos), adds them into the database (only the name '
+        " and file size since it is not downloading the files. It downloads the associated .xmp file and attach "
+        "the  digiKam tags into the medium. Note that it generates virtual tags: e.g. if a tag is "
+        '"people/john_doe" it will also add "people" '
+    )
 
     def add_arguments(self, parser):
-        parser.add_argument('--prefix', type=str, default='',
-                            help='Prefix of the files to be imported.')
+        parser.add_argument(
+            "--prefix", type=str, default="", help="Prefix of the files to be imported."
+        )
 
     def handle(self, *args, **options):
-        bucket_name = 'original'
-        prefix = options['prefix']
+        bucket_name = "original"
+        prefix = options["prefix"]
 
         media_importer = MediaImporter(bucket_name, prefix)
 
@@ -41,12 +43,16 @@ class MediaImporter(object):
         self._media_bucket = spi_s3_utils.SpiS3Utils(bucket_name)
         self._prefix = prefix
         self._all_keys: Optional[Set[str]] = None
-        self._valid_extensions = settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
+        self._valid_extensions = (
+            settings.PHOTO_FORMATS.keys() | settings.VIDEO_FORMATS.keys()
+        )
 
         self._all_keys = self._media_bucket.get_set_of_keys(self._prefix)
 
     def import_media(self):
-        progress_report = ProgressReport(len(self._all_keys), extra_information='Adding files with tags')
+        progress_report = ProgressReport(
+            len(self._all_keys), extra_information="Adding files with tags"
+        )
 
         for s3_object in self._media_bucket.objects_in_bucket(self._prefix):
             progress_report.increment_and_print_if_needed()
@@ -62,7 +68,7 @@ class MediaImporter(object):
 
         size_of_medium = s3_object.size
 
-        xmp_file = s3_object.key + '.xmp'
+        xmp_file = s3_object.key + ".xmp"
 
         tags = self._download_xmp_read_tags(xmp_file)
         medium = self._create_or_found_medium(s3_object.key, size_of_medium)
@@ -79,8 +85,10 @@ class MediaImporter(object):
             # from physical files)
             xmp_object = self._media_bucket.get_object(xmp_key)
 
-            temporary_tags_file = tempfile.NamedTemporaryFile(suffix='.xmp', delete=False)
-            temporary_tags_file.write(xmp_object.get()['Body'].read())
+            temporary_tags_file = tempfile.NamedTemporaryFile(
+                suffix=".xmp", delete=False
+            )
+            temporary_tags_file.write(xmp_object.get()["Body"].read())
             temporary_tags_file.close()
 
             # Extracts tags

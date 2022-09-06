@@ -1,4 +1,4 @@
-from django.db import transaction, DatabaseError
+from django.db import DatabaseError, transaction
 
 # Should this class be implemented from Medium.delete() ?
 # Would we expect that Medium.delete() also deletes MediumResized, Tags, etc.?
@@ -16,10 +16,10 @@ class DeleteMedium:
         if obj is None:
             return
 
-        if hasattr(obj, 'medium_set'):
-            fk = 'medium_set'
-        elif hasattr(obj, 'tag_set'):
-            fk = 'tag_set'
+        if hasattr(obj, "medium_set"):
+            fk = "medium_set"
+        elif hasattr(obj, "tag_set"):
+            fk = "tag_set"
         else:
             assert False
 
@@ -34,18 +34,22 @@ class DeleteMedium:
 
         if file:
             self._files_to_delete.append(
-                {'bucket_name': file.bucket_name(),
-                 'object_storage_key': file.object_storage_key
-                 })
-            print(f'Added to delete {file.bucket_name()}/{file.object_storage_key}')
+                {
+                    "bucket_name": file.bucket_name(),
+                    "object_storage_key": file.object_storage_key,
+                }
+            )
+            print(f"Added to delete {file.bucket_name()}/{file.object_storage_key}")
 
             if file.bucket == File.ORIGINAL:
-                file_path_xmp = f'{file.object_storage_key}.xmp'
+                file_path_xmp = f"{file.object_storage_key}.xmp"
                 self._files_to_delete.append(
-                    {'bucket_name': file.bucket_name(),
-                     'object_storage_key': file_path_xmp
-                     })
-                print(f'Added to delete {file.bucket_name()}/{file_path_xmp}')
+                    {
+                        "bucket_name": file.bucket_name(),
+                        "object_storage_key": file_path_xmp,
+                    }
+                )
+                print(f"Added to delete {file.bucket_name()}/{file_path_xmp}")
 
             file.delete()
 
@@ -84,6 +88,8 @@ class DeleteMedium:
 
         if transaction_success:
             for file_to_delete in self._files_to_delete:
-                spi_s3_utils = SpiS3Utils(file_to_delete['bucket_name'])
-                result = spi_s3_utils.delete(file_to_delete['object_storage_key'])
-                print(f'Deleted file: {file_to_delete["bucket_name"]}/{file_to_delete["object_storage_key"]}: {result}')
+                spi_s3_utils = SpiS3Utils(file_to_delete["bucket_name"])
+                result = spi_s3_utils.delete(file_to_delete["object_storage_key"])
+                print(
+                    f'Deleted file: {file_to_delete["bucket_name"]}/{file_to_delete["object_storage_key"]}: {result}'
+                )

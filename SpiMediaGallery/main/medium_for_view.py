@@ -1,8 +1,8 @@
 import math
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
-from django.templatetags.static import static
 from django.db import models
+from django.templatetags.static import static
 
 from . import utils
 from .models import Medium, MediumResized
@@ -10,13 +10,18 @@ from .models import Medium, MediumResized
 
 class MediumForViewManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().prefetch_related('mediumresized_set').prefetch_related(
-            'mediumresized_set__file').select_related('file')
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related("mediumresized_set")
+            .prefetch_related("mediumresized_set__file")
+            .select_related("file")
+        )
 
 
 class MediumForView(Medium):
-    URL_SMALL_DO_NOT_EXIST = static('images/small-does-not-exist.jpg')
-    URL_THUMBNAIL_DO_NOT_EXIST = static('images/thumbnail-does-not-exist.jpg')
+    URL_SMALL_DO_NOT_EXIST = static("images/small-does-not-exist.jpg")
+    URL_THUMBNAIL_DO_NOT_EXIST = static("images/thumbnail-does-not-exist.jpg")
 
     objects = MediumForViewManager()
 
@@ -38,13 +43,20 @@ class MediumForView(Medium):
         if medium_resized is None:
             return self.URL_THUMBNAIL_DO_NOT_EXIST
 
-        resized_extension = utils.get_file_extension(medium_resized.file.object_storage_key)
+        resized_extension = utils.get_file_extension(
+            medium_resized.file.object_storage_key
+        )
 
-        return utils.link_for_medium(medium_resized.file, 'inline',
-                               utils.filename_for_resized_medium(self.pk, size_label, resized_extension))
+        return utils.link_for_medium(
+            medium_resized.file,
+            "inline",
+            utils.filename_for_resized_medium(self.pk, size_label, resized_extension),
+        )
 
     def original_file_attachment_url(self) -> str:
-        return utils.link_for_medium(self.file, 'attachment', utils.filename_for_medium(self))
+        return utils.link_for_medium(
+            self.file, "attachment", utils.filename_for_medium(self)
+        )
 
     def small_resolution_url(self) -> str:
         return self._url(MediumResized.SMALL)
@@ -58,9 +70,15 @@ class MediumForView(Medium):
         if resized is None:
             return self.URL_SMALL_DO_NOT_EXIST
 
-        return utils.link_for_medium(resized.file, 'inline',
-                                     utils.filename_for_resized_medium(self.pk, size_label,
-                                                                       utils.get_file_extension(resized.file.object_storage_key)))
+        return utils.link_for_medium(
+            resized.file,
+            "inline",
+            utils.filename_for_resized_medium(
+                self.pk,
+                size_label,
+                utils.get_file_extension(resized.file.object_storage_key),
+            ),
+        )
 
     def file_size_original(self) -> str:
         return utils.bytes_to_human_readable(self.file.size)
@@ -93,10 +111,14 @@ class MediumForView(Medium):
         return utils.seconds_to_minutes_seconds(self.duration)
 
     def video_embed_responsive_ratio(self) -> str:
-        if self.width is not None and self.height is not None and math.isclose(self.width / self.height, 16 / 9):
-            return 'embed-responsive-16by9'
+        if (
+            self.width is not None
+            and self.height is not None
+            and math.isclose(self.width / self.height, 16 / 9)
+        ):
+            return "embed-responsive-16by9"
 
-        return 'embed-responsive-16by9'
+        return "embed-responsive-16by9"
 
     def thumbnail_type(self) -> str:
         size_label = self._thumbnail_size()
@@ -104,7 +126,7 @@ class MediumForView(Medium):
         thumbnail = self._medium_resized(size_label)
 
         if thumbnail is None:
-            return 'P'
+            return "P"
         else:
             return self.medium_type
 
@@ -121,25 +143,27 @@ class MediumForView(Medium):
 
     def border_color(self) -> str:
         if self.medium_type == Medium.VIDEO:
-            return 'border-dark'
+            return "border-dark"
 
     def resolution_for_original(self) -> str:
         if self.width is None or self.height is None:
-            return 'Unknown'
+            return "Unknown"
 
-        return '{}x{}'.format(self.width, self.height)
+        return "{}x{}".format(self.width, self.height)
 
     def file_name(self) -> str:
-        return 'SPI-{}.{}'.format(self.pk, utils.get_file_extension(self.file.object_storage_key))
+        return "SPI-{}.{}".format(
+            self.pk, utils.get_file_extension(self.file.object_storage_key)
+        )
 
     def list_of_tags(self) -> List[Dict[str, Any]]:
         list_of_tags = []
 
         for tag in self.tags.all():
-            t = {'id': tag.name.pk, 'tag': tag.name.name}
+            t = {"id": tag.name.pk, "tag": tag.name.name}
             list_of_tags.append(t)
 
-        list_of_tags = sorted(list_of_tags, key=lambda k: k['tag'])
+        list_of_tags = sorted(list_of_tags, key=lambda k: k["tag"])
 
         return list_of_tags
 
@@ -154,42 +178,60 @@ class MediumForView(Medium):
 
             size_information = {}
 
-            size_information['label'] = utils.image_size_label_abbreviation_to_presentation(medium_resized.size_label)
-            size_information['size'] = utils.bytes_to_human_readable(medium_resized.file.size)
-            size_information['width'] = medium_resized.width
+            size_information[
+                "label"
+            ] = utils.image_size_label_abbreviation_to_presentation(
+                medium_resized.size_label
+            )
+            size_information["size"] = utils.bytes_to_human_readable(
+                medium_resized.file.size
+            )
+            size_information["width"] = medium_resized.width
 
-            size_information['resolution'] = utils.human_readable_resolution_for_medium(medium_resized)
+            size_information["resolution"] = utils.human_readable_resolution_for_medium(
+                medium_resized
+            )
 
-            filename = utils.filename_for_resized_medium(self.pk, medium_resized.size_label,
-                                                         utils.get_file_extension(medium_resized.file.object_storage_key))
+            filename = utils.filename_for_resized_medium(
+                self.pk,
+                medium_resized.size_label,
+                utils.get_file_extension(medium_resized.file.object_storage_key),
+            )
 
-            size_information['image_link'] = utils.link_for_medium(medium_resized.file, 'inline', filename)
+            size_information["image_link"] = utils.link_for_medium(
+                medium_resized.file, "inline", filename
+            )
 
             sizes_presentation.append(size_information)
 
-        return sorted(sizes_presentation, key=lambda k: k['width'])
+        return sorted(sizes_presentation, key=lambda k: k["width"])
 
     def copyright_text(self) -> str:
         if self.copyright is None:
-            return 'Unknown'
+            return "Unknown"
         else:
-            return str.replace(self.copyright.public_text,
-                               '$PHOTOGRAPHER_NAME', self.photographer_name())
+            return str.replace(
+                self.copyright.public_text,
+                "$PHOTOGRAPHER_NAME",
+                self.photographer_name(),
+            )
 
     def license_text(self) -> str:
         if self.license is None:
-            return 'Unknown'
+            return "Unknown"
         else:
             return self.license.public_text
 
     def photographer_name(self) -> str:
         if self.photographer is None:
-            return 'Unknown'
+            return "Unknown"
         else:
             if self.photographer.first_name is None:
                 return self.photographer.last_name
             else:
-                return '{} {}'.format(self.photographer.first_name, self.photographer.last_name)
+                return "{} {}".format(
+                    self.photographer.first_name, self.photographer.last_name
+                )
 
     def is_photo(self) -> bool:
         return self.medium_type == self.PHOTO

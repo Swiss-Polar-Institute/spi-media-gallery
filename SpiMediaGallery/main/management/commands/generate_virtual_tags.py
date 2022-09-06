@@ -9,7 +9,7 @@ from ...progress_report import ProgressReport
 
 
 class Command(BaseCommand):
-    help = 'Generates virtual tags'
+    help = "Generates virtual tags"
 
     def add_arguments(self, parser):
         pass
@@ -27,20 +27,26 @@ class GenerateTags(object):
 
     def delete_generated_tags(self):
         """Delete all generated tags (before the new ones are generated to avoid them becoming orphan tags when renaming
-            is done). """
+        is done)."""
 
         for tag in Tag.objects.filter(importer=Tag.GENERATED):
             tagname = tag.name  # gets the associated tag name
             tag.delete()  # deleted tag from Tag
 
             try:
-                tagname.delete()  # deletes tagname from Tagname where is was GENERATED but only if there isn't another tag in Tag with this same name
-            except ProtectedError:  # catches the error to stop the delete of the Tagname if there is another tag with this name but with a different importer
+                # deletes tagname from Tagname where is GENERATED but only
+                # if there isn't another tag in Tag with this same name
+                tagname.delete()
+            # catches the error to stop delete of the Tagname
+            # if there is another tag with this name but with a different importer
+            except ProtectedError:
                 pass
 
     def generate_tags(self):
         media = Medium.objects.all()
-        progress_report = ProgressReport(len(media), extra_information="Adding virtual tags")
+        progress_report = ProgressReport(
+            len(media), extra_information="Adding virtual tags"
+        )
 
         for medium in media:
             generate_virtual_tags_from_medium(medium)
@@ -67,7 +73,7 @@ def generate_virtual_tags_from_medium(medium: Medium):
     "people" (type is generated)
     """
     for tag in medium.tags.all():
-        tag_parts: List[str] = tag.name.name.split('/')
+        tag_parts: List[str] = tag.name.name.split("/")
 
         i = 1
         while i < len(tag_parts):
