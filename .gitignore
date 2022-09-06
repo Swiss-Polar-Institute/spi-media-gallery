@@ -93,3 +93,6 @@ ENV/
 
 # Pycharm project settings
 .idea
+
+# Project
+.env
