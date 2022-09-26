@@ -29,9 +29,7 @@ from main.models import (  # isort:skip
 class ProjectApplicationApiClient:
     _OLDER_LAST_SYNC_POSSIBLE = "1970-01-01T00:00:00+00:00"
 
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         self._hostname = settings.PROJECT_APPLICATION_BASE_URL
         self._imported_bucket = spi_s3_utils.SpiS3Utils(bucket_name="imported")
 

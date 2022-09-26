@@ -3,7 +3,9 @@ botocore==1.27.66
 coverage==6.4.4
 decorator==5.1.1
 Django==4.1.1
+djangorestframework==3.13.1
 django-leaflet==0.28.3
+drf-extra-fields==3.4.0
 gunicorn==20.1.0
 moto==4.0.2
 mysqlclient==2.1.1

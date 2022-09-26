@@ -15,6 +15,7 @@ from main.views import (  # isort:skip
     SearchByMultipleTags,
     Stats,
     TrackGeojson,
+    FileUploadView,
 )
 
 urlpatterns = [
@@ -47,4 +48,5 @@ urlpatterns = [
         ImportFromProjectApplicationCallback.as_view(),
         name="project-application-import-callback",
     ),
+    path("api/v1/upload/", FileUploadView.as_view(), name="upload_file"),
 ]

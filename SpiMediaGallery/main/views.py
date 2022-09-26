@@ -1,8 +1,10 @@
+import base64
 import csv
 import datetime
 import json
 import os
 import re
+import tempfile
 import urllib
 from typing import Dict, List, Tuple, Union
 
@@ -16,11 +18,15 @@ from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.generic import TemplateView, View
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from . import utils
 from .decorators import api_key_required
 from .medium_for_view import MediumForView
-from .models import File, Medium, MediumResized, RemoteMedium, TagName
+from .models import File, Medium, MediumResized, RemoteMedium, Tag, TagName
+from .serializers import MediumSerializer
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
 
@@ -611,3 +617,46 @@ class ImportFromProjectApplicationCallback(View):
         os.system("python3 manage.py import_from_project_application &")
 
         return JsonResponse(status=200, data={"status": "ok"})
+
+
+class FileUploadView(APIView):
+    def post(self, request):
+        file = None
+        height = None
+        width = None
+        if "file" in request.data:
+            file_data = request.data.pop("file")
+            file_extension = utils.get_file_extension(file_data["name"])
+            medium_file = tempfile.NamedTemporaryFile(
+                suffix=f".{file_extension}", delete=False
+            )
+            medium_file.write(base64.b64decode(file_data["content"]))
+            medium_file.flush()
+            object_storage_key = f'{file_data["name"]}'
+
+            spi_s3 = SpiS3Utils(bucket_name="imported")
+            spi_s3.upload_file(medium_file.name, object_storage_key)
+
+            file = File()
+            file.object_storage_key = object_storage_key
+            file.md5 = utils.hash_of_file_path(medium_file.name)
+            file.size = os.stat(medium_file.name).st_size
+            file.bucket = File.IMPORTED
+            file.save()
+
+            image_information = utils.get_medium_information(medium_file.name)
+            height = image_information["height"]
+            width = image_information["width"]
+
+            os.remove(medium_file.name)
+
+        request.data["file"] = file.pk if file else None
+        request.data["height"] = height
+        request.data["width"] = width
+
+        serializer = MediumSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
