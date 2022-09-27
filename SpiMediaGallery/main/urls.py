@@ -1,6 +1,5 @@
 from django.urls import path, re_path
 from django.views.decorators.cache import cache_page
-
 from main.views import (  # isort:skip
     Display,
     DisplayRandom,
@@ -15,7 +14,7 @@ from main.views import (  # isort:skip
     SearchByMultipleTags,
     Stats,
     TrackGeojson,
-    FileUploadView,
+    MediumUploadView,
 )
 
 urlpatterns = [
@@ -48,5 +47,5 @@ urlpatterns = [
         ImportFromProjectApplicationCallback.as_view(),
         name="project-application-import-callback",
     ),
-    path("api/v1/upload/", FileUploadView.as_view(), name="upload_file"),
+    path("api/v1/medium/", MediumUploadView.as_view(), name="upload_file"),
 ]

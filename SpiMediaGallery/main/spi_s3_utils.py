@@ -44,6 +44,9 @@ class SpiS3Utils(object):
     def upload_file(self, file_path, key):
         self.bucket().upload_file(file_path, key)
 
+    def put_object(self, key, body):
+        self.bucket().put_object(Key=key, Body=body)
+
     def download_file(self, key, file_path, create_directory=False):
         if create_directory:
             directory = os.path.dirname(file_path)

@@ -17,11 +17,11 @@ class TageSerializer(serializers.ModelSerializer):
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = "__all__"
 
 
 class MediumSerializer(serializers.ModelSerializer):
     tags = TageSerializer(required=False, many=True)
+    # file = FileSerializer(required=False)
     datetime_imported = serializers.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -29,10 +29,7 @@ class MediumSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def create(self, validated_data):
-        tags_data = validated_data.pop("tags")
         medium = Medium.objects.create(**validated_data)
-        tags_name = []
-        for tag_data in tags_data:
-            tags_name.append(tag_data["name"]["name"])
+        tags_name = [self.initial_data[tag] for tag in self.initial_data if tag.startswith("tag")]
         set_tags(medium, tags_name, "M")
         return medium

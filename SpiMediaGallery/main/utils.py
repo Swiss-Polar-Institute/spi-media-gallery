@@ -44,6 +44,13 @@ def hash_of_file_path(file_path: str) -> str:
     return hash_md5.hexdigest()
 
 
+def hash_of_file(file) -> str:
+    hash_md5 = hashlib.md5()
+    for chunk in iter(lambda: file.read(100 * 1024 * 1024), b""):
+        hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
 def resize_photo(input_file_path: int, width: int) -> Optional[str]:
     output_file_path = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
     output_file_path.close()

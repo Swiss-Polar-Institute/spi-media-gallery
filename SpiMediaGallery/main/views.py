@@ -1,10 +1,8 @@
-import base64
 import csv
 import datetime
 import json
 import os
 import re
-import tempfile
 import urllib
 from typing import Dict, List, Tuple, Union
 
@@ -14,6 +12,7 @@ from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
+from django.core.files.images import get_image_dimensions
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -619,40 +618,25 @@ class ImportFromProjectApplicationCallback(View):
         return JsonResponse(status=200, data={"status": "ok"})
 
 
-class FileUploadView(APIView):
+class MediumUploadView(APIView):
+
     def post(self, request):
-        file = None
-        height = None
-        width = None
         if "file" in request.data:
-            file_data = request.data.pop("file")
-            file_extension = utils.get_file_extension(file_data["name"])
-            medium_file = tempfile.NamedTemporaryFile(
-                suffix=f".{file_extension}", delete=False
-            )
-            medium_file.write(base64.b64decode(file_data["content"]))
-            medium_file.flush()
-            object_storage_key = f'{file_data["name"]}'
+            medium_file = request.data.pop("file")[0]
 
             spi_s3 = SpiS3Utils(bucket_name="imported")
-            spi_s3.upload_file(medium_file.name, object_storage_key)
+            spi_s3.put_object(medium_file.name, medium_file)
 
             file = File()
-            file.object_storage_key = object_storage_key
-            file.md5 = utils.hash_of_file_path(medium_file.name)
-            file.size = os.stat(medium_file.name).st_size
+            file.object_storage_key = medium_file.name
+            file.md5 = utils.hash_of_file(medium_file)
+            file.size = medium_file.size
             file.bucket = File.IMPORTED
             file.save()
-
-            image_information = utils.get_medium_information(medium_file.name)
-            height = image_information["height"]
-            width = image_information["width"]
-
-            os.remove(medium_file.name)
-
-        request.data["file"] = file.pk if file else None
-        request.data["height"] = height
-        request.data["width"] = width
+            request.data["file"] = file.pk
+            width, height = get_image_dimensions(medium_file)
+            request.data["height"] = height
+            request.data["width"] = width
 
         serializer = MediumSerializer(data=request.data)
         if serializer.is_valid():
