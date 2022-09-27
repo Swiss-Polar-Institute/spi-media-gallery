@@ -30,6 +30,8 @@ class MediumSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         medium = Medium.objects.create(**validated_data)
-        tags_name = [self.initial_data[tag] for tag in self.initial_data if tag.startswith("tag")]
+        tags_name = [
+            self.initial_data[tag] for tag in self.initial_data if tag.startswith("tag")
+        ]
         set_tags(medium, tags_name, "M")
         return medium

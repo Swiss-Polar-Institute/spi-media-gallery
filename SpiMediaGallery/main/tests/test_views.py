@@ -1,11 +1,30 @@
+from moto import mock_s3
+from datetime import datetime
+
+from django.conf import settings
 from django.test import Client, TestCase
+
+from main.models import Medium
+from main.utils import SpiS3Utils
 
 
 class ViewsTest(TestCase):
     fixtures = ["test_basic_data.yaml"]
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        settings.BUCKETS_CONFIGURATION["imported"]["endpoint"] = None
+
     def setUp(self):
-        pass
+        self._mock = mock_s3()
+        self._mock.start()
+
+        self._spi_s3_utils_imported = SpiS3Utils("imported")
+        spi_s3_utils_resource_imported = self._spi_s3_utils_imported.resource()
+        spi_s3_utils_resource_imported.create_bucket(
+            Bucket="spi-media-gallery-imported"
+        )
 
     def tearDown(self):
         pass
@@ -52,3 +71,26 @@ class ViewsTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "tag: landscape (1 results)")
+
+    def test_upload(self):
+        c = Client()
+
+        with open('main/fixtures/buckets/original/IMG_4329.jpg', 'rb') as fp:
+            response = c.post(
+                '/api/v1/medium/',
+                {
+                    "datetime_taken": "2002-02-02",
+                    "medium_type": "P",
+                    'tag1': 'fred',
+                    "tag2": "joe",
+                    'file': fp
+                }
+            )
+
+        self.assertEqual(201, response.status_code)
+        m = Medium.objects.get(file__object_storage_key="IMG_4329.jpg")
+        new_tags = m.tags.all()
+        self.assertEqual(m.file.object_storage_key, "IMG_4329.jpg")
+        self.assertEqual(m.datetime_taken, datetime.strptime("2002-02-02 +0000", "%Y-%m-%d %z"))
+        self.assertEqual(m.medium_type, "P")
+        self.assertEqual(new_tags.count(), 2)

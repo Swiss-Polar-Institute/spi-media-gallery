@@ -10,9 +10,9 @@ import requests
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.images import get_image_dimensions
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
-from django.core.files.images import get_image_dimensions
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -24,7 +24,7 @@ from rest_framework.views import APIView
 from . import utils
 from .decorators import api_key_required
 from .medium_for_view import MediumForView
-from .models import File, Medium, MediumResized, RemoteMedium, Tag, TagName
+from .models import File, Medium, MediumResized, RemoteMedium, TagName
 from .serializers import MediumSerializer
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
@@ -619,7 +619,6 @@ class ImportFromProjectApplicationCallback(View):
 
 
 class MediumUploadView(APIView):
-
     def post(self, request):
         if "file" in request.data:
             medium_file = request.data.pop("file")[0]
