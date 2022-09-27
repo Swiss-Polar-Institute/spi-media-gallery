@@ -94,5 +94,5 @@ ENV/
 # Pycharm project settings
 .idea
 
-# Project
-.env
+# Macos
+.DS_Store

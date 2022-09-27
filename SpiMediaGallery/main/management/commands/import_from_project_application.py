@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
 
-from main.importers.project_application_importer import import_resize_update_tags_from_project_application
+from main.importers.project_application_importer import (  # isort:skip
+    import_resize_update_tags_from_project_application,
+)
 
 
 class Command(BaseCommand):

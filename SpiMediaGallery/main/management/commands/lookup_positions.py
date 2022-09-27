@@ -7,7 +7,7 @@ from ...progress_report import ProgressReport
 
 
 class Command(BaseCommand):
-    help = 'Gets date time taken from photos and looks up the position, updates the position'
+    help = "Gets date time taken from photos and looks up the position, updates the position"
 
     def handle(self, *args, **options):
         photos_location_lookup = MediaLocationLookup()
@@ -20,10 +20,14 @@ class MediaLocationLookup(object):
         pass
 
     def lookup(self):
-        media_to_geolocate = Medium.objects.filter(location=None).exclude(datetime_taken__isnull=True)
+        media_to_geolocate = Medium.objects.filter(location=None).exclude(
+            datetime_taken__isnull=True
+        )
 
-        progress_report = ProgressReport(media_to_geolocate.count(),
-                                         extra_information='Adding location information to media')
+        progress_report = ProgressReport(
+            media_to_geolocate.count(),
+            extra_information="Adding location information to media",
+        )
 
         datetime_to_position = DatetimeToPosition()
 
@@ -35,7 +39,7 @@ class MediaLocationLookup(object):
             location = datetime_to_position.lookup_datetime_datetime(datetime_taken)
 
             if location is None:
-                print('No location for: {}'.format(datetime_taken))
+                print("No location for: {}".format(datetime_taken))
             else:
                 photo.location = Point(location[1], location[0])
                 photo.save()

@@ -17,17 +17,20 @@ class Photographer(models.Model):
         return self.full_name()
 
     def full_name(self):
-        return '{} {}'.format(self.first_name, self.last_name)
+        return "{} {}".format(self.first_name, self.last_name)
 
     class Meta:
-        unique_together = (('first_name', 'last_name'))
+        unique_together = ("first_name", "last_name")
 
 
 class License(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
-    name = models.CharField(max_length=255, unique=True,
-                            help_text='If it exists: identifier as per https://spdx.org/licenses/ CC-BY-NC-SA-4.0')
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        help_text="If it exists: identifier as per https://spdx.org/licenses/ CC-BY-NC-SA-4.0",
+    )
     public_text = models.TextField()
 
     def __str__(self):
@@ -38,7 +41,9 @@ class Copyright(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
     holder = models.CharField(max_length=255, unique=True)
-    public_text = models.TextField(help_text='Text displayed to the user for the copyright holder')
+    public_text = models.TextField(
+        help_text="Text displayed to the user for the copyright holder"
+    )
 
     def __str__(self):
         return self.holder
@@ -56,25 +61,25 @@ class TagName(models.Model):
 class Tag(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
-    XMP = 'X'
-    GENERATED = 'G'
-    MANUAL = 'M'
-    RENAMED = 'R'
-    IMPORTED = 'I'
+    XMP = "X"
+    GENERATED = "G"
+    MANUAL = "M"
+    RENAMED = "R"
+    IMPORTED = "I"
 
     IMPORTER = (
-        (XMP, 'XMP'),
-        (GENERATED, 'Generated'),
-        (MANUAL, 'Manual'),
-        (RENAMED, 'Renamed'),
-        (IMPORTED, 'Imported')
+        (XMP, "XMP"),
+        (GENERATED, "Generated"),
+        (MANUAL, "Manual"),
+        (RENAMED, "Renamed"),
+        (IMPORTED, "Imported"),
     )
 
     name = models.ForeignKey(TagName, on_delete=models.PROTECT)
     importer = models.CharField(max_length=1, choices=IMPORTER, null=False, blank=False)
 
     def __str__(self):
-        return '{} -{}'.format(self.name, self.importer_name())
+        return "{} -{}".format(self.name, self.importer_name())
 
     def importer_name(self):
         for importer in self.IMPORTER:
@@ -82,37 +87,39 @@ class Tag(models.Model):
                 return importer[1]
 
     class Meta:
-        unique_together = (('name', 'importer'),)
+        unique_together = (("name", "importer"),)
 
 
 class File(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
-    ORIGINAL = 'O'
-    PROCESSED = 'P'
-    IMPORTED = 'I'
+    ORIGINAL = "O"
+    PROCESSED = "P"
+    IMPORTED = "I"
 
     BUCKET_NAMES = (
-        (ORIGINAL, 'Original'),
-        (PROCESSED, 'Processed'),
-        (IMPORTED, 'Imported'),
+        (ORIGINAL, "Original"),
+        (PROCESSED, "Processed"),
+        (IMPORTED, "Imported"),
     )
 
     object_storage_key = models.CharField(max_length=1024)
     md5 = models.CharField(null=True, blank=True, db_index=True, max_length=32)
     size = models.BigIntegerField()
-    bucket = models.CharField(max_length=1, choices=BUCKET_NAMES, null=False, blank=False)
+    bucket = models.CharField(
+        max_length=1, choices=BUCKET_NAMES, null=False, blank=False
+    )
 
     def __str__(self):
         return self.object_storage_key
 
     def bucket_name(self):
         if self.bucket == File.ORIGINAL:
-            return 'original'
+            return "original"
         elif self.bucket == File.PROCESSED:
-            return 'processed'
+            return "processed"
         elif self.bucket == File.IMPORTED:
-            return 'imported'
+            return "imported"
         else:
             assert False
 
@@ -123,8 +130,10 @@ class File(models.Model):
         # the filename until the first space.
         # Even though using curl this can be seen:
         # Content-Disposition: attachment; filename=carles test.jpg
-        filename = self.object_storage_key.replace(' ', '_')
-        url = spi_s3_utils.get_presigned_download_link(self.object_storage_key, filename=filename)
+        filename = self.object_storage_key.replace(" ", "_")
+        url = spi_s3_utils.get_presigned_download_link(
+            self.object_storage_key, filename=filename
+        )
 
         return mark_safe('<a href="{}">Download</a>'.format(escape(url)))
 
@@ -142,33 +151,42 @@ class File(models.Model):
 class Medium(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
-    PHOTO = 'P'
-    VIDEO = 'V'
+    PHOTO = "P"
+    VIDEO = "V"
 
-    MEDIUM_TYPES = (
-        (PHOTO, 'Photo'),
-        (VIDEO, 'Video')
-    )
+    MEDIUM_TYPES = ((PHOTO, "Photo"), (VIDEO, "Video"))
 
     file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
 
-    location = models.PointField(null=True, blank=True, help_text='Location where the photo/video was taken')
+    location = models.PointField(
+        null=True, blank=True, help_text="Location where the photo/video was taken"
+    )
 
-    height = models.IntegerField(null=True, blank=True, help_text='Height of the image/video')
-    width = models.IntegerField(null=True, blank=True, help_text='Width of the image/video')
+    height = models.IntegerField(
+        null=True, blank=True, help_text="Height of the image/video"
+    )
+    width = models.IntegerField(
+        null=True, blank=True, help_text="Width of the image/video"
+    )
     datetime_taken = models.DateTimeField(null=True, blank=True)
     datetime_imported = models.DateTimeField()
 
     public = models.BooleanField(default=False)
     photographer = models.ForeignKey(Photographer, null=True, on_delete=models.PROTECT)
-    license = models.ForeignKey(License, null=True, blank=True, on_delete=models.PROTECT)
-    copyright = models.ForeignKey(Copyright, null=True, blank=True, on_delete=models.PROTECT)
+    license = models.ForeignKey(
+        License, null=True, blank=True, on_delete=models.PROTECT
+    )
+    copyright = models.ForeignKey(
+        Copyright, null=True, blank=True, on_delete=models.PROTECT
+    )
 
     tags = models.ManyToManyField(Tag, blank=True)
 
     medium_type = models.CharField(max_length=1, choices=MEDIUM_TYPES)
 
-    duration = models.IntegerField(null=True, blank=True, help_text='Duration of the videos, None for photos')
+    duration = models.IntegerField(
+        null=True, blank=True, help_text="Duration of the videos, None for photos"
+    )
 
     def latitude(self):
         if self.location is None:
@@ -184,15 +202,23 @@ class Medium(models.Model):
 
     def preview(self):
         from main.medium_for_view import MediumForView
+
         medium_for_view: MediumForView = MediumForView.objects.get(id=self.pk)
 
         if medium_for_view.medium_type == Medium.PHOTO:
-            return mark_safe('<img src="{}">'.format(escape(medium_for_view.thumbnail_url())))
+            return mark_safe(
+                '<img src="{}">'.format(escape(medium_for_view.thumbnail_url()))
+            )
         elif medium_for_view.medium_type == Medium.VIDEO:
-            return mark_safe('''<video controls>
+            return mark_safe(
+                """<video controls>
                 <source src='{}'> type="{}"
             </video>
-            '''.format(escape(medium_for_view.thumbnail_url()), escape(medium_for_view.thumbnail_content_type())))
+            """.format(
+                    escape(medium_for_view.thumbnail_url()),
+                    escape(medium_for_view.thumbnail_content_type()),
+                )
+            )
         else:
             assert False
 
@@ -200,34 +226,34 @@ class Medium(models.Model):
         set_fields(self, fields)
 
     def get_absolute_url(self):
-        return reverse('medium', args=[str(self.pk)])
+        return reverse("medium", args=[str(self.pk)])
 
     # def delete(self, **kwargs):
     #     See DeleteMedium class in delete_medium.py for a deletion of a medium and dependencies
     #     pass
 
     def __str__(self):
-        return '{}'.format(self.pk)
+        return "{}".format(self.pk)
 
     class Meta:
-        verbose_name_plural = 'Media'
+        verbose_name_plural = "Media"
 
 
 class MediumResized(models.Model):
     objects = models.Manager()  # Helps Pycharm CE auto-completion
 
-    THUMBNAIL = 'T'
-    SMALL = 'S'
-    MEDIUM = 'M'  # Currently unused
-    LARGE = 'L'
-    ORIGINAL = 'O'
+    THUMBNAIL = "T"
+    SMALL = "S"
+    MEDIUM = "M"  # Currently unused
+    LARGE = "L"
+    ORIGINAL = "O"
 
     SIZES_OF_MEDIA = (
-        (THUMBNAIL, 'Thumbnail'),
-        (SMALL, 'Small'),
-        (MEDIUM, 'Medium'),
-        (LARGE, 'Large'),
-        (ORIGINAL, 'Original')
+        (THUMBNAIL, "Thumbnail"),
+        (SMALL, "Small"),
+        (MEDIUM, "Medium"),
+        (LARGE, "Large"),
+        (ORIGINAL, "Original"),
     )
 
     file = models.ForeignKey(File, null=True, blank=True, on_delete=models.PROTECT)
@@ -236,15 +262,17 @@ class MediumResized(models.Model):
 
     size_label = models.CharField(max_length=1, choices=SIZES_OF_MEDIA)
 
-    height = models.IntegerField(help_text='Height of this resized medium')
-    width = models.IntegerField(help_text='Width of this resized medium')
-    medium = models.ForeignKey(Medium, on_delete=models.PROTECT, help_text='Medium that this Resized is from')
+    height = models.IntegerField(help_text="Height of this resized medium")
+    width = models.IntegerField(help_text="Width of this resized medium")
+    medium = models.ForeignKey(
+        Medium, on_delete=models.PROTECT, help_text="Medium that this Resized is from"
+    )
 
     def __str__(self):
-        return f'MediumResized id: {self.id}'
+        return f"MediumResized id: {self.id}"
 
     class Meta:
-        verbose_name_plural = 'MediaResized'
+        verbose_name_plural = "MediaResized"
 
 
 class TagRenamed(models.Model):
@@ -255,43 +283,47 @@ class TagRenamed(models.Model):
     datetime_renamed = models.DateTimeField()
 
     def __str__(self):
-        return 'O: {} - N: {}'.format(self.old_name, self.new_name)
+        return "O: {} - N: {}".format(self.old_name, self.new_name)
 
 
 class RemoteMedium(models.Model):
     class ApiSource(models.TextChoices):
-        PROJECT_APPLICATION_API = 'PROJECT_APPLICATION', 'Project Application'
+        PROJECT_APPLICATION_API = "PROJECT_APPLICATION", "Project Application"
 
     medium = models.ForeignKey(Medium, on_delete=models.PROTECT)
-    remote_modified_on = models.DateTimeField(help_text='Remote modified_on')
-    remote_id = models.IntegerField(help_text='ID of this Medium on the remote side')
+    remote_modified_on = models.DateTimeField(help_text="Remote modified_on")
+    remote_id = models.IntegerField(help_text="ID of this Medium on the remote side")
 
-    api_source = models.CharField(choices=ApiSource.choices,
-                                  default=ApiSource.PROJECT_APPLICATION_API,
-                                  help_text='Which API this photos was fetched from',
-                                  max_length=20)
-    remote_blob = models.TextField(help_text='Remote information for this Medium. The format depends on the '
-                                             'api_source. Kept in case that we need to re-process photos')
+    api_source = models.CharField(
+        choices=ApiSource.choices,
+        default=ApiSource.PROJECT_APPLICATION_API,
+        help_text="Which API this photos was fetched from",
+        max_length=20,
+    )
+    remote_blob = models.TextField(
+        help_text="Remote information for this Medium. The format depends on the "
+        "api_source. Kept in case that we need to re-process photos"
+    )
 
     def update_fields(self, fields):
         set_fields(self, fields)
 
     def __str__(self):
-        return f'RemoteMedium id: {self.id}'
+        return f"RemoteMedium id: {self.id}"
 
     class Meta:
-        verbose_name_plural = 'RemoteMedia'
+        verbose_name_plural = "RemoteMedia"
 
 
 class SyncToken(models.Model):
     class TokenNames(models.TextChoices):
-        DELETED_MEDIA_LAST_SYNC = 'DELETED_MEDIA_LAST_SYNC', 'Deleted Media Last Sync'
+        DELETED_MEDIA_LAST_SYNC = "DELETED_MEDIA_LAST_SYNC", "Deleted Media Last Sync"
 
     token_name = models.CharField(max_length=32, choices=TokenNames.choices)
     token_value = models.CharField(max_length=128, null=True, blank=True)
 
     def __str__(self):
-        return f'{self.token_name} {self.token_value}'
+        return f"{self.token_name} {self.token_value}"
 
 
 def set_fields(obj, fields):

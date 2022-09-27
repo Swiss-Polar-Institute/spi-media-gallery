@@ -6,6 +6,7 @@ services:
     build:
       dockerfile: Dockerfile-dev
       context: ./SpiMediaGallery
+    command: python manage.py runserver 0.0.0.0:8000
     secrets:
       - spi_media_gallery_mysql.conf
       - spi_media_gallery_buckets.json

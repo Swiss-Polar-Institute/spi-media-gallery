@@ -1,11 +1,11 @@
 from django.test import TestCase
 
 from main.delete_medium import DeleteMedium
-from main.models import Medium, File, Tag, TagName, Copyright, Photographer
+from main.models import Copyright, File, Medium, Photographer, Tag, TagName
 
 
 class DeleteMediumTest(TestCase):
-    fixtures = ['test_basic_data.yaml']
+    fixtures = ["test_basic_data.yaml"]
 
     def setUp(self):
         pass

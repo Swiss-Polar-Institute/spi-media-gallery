@@ -1,9 +1,8 @@
 import os
-import sys
 import tempfile
 import time
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
 
 from botocore.exceptions import ClientError
 from django.conf import settings
@@ -12,30 +11,42 @@ from django.db.models import Sum
 from django.utils import timezone
 from pymediainfo import MediaInfo
 
-from ... import spi_s3_utils
-from ... import utils
-from ...models import Medium, MediumResized, File
+from ... import spi_s3_utils, utils
+from ...models import File, Medium, MediumResized
 from ...progress_report import ProgressReport
 
 
 class Command(BaseCommand):
-    help = 'Resizes videos and photos to different sizes used by the application. ' \
-           'Reads from different formats and the output format is JPEG or webm'
+    help = (
+        "Resizes videos and photos to different sizes used by the application. "
+        "Reads from different formats and the output format is JPEG or webm"
+    )
 
     def add_arguments(self, parser):
-        parser.add_argument('media_type', type=str, choices=['Photos', 'Videos'], help='Resizes Photos or Videos')
-        parser.add_argument('sizes_type', nargs='+', type=str,
-                            help='Type of resizing (T for thumbnail, S for small, M for medium, L for large, O for original). Original changes the format to JPEG, potential rotation')
+        parser.add_argument(
+            "media_type",
+            type=str,
+            choices=["Photos", "Videos"],
+            help="Resizes Photos or Videos",
+        )
+        parser.add_argument(
+            "sizes_type",
+            nargs="+",
+            type=str,
+            help="Type of resizing (T for thumbnail, S for small, M for medium, L for large, O for original)."
+            "Original changes the format to JPEG, potential rotation",
+        )
 
     def handle(self, *args, **options):
-        bucket_name_resized = 'processed'
-        media_type = options['media_type']
-        sizes_type = options['sizes_type']
+        bucket_name_resized = "processed"
+        media_type = options["media_type"]
+        sizes_type = options["sizes_type"]
 
         for size in sizes_type:
-            if size not in 'TSMLO':
+            if size not in "TSMLO":
                 raise CommandError(
-                    'Invalid size, needs to be T (Thumbnail), S (Small), M (Medium), L (Large) or O (Original)')
+                    "Invalid size, needs to be T (Thumbnail), S (Small), M (Medium), L (Large) or O (Original)"
+                )
 
         resizer = Resizer(bucket_name_resized, sizes_type, media_type)
 
@@ -48,21 +59,21 @@ def get_information_from_video(video_file: str) -> Dict[str, Any]:
     video_information = MediaInfo.parse(video_file)
 
     for track in video_information.tracks:
-        if track.track_type == 'Video':
-            information['width'] = track.width
-            information['height'] = track.height
+        if track.track_type == "Video":
+            information["width"] = track.width
+            information["height"] = track.height
             if track.duration is not None:
-                information['duration'] = float(track.duration) / 1000
+                information["duration"] = float(track.duration) / 1000
             else:
-                information['duration'] = None
+                information["duration"] = None
 
             if track.encoded_date is not None:
-                dt = datetime.strptime(track.encoded_date, 'UTC %Y-%m-%d %H:%M:%S')
+                dt = datetime.strptime(track.encoded_date, "UTC %Y-%m-%d %H:%M:%S")
                 dt = dt.replace(tzinfo=timezone.utc)
-                information['date_encoded'] = dt
+                information["date_encoded"] = dt
 
             else:
-                information['date_encoded'] = None
+                information["date_encoded"] = None
 
     return information
 
@@ -70,21 +81,24 @@ def get_information_from_video(video_file: str) -> Dict[str, Any]:
 class Resizer(object):
     _medium_type: str
 
-    def __init__(self, bucket_name_resizes: str, sizes_type: List[str],
-                 medium_type: str) -> None:
+    def __init__(
+        self, bucket_name_resizes: str, sizes_type: List[str], medium_type: str
+    ) -> None:
         self._media_buckets = {}
         self._resizes_bucket = spi_s3_utils.SpiS3Utils(bucket_name_resizes)
         self._sizes_type = sizes_type
 
-        if medium_type == 'Photos':
-            self._medium_type = 'P'
-        elif medium_type == 'Videos':
-            self._medium_type = 'V'
+        if medium_type == "Photos":
+            self._medium_type = "P"
+        elif medium_type == "Videos":
+            self._medium_type = "V"
         else:
             assert False
 
     @staticmethod
-    def _update_information_from_photo_if_needed(photo: Medium, photo_file: str) -> None:
+    def _update_information_from_photo_if_needed(
+        photo: Medium, photo_file: str
+    ) -> None:
         """If photo has missing information (e.g. no width, height or datetime_taken)
         it will update the information reading it from param photo_file.
 
@@ -94,11 +108,11 @@ class Resizer(object):
         if photo.width is None or photo.height is None or photo.datetime_taken is None:
             photo_information = utils.get_medium_information(photo_file)
 
-            photo.width = photo_information['width']
-            photo.height = photo_information['height']
+            photo.width = photo_information["width"]
+            photo.height = photo_information["height"]
 
-            if 'datetime_taken' in photo_information:
-                photo.datetime_taken = photo_information['datetime_taken']
+            if "datetime_taken" in photo_information:
+                photo.datetime_taken = photo_information["datetime_taken"]
 
             photo.save()
 
@@ -110,29 +124,38 @@ class Resizer(object):
         :param video: object to update the information to
         :param video_file: file to extract the information from
         """
-        if video.width is None or video.height is None or video.duration is None or video.datetime_taken is None:
+        if (
+            video.width is None
+            or video.height is None
+            or video.duration is None
+            or video.datetime_taken is None
+        ):
             information = get_information_from_video(video_file)
 
-            video.width = information.get('width', None)
-            video.height = information.get('height', None)
-            video.duration = information.get('duration', None)
-            video.datetime_taken = information.get('date_encoded', None)
+            video.width = information.get("width", None)
+            video.height = information.get("height", None)
+            video.duration = information.get("duration", None)
+            video.datetime_taken = information.get("date_encoded", None)
 
             video.save()
 
     def _media_to_resize(self):
         medium_totally_resized = None
         for size_type in self._sizes_type:
-            qs = MediumResized.objects.values_list('medium', flat=True).filter(size_label=size_type).filter(
-                medium__medium_type=self._medium_type)
+            qs = (
+                MediumResized.objects.values_list("medium", flat=True)
+                .filter(size_label=size_type)
+                .filter(medium__medium_type=self._medium_type)
+            )
 
             if medium_totally_resized is None:
                 medium_totally_resized = set(qs)
             else:
                 medium_totally_resized = medium_totally_resized.intersection(set(qs))
 
-        media_to_be_resized = Medium.objects.filter(medium_type=self._medium_type).exclude(
-            id__in=medium_totally_resized)
+        media_to_be_resized = Medium.objects.filter(
+            medium_type=self._medium_type
+        ).exclude(id__in=medium_totally_resized)
 
         return media_to_be_resized
 
@@ -144,33 +167,40 @@ class Resizer(object):
         media_to_be_resized_count = media_to_be_resized.count()
 
         if media_to_be_resized_count == 0:
-            print('Nothing to be resized? Returning...')
+            print("Nothing to be resized? Returning...")
             return
 
         if self._medium_type == Medium.PHOTO:
             total_steps = media_to_be_resized_count
-            progress_report_unit = 'photos'
+            progress_report_unit = "photos"
         else:
-            total_steps = media_to_be_resized.aggregate(Sum('file__size'))['file__size__sum']
+            total_steps = media_to_be_resized.aggregate(Sum("file__size"))[
+                "file__size__sum"
+            ]
             progress_report_unit = None
 
-        progress_report = ProgressReport(total_steps, unit=progress_report_unit,
-                                         extra_information='Resizing medium to {}'.format(','.join(self._sizes_type)),
-                                         steps_are_bytes=self._medium_type == Medium.VIDEO)
+        progress_report = ProgressReport(
+            total_steps,
+            unit=progress_report_unit,
+            extra_information="Resizing medium to {}".format(
+                ",".join(self._sizes_type)
+            ),
+            steps_are_bytes=self._medium_type == Medium.VIDEO,
+        )
 
         for medium in media_to_be_resized:
             # Download Media file from the bucket
-            print('Will resize:', medium.file.object_storage_key)
+            print("Will resize:", medium.file.object_storage_key)
 
             suffix = utils.get_file_extension(medium.file.object_storage_key)
-            medium_file = tempfile.NamedTemporaryFile(suffix='.' + suffix, delete=False)
+            medium_file = tempfile.NamedTemporaryFile(suffix="." + suffix, delete=False)
             medium_file.close()
             start_download = time.time()
 
             try:
                 self._download_medium(medium, medium_file.name)
             except ClientError:
-                print('Cannot download: {}'.format(medium.file.object_storage_key))
+                print("Cannot download: {}".format(medium.file.object_storage_key))
                 continue
 
             download_time = time.time() - start_download
@@ -179,11 +209,14 @@ class Resizer(object):
 
             if verbose:
                 speed = (medium.file.size / 1024 / 1024) / download_time  # MB/s
-                print('Download Stats. Size: {} Time: {} Speed: {:.2f} MB/s File: {}'.format(
-                    utils.bytes_to_human_readable(medium.file.size),
-                    utils.seconds_to_human_readable(download_time),
-                    speed,
-                    medium.file.object_storage_key))
+                print(
+                    "Download Stats. Size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(
+                        utils.bytes_to_human_readable(medium.file.size),
+                        utils.seconds_to_human_readable(download_time),
+                        speed,
+                        medium.file.object_storage_key,
+                    )
+                )
 
             if medium.file.md5 is None:
                 md5_media_file = utils.hash_of_file_path(medium_file.name)
@@ -192,7 +225,7 @@ class Resizer(object):
 
             self._resize_medium(medium, medium_file.name, self._sizes_type)
 
-            print('Finished: medium.id: {}'.format(medium.id))
+            print("Finished: medium.id: {}".format(medium.id))
 
             os.remove(medium_file.name)
 
@@ -219,7 +252,9 @@ class Resizer(object):
             assert False
 
         for size_label in sizes:
-            existing = MediumResized.objects.filter(medium=medium).filter(size_label=size_label)
+            existing = MediumResized.objects.filter(medium=medium).filter(
+                size_label=size_label
+            )
 
             if existing.count() > 0:
                 # It already exists, skip...
@@ -227,7 +262,9 @@ class Resizer(object):
 
             if medium.file.size == 0:
                 # File with size 0, skip...
-                print('File {} size is 0, skipping'.format(medium.file.object_storage_key))
+                print(
+                    "File {} size is 0, skipping".format(medium.file.object_storage_key)
+                )
                 continue
 
             file_resized, width, height = file_resizer.resize(size_label)
@@ -240,8 +277,10 @@ class Resizer(object):
             resized_file_extension = utils.get_file_extension(file_resized).lower()
 
             # Upload medium to bucket
-            resized_key = os.path.join(settings.RESIZED_PREFIX,
-                                       md5_resized_file + '-{}.{}'.format(size_label, resized_file_extension))
+            resized_key = os.path.join(
+                settings.RESIZED_PREFIX,
+                md5_resized_file + "-{}.{}".format(size_label, resized_file_extension),
+            )
 
             self._resizes_bucket.upload_file(file_resized, resized_key)
             file_size = os.stat(file_resized).st_size
@@ -270,13 +309,14 @@ class Resizer(object):
             os.remove(file_to_delete)
 
     def _download_medium(self, medium, download_path):
-        bucket = medium.file.bucket
         bucket_name = medium.file.bucket_name()
 
         if bucket_name not in self._media_buckets:
             self._media_buckets[bucket_name] = spi_s3_utils.SpiS3Utils(bucket_name)
 
-        self._media_buckets[bucket_name].bucket().download_file(medium.file.object_storage_key, download_path)
+        self._media_buckets[bucket_name].bucket().download_file(
+            medium.file.object_storage_key, download_path
+        )
 
 
 class ResizeMedium:
@@ -318,31 +358,37 @@ class ResizeMedium:
             return None, None, None
 
         resized_image_information = utils.get_medium_information(resized_medium_file)
-        width_wanted = resized_image_information['width']
-        height = resized_image_information['height']
+        width_wanted = resized_image_information["width"]
+        height = resized_image_information["height"]
         return resized_medium_file, width_wanted, height
 
     def _resize_video(self, width_wanted: int):
         start_time = time.time()
         resized_medium_file = utils.resize_video(self._medium_local_file, width_wanted)
         if resized_medium_file is None:
-            print('File {} cannot be encoded'.format(self._medium_local_file))
+            print("File {} cannot be encoded".format(self._medium_local_file))
             return None, None, None
 
         duration_convert = time.time() - start_time
         information = get_information_from_video(resized_medium_file)
-        if 'duration' in information:
-            speed = information['duration'] / duration_convert
+        if "duration" in information:
+            speed = information["duration"] / duration_convert
 
-            print('Conversion took: {} Speed: {:.2f}x'.format(utils.seconds_to_human_readable(duration_convert),
-                                                              speed))
+            print(
+                "Conversion took: {} Speed: {:.2f}x".format(
+                    utils.seconds_to_human_readable(duration_convert), speed
+                )
+            )
         else:
-            print('Conversion took: {} Speed: unknown, duration of video not known'.format(
-                utils.seconds_to_human_readable(duration_convert)))
+            print(
+                "Conversion took: {} Speed: unknown, duration of video not known".format(
+                    utils.seconds_to_human_readable(duration_convert)
+                )
+            )
 
         width_wanted = height = None
-        if 'width' in information and 'height' in information:
-            width_wanted = information['width']
-            height = information['height']
+        if "width" in information and "height" in information:
+            width_wanted = information["width"]
+            height = information["height"]
 
         return resized_medium_file, width_wanted, height
