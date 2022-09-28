@@ -621,7 +621,7 @@ class ImportFromProjectApplicationCallback(View):
 class MediumUploadView(APIView):
     def post(self, request):
         if "file" in request.data:
-            medium_file = request.data.pop("file")[0]
+            medium_file = request.data["file"]
 
             spi_s3 = SpiS3Utils(bucket_name="imported")
             spi_s3.put_object(medium_file.name, medium_file)
@@ -641,5 +641,4 @@ class MediumUploadView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
