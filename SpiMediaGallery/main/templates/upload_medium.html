@@ -3,10 +3,22 @@
 {% block title %}SPI Media Gallery - Upload content{% endblock %}
 {% block body_contents %}
   <form id="medium_form">
+    <div>
       <label>Choose an image or a video to upload to media gallery</label>
+    </div>
+    <div>
       <input type="file" id="file_input">
-      <input type="text" id="medium_type_input">
+    </div>
+    <div>
+      <input type="text" id="medium_type_input">Medium type
+    </div>
+    <div>
+      <input type="button" value="Add tag" onclick="add()">
+      <span id="tags"></span>
+    </div>
+    <div>
       <input type="submit" value="Upload">
+    </div>
   </form>
   <script src="{% static 'js/upload_medium.js' %}"></script>
 {% endblock %}
