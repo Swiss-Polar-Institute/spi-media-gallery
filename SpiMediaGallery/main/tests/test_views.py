@@ -1,8 +1,8 @@
-from moto import mock_s3
 from datetime import datetime
 
 from django.conf import settings
 from django.test import Client, TestCase
+from moto import mock_s3
 
 from main.models import Medium
 from main.utils import SpiS3Utils
@@ -75,22 +75,24 @@ class ViewsTest(TestCase):
     def test_upload(self):
         c = Client()
 
-        with open('main/fixtures/buckets/original/IMG_4329.jpg', 'rb') as fp:
+        with open("main/fixtures/buckets/original/IMG_4329.jpg", "rb") as fp:
             response = c.post(
-                '/api/v1/medium/',
+                "/api/v1/medium/",
                 {
                     "datetime_taken": "2002-02-02",
                     "medium_type": "P",
-                    'tag1': 'fred',
+                    "tag1": "fred",
                     "tag2": "joe",
-                    'file': fp
-                }
+                    "file": fp,
+                },
             )
 
         self.assertEqual(201, response.status_code)
         m = Medium.objects.get(file__object_storage_key="IMG_4329.jpg")
         new_tags = m.tags.all()
         self.assertEqual(m.file.object_storage_key, "IMG_4329.jpg")
-        self.assertEqual(m.datetime_taken, datetime.strptime("2002-02-02 +0000", "%Y-%m-%d %z"))
+        self.assertEqual(
+            m.datetime_taken, datetime.strptime("2002-02-02 +0000", "%Y-%m-%d %z")
+        )
         self.assertEqual(m.medium_type, "P")
         self.assertEqual(new_tags.count(), 2)

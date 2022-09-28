@@ -1,0 +1,12 @@
+{% extends '_base.tmpl' %}
+{% load static %}
+{% block title %}SPI Media Gallery - Upload content{% endblock %}
+{% block body_contents %}
+  <form id="medium_form">
+      <label>Choose an image or a video to upload to media gallery</label>
+      <input type="file" id="file_input">
+      <input type="text" id="medium_type_input">
+      <input type="submit" value="Upload">
+  </form>
+  <script src="{% static 'js/upload_medium.js' %}"></script>
+{% endblock %}
