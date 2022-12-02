@@ -121,3 +121,10 @@ select {
     max-width: 48%;
     margin-top: 2%;
 }
+@media (max-width: 575px) {
+    .vertical-center{
+        top: 0;
+        position: relative;
+        transform: translateX(0%) translateY(15%);
+    }
+}
