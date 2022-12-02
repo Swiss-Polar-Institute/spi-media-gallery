@@ -10,57 +10,12 @@
 
 {% block body_contents %}
     <div class="container theme-showcase" role="main">
-        {% include "_logo.tmpl" %} <H1>Welcome to the SPI Media Gallery</H1>
-        <h2>Navigate selecting one tag</h2>
-        (click on <img src="{% static '/images/button-closed.png' %}"> to see subtags)
-
-        <ul class="collapsibleList">
-        {% for tag in list_of_tags %}
-        {% autoescape off %}{{ tag.close_uls }}{% endautoescape %}
-        {% autoescape off %}{{ tag.open_uls }}{% endautoescape %}
-        <li>  <a href="{% url 'search' %}?tags={{ tag.id }}">{{ tag.shortname }}</a> ({{ tag.count }})
-        {% endfor %}
-
-        {% autoescape off %}
-        {{ close_orphaned_uls }}
-        {% endautoescape %}
-        </ul>
-        <h2>Select multiple tags</h2>
-        <a href="{% url 'search_by_multiple_tags' %}">Click here to open the page to select multiple tags.</a>
-        <p>
-        <h2>Search using media ID</h2>
-        <form action="{% url 'search' %}" method="GET">
-            <table>
-                {{ form_search_medium_id }}
-            </table>
-            <input type="submit" value="Search">
-        </form>
-        <p>
-
-        <h2>Search using file name</h2>
-        <form action="{% url 'search' %}" method="GET">
-            <table>
-                {{ form_search_file_name }}
-            </table>
-            <input type="submit" value="Search">
-        </form>
-        <p>
-
-        <h2>Upload content</h2>
-         {% include "upload_medium.html" %}
-        <p>
-        <h2>Random</h2>
-        {% include "_random_selection.tmpl" %}
-        <p>
-
-        <h2>Videos</h2>
-        <a href="{% url 'list_videos' %}">List of all videos</a>
-        <p>
-
-        <!--
-        <h2>Search using the map</h2>
-        <a href="/map">Map</a>
-        <br>
-        -->
+        {% include "_top_bar.tmpl" %}
+        {% include "_main_nav.tmpl" %}
+        <div class="col-lg-8 offset-lg-2 home-text">
+        <p class="home-text">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </p>
+        </div>
     </div>
 {% endblock %}

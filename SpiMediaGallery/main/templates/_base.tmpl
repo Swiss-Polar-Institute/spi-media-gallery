@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static '/css/css.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <!-- Optional JavaScript, it could be at the end of the body -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -35,5 +36,44 @@ Just contact SPI to make this change if interested or we will make when we try t
 the templates -->
 <script data-goatcounter="https://media-swisspolar-ch.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Upload Media</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+       <form>
+          <div class="form-group">
+            <label for="datereceived">Date received</label>
+            <input type="text" class="form-control" id="datereceived" placeholder="Date received">
+          </div>
+          <div class="form-group">
+            <label for="photographer">Photographer</label>
+            <input type="text" class="form-control" id="photographer" placeholder="Photographer">
+          </div>
+          <div class="form-group">
+            <label for="file_url">File URL</label>
+            <input type="file" class="form-control-file" id="file_url" placeholder="File URL">
+          </div>
+          <button onClick="add(); return false;" type="button" class="btn btn-primary">Add tag</button>
+          <div class="form-group">
+            <div class="row mr-0 ml-0" id="tags">
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Upload</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+ <script src="{% static 'js/upload_medium.js' %}"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@ function add() {
     //Assign different attributes to the element.
     element.setAttribute("type", "text");
     element.setAttribute("name", "tag_input");
+    element.setAttribute("class", "form-control col-sm-6 pd-2");
 
     var tags = document.getElementById("tags");
 

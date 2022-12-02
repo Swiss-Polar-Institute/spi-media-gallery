@@ -1,0 +1,55 @@
+{% extends '_base.tmpl' %}
+{% load static %}
+{% block title %}SPI Media Gallery{% endblock %}
+
+{% block extra_head %}
+    <script src="{% static '/js/CollapsibleLists.js' %}"></script>
+{% endblock %}
+
+{% block body_attributes %}class="d-flex flex-column h-100" onload="CollapsibleLists.apply();" {% endblock %}
+
+{% block body_contents %}
+    <div class="container theme-showcase" role="main">
+        {% include "_top_bar.tmpl" %}
+        {% include "_main_nav.tmpl" %}
+        <div class="row">
+            <div class="col-lg-12">
+                <p class="home-text">Select Image to display on the Website</p>
+            </div>
+            <div class="col-lg-4 selection-img">
+                  <img src="{% static 'images/thumbnail.svg' %}" ><br>
+                    <input type="checkbox" id="banner" name="banner" value="banner">
+                    <label for="banner">Banner</label><br>
+                    <input type="checkbox" id="homepage" name="homepage" value="homepage">
+                    <label for="homepage">Homepage</label>
+            </div>
+            <div class="col-lg-4 selection-img">
+                  <img src="{% static 'images/thumbnail.svg' %}" ><br>
+                    <input type="checkbox" id="banner" name="banner" value="banner">
+                    <label for="banner">Banner</label><br>
+                    <input type="checkbox" id="homepage" name="homepage" value="homepage">
+                    <label for="homepage">Homepage</label>
+            </div>
+            <div class="col-lg-4 selection-img">
+                  <img src="{% static 'images/thumbnail.svg' %}" ><br>
+                    <input type="checkbox" id="banner" name="banner" value="banner">
+                    <label for="banner">Banner</label><br>
+                    <input type="checkbox" id="homepage" name="homepage" value="homepage">
+                    <label for="homepage">Homepage</label>
+            </div>
+            <div class="col-lg-4 selection-img">
+                  <img src="{% static 'images/thumbnail.svg' %}" ><br>
+                    <input type="checkbox" id="banner" name="banner" value="banner">
+                    <label for="banner">Banner</label><br>
+                    <input type="checkbox" id="homepage" name="homepage" value="homepage">
+                    <label for="homepage">Homepage</label>
+            </div>
+
+        </div>
+        <div class="row">
+             <div class="col-lg-12">
+                    <a class="form-save btn btn-primary btn-lg" href="#">Save</a>
+             </div>
+        </div>
+    </div>
+{% endblock %}
