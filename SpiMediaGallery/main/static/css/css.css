@@ -99,9 +99,6 @@ ul {
     pointer-events: none;
     color: #aaa;
 }
-.selection-img{
-    padding: 30px 0;
-}
 select {
   background-color: #fff;
   border: 1px solid #ddd;
