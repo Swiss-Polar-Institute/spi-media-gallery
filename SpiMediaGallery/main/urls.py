@@ -16,8 +16,8 @@ from main.views import (  # isort:skip
     Stats,
     TrackGeojson,
     MediumUploadView,
-    Selection,
-    Medium,
+    SelectionView,
+    MediumView,
 )
 
 urlpatterns = [
@@ -51,6 +51,6 @@ urlpatterns = [
         name="project-application-import-callback",
     ),
     path("api/v1/medium/", MediumUploadView.as_view(), name="upload_file"),
-    path("selection/", Selection.as_view(), name="selection_view"),
-    path("medium/", Medium.as_view(), name="medium_view"),
+    path("selection/", SelectionView.as_view(), name="selection_view"),
+    path("medium/", MediumView.as_view(), name="medium_view"),
 ]

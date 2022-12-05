@@ -644,7 +644,7 @@ class MediumUploadView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class Selection(TemplateView):
+class SelectionView(TemplateView):
     template_name = "selection.tmpl"
 
     def get_context_data(self, **kwargs):
@@ -653,7 +653,7 @@ class Selection(TemplateView):
         return context
 
 
-class Medium(TemplateView):
+class MediumView(TemplateView):
     template_name = "medium.tmpl"
 
     def get_context_data(self, **kwargs):
