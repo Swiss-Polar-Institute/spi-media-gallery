@@ -1,19 +1,19 @@
 {
   "original": {
     "name": "spi-media-gallery-original",
-    "endpoint": "http://minio:9000",
+    "endpoint": "http://192.168.22.107:9000",
     "access_key": "minio",
     "secret_key": "minio123"
   },
   "processed": {
     "name": "spi-media-gallery-processed",
-    "endpoint": "http://minio:9000",
+    "endpoint": "http://192.168.22.107:9000",
     "access_key": "minio",
     "secret_key": "minio123"
   },
   "imported": {
     "name": "spi-media-gallery-imported",
-    "endpoint": "http://minio:9000",
+    "endpoint": "http://192.168.22.107:9000",
     "access_key": "minio",
     "secret_key": "minio123"
   }

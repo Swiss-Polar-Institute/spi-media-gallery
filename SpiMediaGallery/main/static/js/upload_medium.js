@@ -15,14 +15,14 @@ function add() {
 document.getElementById("medium_form").addEventListener("submit", function(event) {
     event.preventDefault();
     let file_input = document.getElementById("file_input");
-    let medium_type_input = document.getElementById("medium_type_input").value;
+    // let medium_type_input = document.getElementById("medium_type_input").value;
     let tags = document.getElementById("tags").childNodes;
     console.log(tags);
     console.log(tags.length);
 
     let data = new FormData();
     data.append("file", file_input.files[0]);
-    data.append("medium_type", medium_type_input);
+    data.append("medium_type", "P");
 
     for(var i = 0; i < tags.length; i++) {
         console.log(tags[i].value);
