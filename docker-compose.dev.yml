@@ -32,7 +32,7 @@ services:
       - database:/var/lib/mysql
       - ./database/mysql-dump:/docker-entrypoint-initdb.d
     ports:
-      - "3306:3306"
+      - "3000:3306"
 
   minio:
     container_name: minio
@@ -53,7 +53,7 @@ services:
       - minio
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000 minio minio123;
+      /usr/bin/mc alias set myminio http://192.168.22.107:9000 minio minio123;
       /usr/bin/mc mb myminio/spi-media-gallery-original;
       /usr/bin/mc policy set public myminio/spi-media-gallery-original;
       /usr/bin/mc mb myminio/spi-media-gallery-processed

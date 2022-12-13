@@ -1,0 +1,14 @@
+<div class="row top-bar">
+ <div class="col-sm-3">
+    {% include "_logo.tmpl" %}
+ </div>
+ <div class="col-sm-6">
+      <div class="form-group has-search vertical-center">
+        <span class="fa fa-search form-control-feedback"></span>
+        <input type="text" class="form-control" placeholder="Want to search for something?">
+      </div>
+ </div>
+ <div class="col-sm-3">
+    <span>{{ user.get_username }}</span>
+ </div>
+</div>

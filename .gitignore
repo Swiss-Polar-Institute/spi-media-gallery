@@ -96,3 +96,5 @@ ENV/
 
 # Macos
 .DS_Store
+
+database/mysql-dump/02-*

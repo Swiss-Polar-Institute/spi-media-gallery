@@ -1,0 +1,81 @@
+{% extends '_base.tmpl' %}
+{% load static %}
+{% block title %}SPI Media Gallery{% endblock %}
+
+{% block extra_head %}
+    <script src="{% static '/js/CollapsibleLists.js' %}"></script>
+{% endblock %}
+
+{% block body_attributes %}class="d-flex flex-column h-100" onload="CollapsibleLists.apply();" {% endblock %}
+
+{% block body_contents %}
+    <div class="container theme-showcase" role="main">
+        {% include "_top_bar.tmpl" %}
+        {% include "_main_nav.tmpl" %}
+        <div class="row pd-15">
+                <div class="col-lg-2">
+                   <select>
+                      <option value="">Project</option>
+                   </select>
+                </div>
+                <div class="col-lg-2">
+                   <select>
+                      <option value="">Location</option>
+                   </select>
+                </div>
+                <div class="col-lg-2">
+                   <select>
+                      <option value="">Photographer</option>
+                   </select>
+                </div>
+                <div class="col-lg-2">
+                   <select>
+                      <option value="">People</option>
+                   </select>
+                </div>
+       </div>
+       <div class="row pd-15">
+                <div class="col-lg-2">
+                  <p>12 results</p>
+                </div>
+                <div class="col-lg-2">
+                   <select>
+                      <option value="">Order by</option>
+                      <option value="title">Title</option>
+                   </select>
+                </div>
+       </div>
+       <div class="row">
+            <div class="col-lg-4 selection-img">
+                  <img src="{% static 'images/thumbnail.svg' %}" >
+                  <p>Image name</p>
+            </div>
+            <div class="col-lg-4 selection-img">
+                  <img src="{% static 'images/thumbnail.svg' %}" >
+                  <p>Image name</p>
+            </div>
+            <div class="col-lg-4 selection-img">
+                  <img src="{% static 'images/thumbnail.svg' %}" >
+                  <p>Image name</p>
+            </div>
+            <div class="col-lg-4 selection-img">
+                  <img src="{% static 'images/thumbnail.svg' %}" >
+                  <p>Image name</p>
+            </div>
+            <div class="col-lg-4 selection-img">
+                  <img src="{% static 'images/thumbnail.svg' %}" >
+                  <p>Image name</p>
+            </div>
+            <div class="col-lg-4 selection-img">
+                  <img src="{% static 'images/thumbnail.svg' %}" >
+                  <p>Image name</p>
+            </div>
+            <div class="col-lg-4 selection-img">
+                  <img src="{% static 'images/thumbnail.svg' %}" >
+                  <p>Image name</p>
+            </div>
+
+
+        </div>
+    </div>
+{% endblock %}

@@ -36,10 +36,6 @@ class ViewsTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        self.assertContains(response, "landscape")
-
-        self.assertNotContains(response, "this is not a tag")
-
     def test_medium_not_found(self):
         c = Client()
 
