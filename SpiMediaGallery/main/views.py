@@ -93,17 +93,6 @@ class Homepage(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        list_of_tags = get_tags_with_extra_information()
-
-        if len(list_of_tags) > 0:
-            context["close_orphaned_uls"] = "</ul>" * list_of_tags[-1]["tag"].count("/")
-        else:
-            context["closed_orphaned_uls"] = ""
-
-        context["list_of_tags"] = list_of_tags
-        context["form_search_medium_id"] = MediumIdForm
-        context["form_search_file_name"] = FileNameForm
-
         return context
 
 
