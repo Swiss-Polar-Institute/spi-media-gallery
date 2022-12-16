@@ -28,6 +28,7 @@ from .models import File, Medium, MediumResized, RemoteMedium, TagName
 from .serializers import MediumSerializer
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
+from django.template.loader import render_to_string
 
 from .forms import (  # isort:skip
     AddReferrerForm,
@@ -92,17 +93,6 @@ class Homepage(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        list_of_tags = get_tags_with_extra_information()
-
-        if len(list_of_tags) > 0:
-            context["close_orphaned_uls"] = "</ul>" * list_of_tags[-1]["tag"].count("/")
-        else:
-            context["closed_orphaned_uls"] = ""
-
-        context["list_of_tags"] = list_of_tags
-        context["form_search_medium_id"] = MediumIdForm
-        context["form_search_file_name"] = FileNameForm
 
         return context
 
@@ -645,18 +635,99 @@ class MediumUploadView(APIView):
 
 
 class SelectionView(TemplateView):
-    template_name = "selection.tmpl"
+    def get(self, request, *args, **kwargs):
+        try:
+            medium = MediumForView.objects.order_by("datetime_taken")[:10]
+            count = medium.count()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        except ObjectDoesNotExist:
+            error = {"error_message": "Media not found"}
+            return render(request, "error.tmpl", error, status=404)
 
-        return context
+        return render(
+            request, "selection.tmpl", {"medium": medium, "count": count}
+        )
 
 
 class MediumView(TemplateView):
-    template_name = "medium.tmpl"
+    def get(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            list_of_tag_ids = []
+            if "project_id" in request.GET:
+                project_id = request.GET.get('project_id')
+                list_of_tag_ids.append(project_id)
+            if "location_id" in request.GET:
+                location_id = request.GET.get('location_id')
+                list_of_tag_ids.append(location_id)
+            if "photographer_id" in request.GET:
+                photographer_id = request.GET.get('photographer_id')
+                list_of_tag_ids.append(photographer_id)
+            if "people_id" in request.GET:
+                people_id = request.GET.get('people_id')
+                list_of_tag_ids.append(people_id)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+            information, qs = search_for_tag_name_ids(list_of_tag_ids)
+            qs_count = qs.count()
+            number_results_per_page = 12
+            paginator = Paginator(qs, number_results_per_page)
+            try:
+                page_number = int(request.GET.get("page", 1))
+            except ValueError:
+                page_number = 1
+            medium = paginator.get_page(page_number)
+            html = render_to_string('filter_projects.tmpl', {'medium': medium})
 
-        return context
+            if "orderby" in request.GET:
+                order_by_text = request.GET.get('orderby')
+                qs = MediumForView.objects.order_by(order_by_text)
+                qs_count = qs.count()
+                number_results_per_page = 12
+                paginator = Paginator(qs, number_results_per_page)
+                try:
+                    page_number = int(request.GET.get("page", 1))
+                except ValueError:
+                    page_number = 1
+                medium = paginator.get_page(page_number)
+                html = render_to_string('filter_projects.tmpl', {'medium': medium})
+
+            if "page" in request.GET:
+                page = int(request.GET.get('page', None))
+                number_results_per_page = 12
+                starting_number = (page - 1) * number_results_per_page
+                ending_number = page * number_results_per_page
+                qs = MediumForView.objects.order_by("datetime_taken")
+                qs_count = qs.count()
+                page_number = page + 1;
+                information, qs = search_for_tag_name_ids(list_of_tag_ids)
+                qs = qs[starting_number:ending_number]
+
+                html = render_to_string('filter_projects.tmpl', {'medium': qs})
+
+            return HttpResponse(json.dumps({'html': html, 'count': qs_count, 'page_number': page_number}),
+                                content_type="application/json")
+
+        try:
+            qs = MediumForView.objects.order_by("datetime_taken")
+            count = qs.count()
+            locations = TagName.objects.filter(name__icontains="location")
+            projects = TagName.objects.filter(name__icontains="spi project")
+            photographers = TagName.objects.filter(name__icontains="photographer")
+            peoples = TagName.objects.filter(name__icontains="people")
+            number_results_per_page = 12
+            paginator = Paginator(qs, number_results_per_page)
+            try:
+                page_number = int(request.GET.get("page", 1))
+            except ValueError:
+                page_number = 1
+            medium = paginator.get_page(page_number)
+
+        except ObjectDoesNotExist:
+            error = {"error_message": "Media not found"}
+            return render(request, "error.tmpl", error, status=404)
+
+        search_query = request.GET.get("search_query", None)
+        return render(
+            request, "medium.tmpl", {"medium": medium,
+                                     "search_query": search_query, "locations": locations, "projects": projects,
+                                     "photographers": photographers, "peoples": peoples, "count": count}
+        )

@@ -14,68 +14,71 @@
         {% include "_main_nav.tmpl" %}
         <div class="row pd-15">
                 <div class="col-lg-2">
-                   <select>
-                      <option value="">Project</option>
+                   <select id="project_id">
+                      {% for project in projects %}
+                            <option value="{{ project.id }}">{{ project.name|cut:'SPI project/' }}</option>
+                      {% endfor %}
                    </select>
                 </div>
                 <div class="col-lg-2">
-                   <select>
-                      <option value="">Location</option>
+                   <select id="location_id">
+                      {% for location in locations %}
+                            <option value="{{ location.id }}">{{ location.name|cut:'Location/' }}</option>
+                      {% endfor %}
                    </select>
                 </div>
                 <div class="col-lg-2">
-                   <select>
-                      <option value="">Photographer</option>
+                   <select id="photographer_id">
+                      {% for photographer in photographers %}
+                            <option value="{{ photographer.id }}">{{ photographer.name|cut:'Photographer/' }}</option>
+                      {% endfor %}
                    </select>
                 </div>
                 <div class="col-lg-2">
-                   <select>
-                      <option value="">People</option>
+                   <select id="people_id">
+                      {% for people in peoples %}
+                            <option value="{{ people.id }}">{{ people.name|cut:'People/' }}</option>
+                      {% endfor %}
                    </select>
                 </div>
        </div>
        <div class="row pd-15">
                 <div class="col-lg-2">
-                  <p>12 results</p>
+                  <p><span id="medium_count">{{ count }} </span> results</p>
                 </div>
                 <div class="col-lg-2">
-                   <select>
+                   <select id="order_by_id">
                       <option value="">Order by</option>
-                      <option value="title">Title</option>
+                      <option value="datetime_taken">Date ASC</option>
+                      <option value="-datetime_taken">Date DESC</option>
                    </select>
                 </div>
        </div>
-       <div class="row">
+       <div class="row" id="page-content">
+        {% for fields in medium %}
             <div class="col-lg-4 selection-img">
-                  <img src="{% static 'images/thumbnail.svg' %}" >
-                  <p>Image name</p>
-            </div>
-            <div class="col-lg-4 selection-img">
-                  <img src="{% static 'images/thumbnail.svg' %}" >
-                  <p>Image name</p>
-            </div>
-            <div class="col-lg-4 selection-img">
-                  <img src="{% static 'images/thumbnail.svg' %}" >
-                  <p>Image name</p>
-            </div>
-            <div class="col-lg-4 selection-img">
-                  <img src="{% static 'images/thumbnail.svg' %}" >
-                  <p>Image name</p>
-            </div>
-            <div class="col-lg-4 selection-img">
-                  <img src="{% static 'images/thumbnail.svg' %}" >
-                  <p>Image name</p>
-            </div>
-            <div class="col-lg-4 selection-img">
-                  <img src="{% static 'images/thumbnail.svg' %}" >
-                  <p>Image name</p>
-            </div>
-            <div class="col-lg-4 selection-img">
-                  <img src="{% static 'images/thumbnail.svg' %}" >
-                  <p>Image name</p>
-            </div>
+                {% if fields.thumbnail_type == "P" %}
+                  <img src="{{ fields.thumbnail_url }}" >
+                {% else %}
+                  <video preload="metadata">
+                    <source src="{{ fields.thumbnail_url }}" type="{{ fields.thumbnail_content_type }}">
+                  </video>
+                {% endif %}
+                        <br> <input type="checkbox" id="banner" name="banner" value="banner">
+                        <label for="banner">Banner</label><br>
+                        <input class="form-control" type="text" placeholder="Add title"><br>
+                        <textarea class="form-control" name="image_description" placeholder="Image description" rows="4" cols="30"></textarea>
 
-
+            </div>
+        {% endfor %}
         </div>
+        <input type="hidden" id="page_id" value="2">
+        <input type="hidden" id="project_value" value="">
+        <br>
+        <button class="navbar-brand btn btn-primary btn-lg" id="load_more_id">Load More</button>
     </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="{% static '/js/project_search.js' %}"></script>
 {% endblock %}
+
+

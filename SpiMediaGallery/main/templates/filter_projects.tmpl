@@ -1,0 +1,6 @@
+{% for fields in medium %}
+    <div class="col-lg-4 selection-img">
+          <img src="{{ fields.thumbnail_url }}" >
+          <p>{{ fields.file_name }}</p>
+    </div>
+{% endfor %}
