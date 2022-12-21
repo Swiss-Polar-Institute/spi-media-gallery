@@ -183,6 +183,9 @@ class Medium(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
 
     medium_type = models.CharField(max_length=1, choices=MEDIUM_TYPES)
+    title = models.TextField(null=True, blank=True)
+    image_desc = models.CharField(null=True, max_length=200, help_text="Image description")
+    is_image_of_the_week = models.BooleanField(default=False, help_text="is active")
 
     duration = models.IntegerField(
         null=True, blank=True, help_text="Duration of the videos, None for photos"

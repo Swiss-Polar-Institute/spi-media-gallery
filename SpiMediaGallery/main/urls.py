@@ -1,5 +1,6 @@
 from django.urls import path, re_path
 from django.views.decorators.cache import cache_page
+from . import views
 
 from main.views import (  # isort:skip
     Display,
@@ -18,6 +19,7 @@ from main.views import (  # isort:skip
     MediumUploadView,
     SelectionView,
     MediumView,
+    SearchAll,
 )
 
 urlpatterns = [
@@ -53,4 +55,6 @@ urlpatterns = [
     path("api/v1/medium/", MediumUploadView.as_view(), name="upload_file"),
     path("selection/", SelectionView.as_view(), name="selection_view"),
     path("medium/", MediumView.as_view(), name="medium_view"),
+    path("selection/updatemediumrecord", views.UpdateMedium, name="medium_view_update"),
+    path("search_all/", views.SearchAll, name="search_all"),
 ]

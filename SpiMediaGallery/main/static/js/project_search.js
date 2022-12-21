@@ -62,4 +62,35 @@ $(document).ready(function() {
             }
         });
     });
+
+    $(document).on("click", ".updatemediumModal_btn", function() {
+        var fileId = $(this).data('file-id');
+        var fileTitle = $(this).data('file-title');
+        var fileDesc = $(this).data('file-desc');
+       $(".modal-body-spi #fileid").val( fileId );
+       $(".modal-body-spi #title").val( fileTitle );
+       $(".modal-body-spi #description").val( fileDesc );
+    });
+    $("#search_all").change( function() {
+        var search_term = $(this).val();
+
+
+    });
+    $("#is_image_of_the_week").change( function() {
+      if ( $(this).is(":checked") ) {
+         $(this).val("True");
+      } else if ( $(this).not(":checked") ) {
+         $(this).val("False");
+      }
+      var is_image_of_the_week = $(this).val();
+      var mfileid = $(this).data('mfile-id');
+      $.ajax({
+          url: '/medium/',
+          type: 'GET',
+          data: {is_image_of_the_week: is_image_of_the_week, id: mfileid},
+          success: function(response) {
+              console.log("True");
+          }
+      });
+    });
 });

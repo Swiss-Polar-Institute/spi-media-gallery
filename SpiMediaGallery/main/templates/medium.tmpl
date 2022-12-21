@@ -56,18 +56,28 @@
        </div>
        <div class="row" id="page-content">
         {% for fields in medium %}
-            <div class="col-lg-4 selection-img">
+            <div class="col-lg-4 selection-img medium-gallery-img">
+              <a href="/media/{{ fields.id }}">
                 {% if fields.thumbnail_type == "P" %}
-                  <img src="{{ fields.thumbnail_url }}" >
+                  <img src="{% static 'images/thumbnail.svg' %}" >
                 {% else %}
-                  <video preload="metadata">
+                  <video preload="metadata" class="img-relative">
                     <source src="{{ fields.thumbnail_url }}" type="{{ fields.thumbnail_content_type }}">
                   </video>
                 {% endif %}
-                        <br> <input type="checkbox" id="banner" name="banner" value="banner">
-                        <label for="banner">Banner</label><br>
-                        <input class="form-control" type="text" placeholder="Add title"><br>
-                        <textarea class="form-control" name="image_description" placeholder="Image description" rows="4" cols="30"></textarea>
+                </a>
+                <div class="updatemediumModal_medium_btn">
+                {% if fields.is_image_of_the_week == True %}
+                    <input type="checkbox" id="is_image_of_the_week" name="is_image_of_the_week"
+                    value="{{ fields.is_image_of_the_week }}"  data-mfile-id="{{ fields.id }}" checked>
+                {% else %}
+                    <input type="checkbox" id="is_image_of_the_week" name="is_image_of_the_week"
+                    data-mfile-id="{{ fields.id }}" value="{{ fields.is_image_of_the_week }}" >
+                {% endif %}
+                 <label for="is_image_of_the_week">Banner</label>
+
+                 <input type="hidden" id="fileid" name="fileid">
+             </div>
 
             </div>
         {% endfor %}
