@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from .models import Medium, Tag, Copyright, License, File, Photographer
+from .models import Copyright, File, License, Medium, Photographer, Tag
 from .utils import set_tags
 
 

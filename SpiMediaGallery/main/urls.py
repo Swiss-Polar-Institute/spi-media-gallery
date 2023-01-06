@@ -1,5 +1,6 @@
 from django.urls import path, re_path
 from django.views.decorators.cache import cache_page
+
 from . import views
 
 from main.views import (  # isort:skip
@@ -19,7 +20,6 @@ from main.views import (  # isort:skip
     MediumUploadView,
     SelectionView,
     MediumView,
-    SearchAll,
     MediumList,
 )
 

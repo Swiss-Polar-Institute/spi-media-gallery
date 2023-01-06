@@ -78,7 +78,6 @@ TEMPLATES = [
                 "main.views.get_copyright_list",
                 "main.views.get_license_list",
                 "main.views.get_photographer_list",
-
             ],
         },
     },
