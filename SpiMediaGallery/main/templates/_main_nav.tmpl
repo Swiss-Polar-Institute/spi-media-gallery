@@ -13,12 +13,12 @@
   </div>
   <a class="navbar-brand btn btn-primary btn-lg" data-toggle="modal" data-target=".uploadModal">Upload medium</a>
   <!-- Modal -->
-<div class="modal fade uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+<div class="modal fade uploadModal" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Upload Media</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close" id="close_mu" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -86,3 +86,10 @@
   </div>
 </div>
 </nav>
+<div class="alert alert-success alert-dismissible fade show col-lg-12 mt-3" id="medium_success_msg" role="alert"
+style="display:none">
+  <strong>Uploaded Successfully!</strong>
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>

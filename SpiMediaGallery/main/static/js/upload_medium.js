@@ -89,6 +89,9 @@ document.getElementById("medium_form").addEventListener("submit", function(event
         return response.json();
     }).then(function(data) {
         console.log(data);
+        document.getElementById("medium_form").reset();
+        document.getElementById('close_mu').click();
+        document.getElementById('medium_success_msg').style.display="block";
     }).catch(function(error) {
         console.error("Error:", error);
     });

@@ -616,8 +616,8 @@ class MediumUploadView(APIView):
         if "file" in request.data:
             medium_file = request.data["file"]
 
-            # spi_s3 = SpiS3Utils(bucket_name="imported")
-            # spi_s3.put_object(medium_file.name, medium_file)
+            spi_s3 = SpiS3Utils(bucket_name="imported")
+            spi_s3.put_object(medium_file.name, medium_file)
 
             file = File()
             file.object_storage_key = medium_file.name
