@@ -59,7 +59,7 @@
             <div class="col-lg-4 selection-img medium-gallery-img">
               <a href="/media/{{ fields.id }}">
                 {% if fields.thumbnail_type == "P" %}
-                  <img src="{% static 'images/thumbnail.svg' %}" >
+                  <img src="{{ fields.thumbnail_url }}" >
                 {% else %}
                   <video preload="metadata" class="img-relative">
                     <source src="{{ fields.thumbnail_url }}" type="{{ fields.thumbnail_content_type }}">
@@ -90,5 +90,3 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="{% static '/js/project_search.js' %}"></script>
 {% endblock %}
-
-
