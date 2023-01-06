@@ -77,8 +77,8 @@ class ViewsTest(TestCase):
                 {
                     "datetime_taken": "2002-02-02",
                     "medium_type": "P",
-                    "tag1": "fred",
-                    "tag2": "joe",
+                    "people": "fred",
+                    "project": "joe",
                     "file": fp,
                 },
             )
