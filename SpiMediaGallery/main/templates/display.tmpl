@@ -9,8 +9,9 @@
 
 {% block body_contents %}
         <div class="container">
-            {% include "_logo.tmpl" %}
-
+        {% include "_top_bar.tmpl" %}
+        {% include "_main_nav.tmpl" %}
+        <br>
             <p>
                 <a href="/">Home</a> >
                 {% if search_query %}

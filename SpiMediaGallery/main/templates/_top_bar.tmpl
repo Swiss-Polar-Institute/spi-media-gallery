@@ -5,7 +5,7 @@
  <div class="col-sm-6">
       <div class="form-group has-search vertical-center">
         <span class="fa fa-search form-control-feedback"></span>
-        <input type="text" class="form-control" placeholder="Want to search for something?">
+        <form action="{% url 'search_all' %}" id="search_all_form" method="post" >{% csrf_token %}<input type="text" class="form-control" placeholder="Want to search for something?" name="search_term" id="search_all"></form>
       </div>
  </div>
  <div class="col-sm-3">

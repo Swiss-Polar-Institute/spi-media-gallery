@@ -1,0 +1,57 @@
+{% extends '_base.tmpl' %}
+{% load static %}
+{% block title %}SPI Media Gallery{% endblock %}
+
+{% block extra_head %}
+    <script src="{% static '/js/CollapsibleLists.js' %}"></script>
+{% endblock %}
+
+{% block body_attributes %}class="d-flex flex-column h-100" onload="CollapsibleLists.apply();" {% endblock %}
+
+{% block body_contents %}
+    <div class="container theme-showcase" role="main">
+        {% include "_top_bar.tmpl" %}
+        {% include "_main_nav.tmpl" %}
+       <div class="row pd-15">
+                <div class="col-lg-2">
+                  <p><span id="medium_count">{{ count }} </span> results</p>
+                </div>
+                <div class="col-lg-2">
+                   <select id="order_by_id">
+                      <option value="">Order by</option>
+                      <option value="datetime_taken">Date ASC</option>
+                      <option value="-datetime_taken">Date DESC</option>
+                   </select>
+                </div>
+       </div>
+       <div class="container">
+            <div class="card-columns" id="page-content">
+                {% for medium in media %}
+                    <div class="card p-1 {{ medium.border_color }}">
+
+                    {% if medium.thumbnail_type == "P" %}
+                        <a href="{{ medium.get_absolute_url }}?search_query={{ search_query }}"><img class="card-img-top" src="{{ medium.thumbnail_url }}" title="{{ medium.file.object_storage_key }}" /></a>
+                    {% else %}
+                        <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
+                            <a href="{{ medium.get_absolute_url }}">
+                                <video preload="metadata">
+                                    <source src="{{ medium.thumbnail_url }}" type="{{ medium.thumbnail_content_type }}">
+                                </video>
+                            </a>
+                        </div>
+                    {% endif %}
+                    </div>
+                {%endfor %}
+            </div>
+            <input type="hidden" id="page_id" value="2">
+            <input type="hidden" id="search_term" value="{{ search_term }}">
+            {% if count > 12 %}
+               <button class="navbar-brand btn btn-primary btn-lg" id="search_load_more_id">Load More</button>
+            {% endif %}
+       </div>
+    </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="{% static '/js/project_search.js' %}"></script>
+{% endblock %}
+
+

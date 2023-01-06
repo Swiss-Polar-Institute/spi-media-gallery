@@ -1,0 +1,18 @@
+{% load static %}
+{% for fields in medium %}
+    <div class="col-lg-4 selection-img medium-gallery-img">
+            <a href="/media/{{ fields.id }}">
+                {% if fields.thumbnail_type == "P" %}
+                  <img class="img-relative" src="{{ fields.thumbnail_url }}" >
+                {% else %}
+                  <video preload="metadata" class="img-relative">
+                    <source src="{{ fields.thumbnail_url }}" type="{{ fields.thumbnail_content_type }}">
+                  </video>
+                {% endif %}
+            </a>
+                <img src="{% static 'images/edit.svg' %}" class="updatemediumModal_btn" href="#" data-toggle="modal"
+                            data-target="#updatemediumModal" id="updatemediumModal_btn" data-file-id="{{fields.id}}"
+                             data-file-title="{{fields.title}}" data-file-desc="{{fields.image_desc}}" >
+
+            </div>
+{% endfor %}

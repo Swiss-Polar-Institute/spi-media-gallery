@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from .models import Medium, Tag
+from .models import Copyright, File, License, Medium, Photographer, Tag
 from .utils import set_tags
 
 
@@ -15,7 +15,7 @@ class TageSerializer(serializers.ModelSerializer):
 
 
 class MediumSerializer(serializers.ModelSerializer):
-    tags = TageSerializer(required=False, many=True)
+    tags = TageSerializer(required=False, many=True, read_only=True)
     datetime_imported = serializers.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -27,5 +27,42 @@ class MediumSerializer(serializers.ModelSerializer):
         tags_name = [
             self.initial_data[tag] for tag in self.initial_data if tag.startswith("tag")
         ]
-        set_tags(medium, tags_name, "M")
+        for tag in tags_name:
+            set_tags(medium, tag, "M")
         return medium
+
+
+class PhotographerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Photographer
+        fields = "__all__"
+
+
+class CopyrightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Copyright
+        fields = "__all__"
+
+
+class LicenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = License
+        fields = "__all__"
+
+
+class FileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = File
+        fields = "__all__"
+
+
+class MediumDataSerializer(serializers.ModelSerializer):
+    tags = TageSerializer(required=False, many=True)
+    copyright = CopyrightSerializer(required=False, read_only=True)
+    license = LicenseSerializer(required=False, read_only=True)
+    file = FileSerializer(required=False, read_only=True)
+    photographer = PhotographerSerializer(required=False, read_only=True)
+
+    class Meta:
+        model = Medium
+        fields = "__all__"

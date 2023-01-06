@@ -12,44 +12,90 @@
     <div class="container theme-showcase" role="main">
         {% include "_top_bar.tmpl" %}
         {% include "_main_nav.tmpl" %}
-        <div class="row">
-            <div class="col-lg-12">
-                <p class="home-text">Select Image to display on the Website</p>
-            </div>
-            <div class="col-lg-4 selection-img">
-                  <img src="{% static 'images/thumbnail.svg' %}" ><br>
-                    <input type="checkbox" id="banner" name="banner" value="banner">
-                    <label for="banner">Banner</label><br>
-                    <input type="checkbox" id="homepage" name="homepage" value="homepage">
-                    <label for="homepage">Homepage</label>
-            </div>
-            <div class="col-lg-4 selection-img">
-                  <img src="{% static 'images/thumbnail.svg' %}" ><br>
-                    <input type="checkbox" id="banner" name="banner" value="banner">
-                    <label for="banner">Banner</label><br>
-                    <input type="checkbox" id="homepage" name="homepage" value="homepage">
-                    <label for="homepage">Homepage</label>
-            </div>
-            <div class="col-lg-4 selection-img">
-                  <img src="{% static 'images/thumbnail.svg' %}" ><br>
-                    <input type="checkbox" id="banner" name="banner" value="banner">
-                    <label for="banner">Banner</label><br>
-                    <input type="checkbox" id="homepage" name="homepage" value="homepage">
-                    <label for="homepage">Homepage</label>
-            </div>
-            <div class="col-lg-4 selection-img">
-                  <img src="{% static 'images/thumbnail.svg' %}" ><br>
-                    <input type="checkbox" id="banner" name="banner" value="banner">
-                    <label for="banner">Banner</label><br>
-                    <input type="checkbox" id="homepage" name="homepage" value="homepage">
-                    <label for="homepage">Homepage</label>
-            </div>
 
+       <div class="row pd-15">
+       {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show col-lg-12" role="alert">
+              <strong>{{ message }}!</strong>
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            {% endfor %}
+       {% endif %}
+                <div class="col-lg-2">
+                  <p><span id="medium_count">{{ count }} </span> results</p>
+                </div>
+                <div class="col-lg-2">
+                   <select id="order_by_id_selection">
+                      <option value="">Order by</option>
+                      <option value="datetime_taken">Date ASC</option>
+                      <option value="-datetime_taken">Date DESC</option>
+                   </select>
+                </div>
+       </div>
+       <div class="row" id="page-content">
+        {% for fields in medium %}
+            <div class="col-lg-4 selection-img medium-gallery-img">
+              <a href="/media/{{ fields.id }}">
+                {% if fields.thumbnail_type == "P" %}
+                  <img src="{% static 'images/thumbnail.svg' %}" >
+                {% else %}
+                  <video preload="metadata" class="img-relative">
+                    <source src="{{ fields.thumbnail_url }}" type="{{ fields.thumbnail_content_type }}">
+                  </video>
+                {% endif %}
+                </a>
+                <img src="{% static 'images/edit.svg' %}" class="updatemediumModal_btn" href="#" data-toggle="modal"
+                            data-target="#updatemediumModal" id="updatemediumModal_btn" data-file-id="{{fields.id}}"
+                             data-file-title="{{fields.title}}" data-file-desc="{{fields.image_desc}}" >
+
+            </div>
+        {% endfor %}
         </div>
-        <div class="row">
-             <div class="col-lg-12">
-                    <a class="form-save btn btn-primary btn-lg" href="#">Save</a>
-             </div>
-        </div>
+        <input type="hidden" id="page_id" value="2">
+        <input type="hidden" id="project_value" value="">
+        <br>
+        {% if count > 12 %}
+            <button class="navbar-brand btn btn-primary btn-lg" id="load_more_id_selection">Load More</button>
+        {% endif %}
     </div>
+<!-- Modal -->
+<div class="modal fade" id="updatemediumModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Upload Media</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+     <form action="" id="medium_update_form" method="post">
+       {% csrf_token %}
+       <div class="modal-body modal-body-spi">
+         <div class="form-group">
+             <input type="hidden" id="fileid" name="fileid">
+         </div>
+         <div class="form-group">
+            <label for="Title">Title</label>
+            <input type="text" class="form-control" id="title" name="title"  placeholder="Title">
+         </div>
+         <div class="form-group">
+           <label for="description">Description</label>
+           <textarea class="form-control" id="description" name="image_desc" placeholder="Description" rows="4" cols="30"></textarea>
+         </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+     </form>
+    </div>
+  </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="{% static '/js/project_search.js' %}"></script>
 {% endblock %}
+
+
