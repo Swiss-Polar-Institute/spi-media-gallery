@@ -14,7 +14,7 @@ services:
       - database
     volumes:
       - ./SpiMediaGallery:/code/
-      - static_volume:/code/SpiMediaGallery/staticfiles
+      - static_volume:/code/staticfiles
       - tmp-for-spi-media-gallery:/tmp
     ports:
       - "8000:8000"

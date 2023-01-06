@@ -2,7 +2,9 @@ version: '3.6'
 
 services:
   spi-media-gallery:
-    image: spi-media-gallery-docker:0.0.1
+    build:
+      dockerfile: Dockerfile
+      context: ./SpiMediaGallery
     secrets:
       - spi_media_gallery_mysql.conf
       - spi_media_gallery_buckets.json
@@ -10,8 +12,8 @@ services:
       - database
     volumes:
       - ${SPI_MEDIA_GALLERY_GPS_SQLITE3_PATH}:/code/gps.sqlite3
-      - ./SpiMediaGallery:/code/SpiMediaGallery
-      - static_volume:/code/SpiMediaGallery/staticfiles
+      - ./SpiMediaGallery:/code/
+      - static_volume:/code/staticfiles
       - tmp-for-spi-media-gallery:/tmp
     expose:
       - "8000"
@@ -39,7 +41,7 @@ services:
       - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - static_volume:/code/SpiMediaGallery/staticfiles
+      - static_volume:/code/staticfiles
     links:
       - spi-media-gallery
     networks:
