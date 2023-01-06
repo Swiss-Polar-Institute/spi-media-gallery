@@ -1,0 +1,16 @@
+{% for medium in media %}
+        <div class="card p-1 {{ medium.border_color }}">
+
+        {% if medium.thumbnail_type == "P" %}
+            <a href="{{ medium.get_absolute_url }}?search_query={{ search_query }}"><img class="card-img-top" src="{{ medium.thumbnail_url }}" title="{{ medium.file.object_storage_key }}" /></a>
+        {% else %}
+            <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
+                <a href="{{ medium.get_absolute_url }}">
+                    <video preload="metadata">
+                        <source src="{{ medium.thumbnail_url }}" type="{{ medium.thumbnail_content_type }}">
+                    </video>
+                </a>
+            </div>
+        {% endif %}
+        </div>
+    {%endfor %}

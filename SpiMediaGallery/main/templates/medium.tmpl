@@ -68,10 +68,10 @@
                 </a>
                 <div class="updatemediumModal_medium_btn">
                 {% if fields.is_image_of_the_week == True %}
-                    <input type="checkbox" id="is_image_of_the_week" name="is_image_of_the_week"
+                    <input type="checkbox" id="is_image_of_the_week" class="is_image_of_the_week" name="is_image_of_the_week"
                     value="{{ fields.is_image_of_the_week }}"  data-mfile-id="{{ fields.id }}" checked>
                 {% else %}
-                    <input type="checkbox" id="is_image_of_the_week" name="is_image_of_the_week"
+                    <input type="checkbox" id="is_image_of_the_week" class="is_image_of_the_week" name="is_image_of_the_week"
                     data-mfile-id="{{ fields.id }}" value="{{ fields.is_image_of_the_week }}" >
                 {% endif %}
                  <label for="is_image_of_the_week">Banner</label>

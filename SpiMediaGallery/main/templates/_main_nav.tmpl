@@ -11,5 +11,78 @@
     </div>
 
   </div>
-  <a class="navbar-brand btn btn-primary btn-lg" href="#" data-toggle="modal" data-target="#exampleModal">Upload medium</a>
+  <a class="navbar-brand btn btn-primary btn-lg" data-toggle="modal" data-target=".uploadModal">Upload medium</a>
+  <!-- Modal -->
+<div class="modal fade uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Upload Media</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+     <form id="medium_form">
+       <div class="modal-body" id="uploadModal">
+         <div class="form-group">
+          <label for="datereceived">Date received</label>
+          <input type="date" class="form-control" id="datereceived" placeholder="Date received">
+         </div>
+         <div class="form-group">
+            <label for="loaction">Location</label>
+            <input type="text" class="form-control" id="location" name="location" placeholder="Location">
+         </div>
+         <div class="form-group">
+           <label for="photographer">Photographer</label>
+           <select class="form-control" id="photographer" name="photographer">
+              {% for photographer in photographers_list %}
+                    <option value="{{ photographer.id }}">{% if photographer.first_name != None %}
+                    {{ photographer.first_name }} {% endif %} {% if photographer.last_name != None %}
+                    {{ photographer.last_name }} {% endif %}</option>
+              {% endfor %}
+           </select>
+         </div>
+         <div class="form-group">
+           <label for="people">People</label>
+           <input type="text" class="form-control" id="people" placeholder="People">
+         </div>
+         <div class="form-group">
+           <label for="project">Project</label>
+           <input type="text" class="form-control" id="project" placeholder="Project">
+         </div>
+         <div class="form-group">
+           <label for="copyright">Copyright</label>
+           <select class="form-control" id="copyright" name="copyright">
+              {% for copyright in copyrights %}
+                    <option value="{{ copyright.id }}">{{ copyright.holder }}</option>
+              {% endfor %}
+           </select>
+         </div>
+         <div class="form-group">
+           <label for="license">License</label>
+           <select class="form-control" id="license" name="license">
+              {% for license in license_list %}
+                    <option value="{{ license.id }}">{{ license.name }}</option>
+              {% endfor %}
+           </select>
+         </div>
+         <div class="form-group">
+           <label for="file_url">File URL</label>
+           <input type="file" class="form-control-file" id="file_input" placeholder="File URL"
+           onchange="return validateFileExtension(this)">
+         </div>
+         <input type="hidden" id="medium_type" name="medium_type">
+         <div class="form-group">
+           <div class="row mr-0 ml-0" id="tags">
+           </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Upload</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+     </form>
+    </div>
+  </div>
+</div>
 </nav>

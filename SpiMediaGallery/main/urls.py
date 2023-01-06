@@ -20,6 +20,7 @@ from main.views import (  # isort:skip
     SelectionView,
     MediumView,
     SearchAll,
+    MediumList,
 )
 
 urlpatterns = [
@@ -53,8 +54,8 @@ urlpatterns = [
         name="project-application-import-callback",
     ),
     path("api/v1/medium/", MediumUploadView.as_view(), name="upload_file"),
+    path("api/v1/mediumdata/", MediumList.as_view(), name="medium_api"),
     path("selection/", SelectionView.as_view(), name="selection_view"),
     path("medium/", MediumView.as_view(), name="medium_view"),
-    path("selection/updatemediumrecord", views.UpdateMedium, name="medium_view_update"),
     path("search_all/", views.SearchAll, name="search_all"),
 ]

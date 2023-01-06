@@ -1,0 +1,27 @@
+{% load static %}
+{% for fields in medium %}
+    <div class="col-lg-4 selection-img medium-gallery-img">
+            <a href="/media/{{ fields.id }}">
+                {% if fields.thumbnail_type == "P" %}
+                  <img class="img-relative" src="{{ fields.thumbnail_url }}" >
+                {% else %}
+                  <video preload="metadata" class="img-relative">
+                    <source src="{{ fields.thumbnail_url }}" type="{{ fields.thumbnail_content_type }}">
+                  </video>
+                {% endif %}
+            </a>
+            <div class="updatemediumModal_medium_btn">
+                {% if fields.is_image_of_the_week == True %}
+                    <input type="checkbox" id="is_image_of_the_week" class="is_image_of_the_week" name="is_image_of_the_week"
+                    value="{{ fields.is_image_of_the_week }}"  data-mfile-id="{{ fields.id }}" checked>
+                {% else %}
+                    <input type="checkbox" id="is_image_of_the_week" class="is_image_of_the_week" name="is_image_of_the_week"
+                    data-mfile-id="{{ fields.id }}" value="{{ fields.is_image_of_the_week }}" >
+                {% endif %}
+                 <label for="is_image_of_the_week">Banner</label>
+
+                 <input type="hidden" id="fileid" name="fileid">
+            </div>
+
+            </div>
+{% endfor %}

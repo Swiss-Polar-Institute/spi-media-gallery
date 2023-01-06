@@ -24,11 +24,12 @@ from rest_framework.views import APIView
 from . import utils
 from .decorators import api_key_required
 from .medium_for_view import MediumForView
-from .models import File, Medium, MediumResized, RemoteMedium, TagName
-from .serializers import MediumSerializer
+from .models import File, Medium, MediumResized, RemoteMedium, TagName, Copyright, Photographer, License
+from .serializers import MediumSerializer, MediumDataSerializer
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
 from django.template.loader import render_to_string
+from django.contrib import messages
 
 from .forms import (  # isort:skip
     AddReferrerForm,
@@ -99,7 +100,7 @@ class Homepage(TemplateView):
 
 
 def search_for_nearby(
-    latitude: float, longitude: float, km: float
+        latitude: float, longitude: float, km: float
 ) -> Tuple[Dict[str, str], object]:
     center_point: Point = Point(longitude, latitude, srid=4326)
     buffered: GEOSGeometry = center_point.buffer(meters_to_degrees(km * 1000))
@@ -122,7 +123,7 @@ def search_for_nearby(
 
 
 def search_in_box(
-    north: float, south: float, east: float, west: float
+        north: float, south: float, east: float, west: float
 ) -> Tuple[Dict[str, str], object]:
     geom: Union[GEOSGeometry, Polygon] = Polygon.from_bbox((east, south, west, north))
 
@@ -220,9 +221,9 @@ class Search(TemplateView):
             information, qs = search_for_filenames(request.GET["filename"])
 
         elif (
-            "latitude" in request.GET
-            and "longitude" in request.GET
-            and "km" in request.GET
+                "latitude" in request.GET
+                and "longitude" in request.GET
+                and "km" in request.GET
         ):
             latitude = float(request.GET["latitude"])
             longitude = float(request.GET["longitude"])
@@ -231,10 +232,10 @@ class Search(TemplateView):
             information, qs = search_for_nearby(latitude, longitude, km)
 
         elif (
-            "north" in request.GET
-            and "south" in request.GET
-            and "east" in request.GET
-            and "west" in request.GET
+                "north" in request.GET
+                and "south" in request.GET
+                and "east" in request.GET
+                and "west" in request.GET
         ):
             north = float(request.GET["north"])
             south = float(request.GET["south"])
@@ -611,11 +612,12 @@ class ImportFromProjectApplicationCallback(View):
 
 class MediumUploadView(APIView):
     def post(self, request):
+        request.data._mutable = True
         if "file" in request.data:
             medium_file = request.data["file"]
 
-            spi_s3 = SpiS3Utils(bucket_name="imported")
-            spi_s3.put_object(medium_file.name, medium_file)
+            # spi_s3 = SpiS3Utils(bucket_name="imported")
+            # spi_s3.put_object(medium_file.name, medium_file)
 
             file = File()
             file.object_storage_key = medium_file.name
@@ -627,7 +629,14 @@ class MediumUploadView(APIView):
             width, height = get_image_dimensions(medium_file)
             request.data["height"] = height
             request.data["width"] = width
-
+        tags = []
+        if "people" in request.data:
+            tags.append(request.data["people"])
+        if "location_value" in request.data:
+            tags.append(request.data["location_value"])
+        if "project" in request.data:
+            tags.append(request.data["project"])
+        request.data["tags"] = tags
         serializer = MediumSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -638,34 +647,10 @@ class MediumUploadView(APIView):
 class SelectionView(TemplateView):
     def get(self, request, *args, **kwargs):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            list_of_tag_ids = []
-            if "project_id" in request.GET:
-                project_id = request.GET.get('project_id')
-                list_of_tag_ids.append(project_id)
-            if "location_id" in request.GET:
-                location_id = request.GET.get('location_id')
-                list_of_tag_ids.append(location_id)
-            if "photographer_id" in request.GET:
-                photographer_id = request.GET.get('photographer_id')
-                list_of_tag_ids.append(photographer_id)
-            if "people_id" in request.GET:
-                people_id = request.GET.get('people_id')
-                list_of_tag_ids.append(people_id)
-
-            information, qs = search_for_tag_name_ids(list_of_tag_ids)
-            qs_count = qs.count()
-            number_results_per_page = 12
-            paginator = Paginator(qs, number_results_per_page)
-            try:
-                page_number = int(request.GET.get("page", 1))
-            except ValueError:
-                page_number = 1
-            medium = paginator.get_page(page_number)
-            html = render_to_string('filter_projects.tmpl', {'medium': medium})
 
             if "orderby" in request.GET:
                 order_by_text = request.GET.get('orderby')
-                qs = MediumForView.objects.order_by(order_by_text)
+                qs = MediumForView.objects.filter(is_image_of_the_week=True).order_by(order_by_text)
                 qs_count = qs.count()
                 number_results_per_page = 12
                 paginator = Paginator(qs, number_results_per_page)
@@ -681,10 +666,9 @@ class SelectionView(TemplateView):
                 number_results_per_page = 12
                 starting_number = (page - 1) * number_results_per_page
                 ending_number = page * number_results_per_page
-                qs = MediumForView.objects.order_by("datetime_taken")
+                qs = MediumForView.objects.filter(is_image_of_the_week=True)
                 qs_count = qs.count()
-                page_number = page + 1;
-                information, qs = search_for_tag_name_ids(list_of_tag_ids)
+                page_number = page + 1
                 qs = qs[starting_number:ending_number]
 
                 html = render_to_string('filter_projects.tmpl', {'medium': qs})
@@ -714,9 +698,20 @@ class SelectionView(TemplateView):
         search_query = request.GET.get("search_query", None)
         return render(
             request, "selection.tmpl", {"medium": medium,
-                                     "search_query": search_query, "locations": locations, "projects": projects,
-                                     "photographers": photographers, "peoples": peoples, "count": count}
+                                        "search_query": search_query, "locations": locations, "projects": projects,
+                                        "photographers": photographers, "peoples": peoples, "count": count}
         )
+
+    def post(self, request):
+        id = request.POST['fileid']
+        title = request.POST['title']
+        image_desc = request.POST['image_desc']
+        medium = Medium.objects.get(id=id)
+        medium.title = title
+        medium.image_desc = image_desc
+        medium.save()
+        messages.success(request, 'Changes successfully saved.')
+        return redirect('/selection')
 
 
 class MediumView(TemplateView):
@@ -751,7 +746,7 @@ class MediumView(TemplateView):
             except ValueError:
                 page_number = 1
             medium = paginator.get_page(page_number)
-            html = render_to_string('filter_projects.tmpl', {'medium': medium})
+            html = render_to_string('filter_projects_medium.tmpl', {'medium': medium})
 
             if "orderby" in request.GET:
                 order_by_text = request.GET.get('orderby')
@@ -764,7 +759,7 @@ class MediumView(TemplateView):
                 except ValueError:
                     page_number = 1
                 medium = paginator.get_page(page_number)
-                html = render_to_string('filter_projects.tmpl', {'medium': medium})
+                html = render_to_string('filter_projects_medium.tmpl', {'medium': medium})
 
             if "page" in request.GET:
                 page = int(request.GET.get('page', None))
@@ -777,7 +772,7 @@ class MediumView(TemplateView):
                 information, qs = search_for_tag_name_ids(list_of_tag_ids)
                 qs = qs[starting_number:ending_number]
 
-                html = render_to_string('filter_projects.tmpl', {'medium': qs})
+                html = render_to_string('filter_projects_medium.tmpl', {'medium': qs})
 
             return HttpResponse(json.dumps({'html': html, 'count': qs_count, 'page_number': page_number}),
                                 content_type="application/json")
@@ -810,17 +805,57 @@ class MediumView(TemplateView):
 
 
 def SearchAll(request):
+    if "page" in request.GET:
+        page = int(request.GET.get('page', None))
+        search_term = request.GET.get('search_term', None)
+        number_results_per_page = 12
+        starting_number = (page - 1) * number_results_per_page
+        ending_number = page * number_results_per_page
+        qs = MediumForView.objects.filter(
+            photographer__first_name__icontains=search_term) | MediumForView.objects.filter(
+            photographer__last_name__icontains=search_term) | MediumForView.objects.filter(
+            location__icontains=search_term) | MediumForView.objects.filter(
+            copyright__public_text__icontains=search_term)
+        qs_count = qs.count()
+        page_number = page + 1;
+        qs = qs[starting_number:ending_number]
+        html = render_to_string('filter_search_results.tmpl', {'media': qs})
+        return HttpResponse(
+            json.dumps({'html': html, 'count': qs_count, 'page_number': page_number, 'search_term': search_term}),
+            content_type="application/json")
     search_term = request.POST['search_term']
-    qs = MediumForView.objects.filter(photographer__first_name__icontains=search_term)
+    qs = MediumForView.objects.filter(photographer__first_name__icontains=search_term) | MediumForView.objects.filter(
+        photographer__last_name__icontains=search_term) | MediumForView.objects.filter(
+        location__icontains=search_term) | MediumForView.objects.filter(copyright__public_text__icontains=search_term)
     count = qs.count()
-    return render(request, "search_results.tmpl", {"media": qs, "count": count} )
+    number_results_per_page = 12
+    paginator = Paginator(qs, number_results_per_page)
+    try:
+        page_number = int(request.GET.get("page", 1))
+    except ValueError:
+        page_number = 1
+    medium = paginator.get_page(page_number)
+    return render(request, "search_results.tmpl", {"media": medium, "count": count, "search_term": search_term})
 
-def UpdateMedium(request):
-  id = request.POST['fileid']
-  title = request.POST['title']
-  image_desc = request.POST['image_desc']
-  medium = Medium.objects.get(id=id)
-  medium.title = title
-  medium.image_desc = image_desc
-  medium.save()
-  return redirect('/selection')
+
+class MediumList(APIView):
+    def get(self, request):
+        qs = Medium.objects.filter(is_image_of_the_week=True)
+        count = qs.count()
+        serializer = MediumDataSerializer(qs, many=True)
+        return Response(serializer.data)
+
+
+def get_copyright_list(request):
+    copyright_list = Copyright.objects.all()
+    return {'copyrights': copyright_list}
+
+
+def get_license_list(request):
+    license_list = License.objects.all()
+    return {'license_list': license_list}
+
+
+def get_photographer_list(request):
+    photographer_list = Photographer.objects.all()
+    return {'photographers_list': photographer_list}

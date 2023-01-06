@@ -25,7 +25,7 @@
                 </div>
        </div>
        <div class="container">
-            <div class="card-columns">
+            <div class="card-columns" id="page-content">
                 {% for medium in media %}
                     <div class="card p-1 {{ medium.border_color }}">
 
@@ -42,7 +42,12 @@
                     {% endif %}
                     </div>
                 {%endfor %}
-             </div>
+            </div>
+            <input type="hidden" id="page_id" value="2">
+            <input type="hidden" id="search_term" value="{{ search_term }}">
+            {% if count > 12 %}
+               <button class="navbar-brand btn btn-primary btn-lg" id="search_load_more_id">Load More</button>
+            {% endif %}
        </div>
     </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

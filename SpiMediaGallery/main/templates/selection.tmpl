@@ -12,42 +12,23 @@
     <div class="container theme-showcase" role="main">
         {% include "_top_bar.tmpl" %}
         {% include "_main_nav.tmpl" %}
-        <div class="row pd-15">
-                <div class="col-lg-2">
-                   <select id="project_id">
-                      {% for project in projects %}
-                            <option value="{{ project.id }}">{{ project.name|cut:'SPI project/' }}</option>
-                      {% endfor %}
-                   </select>
-                </div>
-                <div class="col-lg-2">
-                   <select id="location_id">
-                      {% for location in locations %}
-                            <option value="{{ location.id }}">{{ location.name|cut:'Location/' }}</option>
-                      {% endfor %}
-                   </select>
-                </div>
-                <div class="col-lg-2">
-                   <select id="photographer_id">
-                      {% for photographer in photographers %}
-                            <option value="{{ photographer.id }}">{{ photographer.name|cut:'Photographer/' }}</option>
-                      {% endfor %}
-                   </select>
-                </div>
-                <div class="col-lg-2">
-                   <select id="people_id">
-                      {% for people in peoples %}
-                            <option value="{{ people.id }}">{{ people.name|cut:'People/' }}</option>
-                      {% endfor %}
-                   </select>
-                </div>
-       </div>
+
        <div class="row pd-15">
+       {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show col-lg-12" role="alert">
+              <strong>{{ message }}!</strong>
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            {% endfor %}
+       {% endif %}
                 <div class="col-lg-2">
                   <p><span id="medium_count">{{ count }} </span> results</p>
                 </div>
                 <div class="col-lg-2">
-                   <select id="order_by_id">
+                   <select id="order_by_id_selection">
                       <option value="">Order by</option>
                       <option value="datetime_taken">Date ASC</option>
                       <option value="-datetime_taken">Date DESC</option>
@@ -77,11 +58,11 @@
         <input type="hidden" id="project_value" value="">
         <br>
         {% if count > 12 %}
-            <button class="navbar-brand btn btn-primary btn-lg" id="load_more_id">Load More</button>
+            <button class="navbar-brand btn btn-primary btn-lg" id="load_more_id_selection">Load More</button>
         {% endif %}
     </div>
 <!-- Modal -->
-<div class="modal fade" id="updatemediumModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="updatemediumModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -90,7 +71,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-     <form action="updatemediumrecord" id="medium_update_form" method="post">
+     <form action="" id="medium_update_form" method="post">
        {% csrf_token %}
        <div class="modal-body modal-body-spi">
          <div class="form-group">
