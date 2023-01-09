@@ -752,7 +752,7 @@ class MediumView(TemplateView):
 
             information, qs = search_for_tag_name_ids(list_of_tag_ids)
             qs_count = qs.count()
-            number_results_per_page = 12
+            number_results_per_page = 9
             paginator = Paginator(qs, number_results_per_page)
             try:
                 page_number = int(request.GET.get("page", 1))
@@ -765,7 +765,7 @@ class MediumView(TemplateView):
                 order_by_text = request.GET.get("orderby")
                 qs = MediumForView.objects.order_by(order_by_text)
                 qs_count = qs.count()
-                number_results_per_page = 12
+                number_results_per_page = 9
                 paginator = Paginator(qs, number_results_per_page)
                 try:
                     page_number = int(request.GET.get("page", 1))
@@ -778,7 +778,7 @@ class MediumView(TemplateView):
 
             if "page" in request.GET:
                 page = int(request.GET.get("page", None))
-                number_results_per_page = 12
+                number_results_per_page = 9
                 starting_number = (page - 1) * number_results_per_page
                 ending_number = page * number_results_per_page
                 qs = MediumForView.objects.order_by("datetime_taken")
@@ -803,7 +803,7 @@ class MediumView(TemplateView):
             projects = TagName.objects.filter(name__icontains="spi project")
             photographers = TagName.objects.filter(name__icontains="photographer")
             peoples = TagName.objects.filter(name__icontains="people")
-            number_results_per_page = 12
+            number_results_per_page = 9
             paginator = Paginator(qs, number_results_per_page)
             try:
                 page_number = int(request.GET.get("page", 1))
