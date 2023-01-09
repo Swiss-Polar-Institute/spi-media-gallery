@@ -889,7 +889,7 @@ def SearchAll(request):
 
 class MediumList(APIView):
     def get(self, request):
-        qs = Medium.objects.filter(is_image_of_the_week=True)
+        qs = MediumForView.objects.filter(is_image_of_the_week=True)
         serializer = MediumDataSerializer(qs, many=True)
         return Response(serializer.data)
 
