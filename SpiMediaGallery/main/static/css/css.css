@@ -161,7 +161,7 @@ select {
     height: 250px;
     display: inline-block;
 }
-.medium-gallery-img img{
+.medium-gallery-img a img{
     width: 100%;
     height: 100%;
     object-fit: cover;
