@@ -21,6 +21,7 @@ from main.views import (  # isort:skip
     SelectionView,
     MediumView,
     MediumList,
+    MediumBanner,
 )
 
 urlpatterns = [
@@ -55,6 +56,7 @@ urlpatterns = [
     ),
     path("api/v1/medium/", MediumUploadView.as_view(), name="upload_file"),
     path("api/v1/mediumdata/", MediumList.as_view(), name="medium_api"),
+    path("api/v1/mediumbannerdata/", MediumBanner.as_view(), name="medium_banner_api"),
     path("selection/", SelectionView.as_view(), name="selection_view"),
     path("medium/", MediumView.as_view(), name="medium_view"),
     path("search_all/", views.SearchAll, name="search_all"),

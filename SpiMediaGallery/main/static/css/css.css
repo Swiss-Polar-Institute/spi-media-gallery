@@ -167,3 +167,8 @@ select {
     height: 100%;
     object-fit: cover;
 }
+.medium-gallery-img a video.img-relative {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
