@@ -69,29 +69,30 @@ $(document).ready(function () {
         order_by_projects_selection(the_id)
     });
 
-    $("#load_more_id").on('click', function () {
-        $('#page-content').text('Loading...');
-        page = $("#page_id").val();
-        var project_id = $("#project_id").val();
-        var location_id = $("#location_id").val();
-        var photographer_id = $("#photographer_id").val();
-        var people_id = $("#people_id").val();
-        $.ajax({
-            url: '/medium/',
-            type: "get",
-            data: {
-                page: page,
-                project_id: project_id,
-                location_id: location_id,
-                photographer_id: photographer_id,
-                people_id: people_id
-            },
-            dataType: 'json',
-            success: function (response) {
-                $("#page-content").html(response.html);
-                $("#page_id").val(response.page_number);
-            }
-        });
+    $(window).scroll(function () {
+     if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+       page = $("#page_id").val();
+       var project_id = $("#project_id").val();
+       var location_id = $("#location_id").val();
+       var photographer_id = $("#photographer_id").val();
+       var people_id = $("#people_id").val();
+       $.ajax({
+           url: '/medium/',
+           type: "get",
+           data: {
+               page: page,
+               project_id: project_id,
+               location_id: location_id,
+               photographer_id: photographer_id,
+               people_id: people_id
+           },
+           dataType: 'json',
+           success: function (response) {
+               $("#page-content").append(response.html);
+               $("#page_id").val(response.page_number);
+           }
+       });
+     }
     });
 
     $("#load_more_id_selection").on('click', function () {
