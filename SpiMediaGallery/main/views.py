@@ -894,6 +894,13 @@ class MediumList(APIView):
         return Response(serializer.data)
 
 
+class MediumBanner(APIView):
+    def get(self, request):
+        qs = MediumForView.objects.filter(is_image_of_the_week=True, medium_type="P")
+        serializer = MediumDataSerializer(qs, many=True)
+        return Response(serializer.data)
+
+
 def get_copyright_list(request):
     copyright_list = Copyright.objects.all()
     return {"copyrights": copyright_list}
