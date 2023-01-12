@@ -87,6 +87,12 @@ $(document).ready(function () {
                people_id: people_id
            },
            dataType: 'json',
+               beforeSend: function(){
+           $('.loader').show()
+           },
+          complete: function(){
+               $('.loader').hide();
+          },
            success: function (response) {
                $("#page-content").append(response.html);
                $("#page_id").val(response.page_number);
