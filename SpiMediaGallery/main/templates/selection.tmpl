@@ -57,10 +57,7 @@
         </div>
         <input type="hidden" id="page_id" value="2">
         <input type="hidden" id="project_value" value="">
-        <br>
-        {% if count > 12 %}
-            <button class="navbar-brand btn btn-primary btn-lg" id="load_more_id_selection">Load More</button>
-        {% endif %}
+
     </div>
 <!-- Modal -->
 <div class="modal fade" id="updatemediumModal" tabindex="-1" role="dialog">
@@ -103,5 +100,38 @@
     </div>
   </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+  $(window).scroll(function () {
+     if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+         page = $("#page_id").val();
+         var project_id = $("#project_id").val();
+         var location_id = $("#location_id").val();
+         var photographer_id = $("#photographer_id").val();
+         var people_id = $("#people_id").val();
+         $.ajax({
+             url: '/selection/',
+             type: "get",
+             data: {
+                 page: page,
+                 project_id: project_id,
+                 location_id: location_id,
+                 photographer_id: photographer_id,
+                 people_id: people_id
+             },
+             dataType: 'json',
+             beforeSend: function(){
+              $('.loader').show();
+            },
+             complete: function(){
+               $('.loader').hide();
+             },
+             success: function (response) {
+                 $("#page-content-selection").append(response.html);
+                 $("#page_id").val(response.page_number);
+             }
+         });
+     }
+    });
+</script>
 <script src="{% static '/js/project_search.js' %}"></script>
 {% endblock %}

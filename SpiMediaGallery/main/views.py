@@ -653,7 +653,7 @@ class SelectionView(TemplateView):
                     order_by_text
                 )
                 qs_count = qs.count()
-                number_results_per_page = 12
+                number_results_per_page = 15
                 paginator = Paginator(qs, number_results_per_page)
                 try:
                     page_number = int(request.GET.get("page", 1))
@@ -664,7 +664,7 @@ class SelectionView(TemplateView):
 
             if "page" in request.GET:
                 page = int(request.GET.get("page", None))
-                number_results_per_page = 12
+                number_results_per_page = 15
                 starting_number = (page - 1) * number_results_per_page
                 ending_number = page * number_results_per_page
                 qs = MediumForView.objects.filter(is_image_of_the_week=True)
@@ -688,7 +688,7 @@ class SelectionView(TemplateView):
             projects = TagName.objects.filter(name__icontains="spi project")
             photographers = TagName.objects.filter(name__icontains="photographer")
             peoples = TagName.objects.filter(name__icontains="people")
-            number_results_per_page = 12
+            number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
             try:
                 page_number = int(request.GET.get("page", 1))
