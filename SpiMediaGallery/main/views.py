@@ -653,7 +653,7 @@ class SelectionView(TemplateView):
                 if "archive_type" in request.GET:
                     archive_type = request.GET.get("archive_type")
                     if archive_type != "":
-                        qs = MediumForView.objects.filter(is_image_of_the_week=True, is_archive=archive_type)
+                        qs = MediumForView.objects.filter(is_image_of_the_week=True, is_archive=archive_type).order_by(order_by_text)
                 qs_count = qs.count()
                 number_results_per_page = 15
                 paginator = Paginator(qs, number_results_per_page)
