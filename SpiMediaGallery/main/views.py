@@ -720,7 +720,10 @@ class SelectionView(TemplateView):
         title = request.POST["title"]
         image_desc = request.POST["image_desc"]
         order = request.POST["order"]
-        is_archive = request.POST["is_archive"]
+        if 'is_archive' in request.POST:
+            is_archive = request.POST['is_archive']
+        else:
+            is_archive = False
         medium = Medium.objects.get(id=id)
         medium.title = title
         medium.image_desc = image_desc
@@ -893,7 +896,7 @@ def SearchAll(request):
 
 class MediumList(APIView):
     def get(self, request):
-        qs = MediumForView.objects.filter(is_image_of_the_week=True)
+        qs = MediumForView.objects.filter(is_image_of_the_week=True, is_archive=False).order_by('-order')
         serializer = MediumDataSerializer(qs, many=True)
         return Response(serializer.data)
 

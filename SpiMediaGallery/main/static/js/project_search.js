@@ -69,38 +69,6 @@ $(document).ready(function () {
         order_by_projects_selection(the_id)
     });
 
-    $(window).scroll(function () {
-     if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
-       page = $("#page_id").val();
-       var project_id = $("#project_id").val();
-       var location_id = $("#location_id").val();
-       var photographer_id = $("#photographer_id").val();
-       var people_id = $("#people_id").val();
-       $.ajax({
-           url: '/medium/',
-           type: "get",
-           data: {
-               page: page,
-               project_id: project_id,
-               location_id: location_id,
-               photographer_id: photographer_id,
-               people_id: people_id
-           },
-           dataType: 'json',
-               beforeSend: function(){
-           $('.loader').show()
-           },
-          complete: function(){
-               $('.loader').hide();
-          },
-           success: function (response) {
-               $("#page-content").append(response.html);
-               $("#page_id").val(response.page_number);
-           }
-       });
-     }
-    });
-
     $("#load_more_id_selection").on('click', function () {
         $('#page-content').text('Loading...');
         page = $("#page_id").val();
@@ -120,7 +88,7 @@ $(document).ready(function () {
             },
             dataType: 'json',
             success: function (response) {
-                $("#page-content").html(response.html);
+                $("#page-content-selection").html(response.html);
                 $("#page_id").val(response.page_number);
             }
         });
@@ -150,11 +118,21 @@ $(document).ready(function () {
         var fileDesc = $(this).data('file-desc');
         var is_archive = $(this).data('file-archive');
         var order = $(this).data('file-order');
+        console.log(order);
         $(".modal-body-spi #fileid").val(fileId);
         $(".modal-body-spi #title").val(fileTitle);
         $(".modal-body-spi #description").val(fileDesc);
-        $(".modal-body-spi #order").val(order);
+        if(order != "None" ) {
+            $(".modal-body-spi #order").val(order);
+        }else{
+            $(".modal-body-spi #order").val(0);
+        }
         $(".modal-body-spi #is_archive").val(is_archive);
+        if(is_archive == "True"){
+            $('.modal-body-spi #is_archive').prop('checked', true);
+        }else{
+            $('.modal-body-spi #is_archive').prop('checked', false);
+        }
     });
     $("#search_all").change(function () {
         var search_term = $(this).val();
