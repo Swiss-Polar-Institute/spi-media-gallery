@@ -719,9 +719,13 @@ class SelectionView(TemplateView):
         id = request.POST["fileid"]
         title = request.POST["title"]
         image_desc = request.POST["image_desc"]
+        order = request.POST["order"]
+        is_archive = request.POST["is_archive"]
         medium = Medium.objects.get(id=id)
         medium.title = title
         medium.image_desc = image_desc
+        medium.order = order
+        medium.is_archive = is_archive
         medium.save()
         messages.success(request, "Changes successfully saved.")
         return redirect("/selection")

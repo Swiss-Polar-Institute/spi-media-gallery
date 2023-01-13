@@ -148,9 +148,13 @@ $(document).ready(function () {
         var fileId = $(this).data('file-id');
         var fileTitle = $(this).data('file-title');
         var fileDesc = $(this).data('file-desc');
+        var is_archive = $(this).data('file-archive');
+        var order = $(this).data('file-order');
         $(".modal-body-spi #fileid").val(fileId);
         $(".modal-body-spi #title").val(fileTitle);
         $(".modal-body-spi #description").val(fileDesc);
+        $(".modal-body-spi #order").val(order);
+        $(".modal-body-spi #is_archive").val(is_archive);
     });
     $("#search_all").change(function () {
         var search_term = $(this).val();
@@ -174,5 +178,12 @@ $(document).ready(function () {
                 console.log("True");
             }
         });
+    });
+    $(document).on("change", ".is_archive", function () {
+        if ($(this).is(":checked")) {
+            $(this).val("True");
+        } else if ($(this).not(":checked")) {
+            $(this).val("False");
+        }
     });
 });
