@@ -29,13 +29,20 @@
                 </div>
                 <div class="col-lg-2">
                    <select id="order_by_id_selection">
-                      <option value="">Order by</option>
-                      <option value="datetime_taken">Date ASC</option>
-                      <option value="-datetime_taken">Date DESC</option>
+                      <option value="order">Order by</option>
+                      <option value="order">Order ASC</option>
+                      <option value="-order">Order DESC</option>
+                   </select>
+                </div>
+                <div class="col-lg-2">
+                   <select id="archive_id_selection">
+                      <option value="">Select status</option>
+                      <option value="True">Archive</option>
+                      <option value="False">Not archive</option>
                    </select>
                 </div>
        </div>
-       <div class="row" id="page-content">
+       <div class="row" id="page-content-selection">
         {% for fields in medium %}
             <div class="col-lg-4 selection-img medium-gallery-img">
               <a href="/media/{{ fields.id }}">
@@ -49,17 +56,15 @@
                 </a>
                 <img src="{% static 'images/edit.svg' %}" class="updatemediumModal_btn" href="#" data-toggle="modal"
                             data-target="#updatemediumModal" id="updatemediumModal_btn" data-file-id="{{fields.id}}"
-                             data-file-title="{{fields.title}}" data-file-desc="{{fields.image_desc}}" >
+                             data-file-title="{{fields.title}}" data-file-desc="{{fields.image_desc}}"
+                             data-file-order="{{fields.order}}" data-file-archive="{{fields.is_archive}}" >
 
             </div>
         {% endfor %}
         </div>
         <input type="hidden" id="page_id" value="2">
         <input type="hidden" id="project_value" value="">
-        <br>
-        {% if count > 12 %}
-            <button class="navbar-brand btn btn-primary btn-lg" id="load_more_id_selection">Load More</button>
-        {% endif %}
+
     </div>
 <!-- Modal -->
 <div class="modal fade" id="updatemediumModal" tabindex="-1" role="dialog">
@@ -82,10 +87,17 @@
             <input type="text" class="form-control" id="title" name="title"  placeholder="Title">
          </div>
          <div class="form-group">
+            <label for="Order">Order</label>
+            <input type="number" class="form-control" id="order" name="order"  placeholder="Order">
+         </div>
+         <div class="form-group">
            <label for="description">Description</label>
            <textarea class="form-control" id="description" name="image_desc" placeholder="Description" rows="4" cols="30"></textarea>
          </div>
-
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input is_archive" value="False" name="is_archive" id="is_archive">
+            <label class="form-check-label" for="is_archive">Archive</label>
+          </div>
           <div class="modal-footer">
             <button type="submit" class="btn btn-primary">Submit</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -95,5 +107,38 @@
     </div>
   </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+  $(window).scroll(function () {
+     if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+         page = $("#page_id").val();
+         var project_id = $("#project_id").val();
+         var location_id = $("#location_id").val();
+         var photographer_id = $("#photographer_id").val();
+         var people_id = $("#people_id").val();
+         $.ajax({
+             url: '/selection/',
+             type: "get",
+             data: {
+                 page: page,
+                 project_id: project_id,
+                 location_id: location_id,
+                 photographer_id: photographer_id,
+                 people_id: people_id
+             },
+             dataType: 'json',
+             beforeSend: function(){
+              $('.loader').show();
+            },
+             complete: function(){
+               $('.loader').hide();
+             },
+             success: function (response) {
+                 $("#page-content-selection").append(response.html);
+                 $("#page_id").val(response.page_number);
+             }
+         });
+     }
+    });
+</script>
 <script src="{% static '/js/project_search.js' %}"></script>
 {% endblock %}

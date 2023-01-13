@@ -649,11 +649,13 @@ class SelectionView(TemplateView):
 
             if "orderby" in request.GET:
                 order_by_text = request.GET.get("orderby")
-                qs = MediumForView.objects.filter(is_image_of_the_week=True).order_by(
-                    order_by_text
-                )
+                qs = MediumForView.objects.filter(is_image_of_the_week=True).order_by(order_by_text)
+                if "archive_type" in request.GET:
+                    archive_type = request.GET.get("archive_type")
+                    if archive_type != "":
+                        qs = MediumForView.objects.filter(is_image_of_the_week=True, is_archive=archive_type)
                 qs_count = qs.count()
-                number_results_per_page = 12
+                number_results_per_page = 15
                 paginator = Paginator(qs, number_results_per_page)
                 try:
                     page_number = int(request.GET.get("page", 1))
@@ -664,7 +666,7 @@ class SelectionView(TemplateView):
 
             if "page" in request.GET:
                 page = int(request.GET.get("page", None))
-                number_results_per_page = 12
+                number_results_per_page = 15
                 starting_number = (page - 1) * number_results_per_page
                 ending_number = page * number_results_per_page
                 qs = MediumForView.objects.filter(is_image_of_the_week=True)
@@ -688,7 +690,7 @@ class SelectionView(TemplateView):
             projects = TagName.objects.filter(name__icontains="spi project")
             photographers = TagName.objects.filter(name__icontains="photographer")
             peoples = TagName.objects.filter(name__icontains="people")
-            number_results_per_page = 12
+            number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
             try:
                 page_number = int(request.GET.get("page", 1))
@@ -719,9 +721,16 @@ class SelectionView(TemplateView):
         id = request.POST["fileid"]
         title = request.POST["title"]
         image_desc = request.POST["image_desc"]
+        order = request.POST["order"]
+        if 'is_archive' in request.POST:
+            is_archive = request.POST['is_archive']
+        else:
+            is_archive = False
         medium = Medium.objects.get(id=id)
         medium.title = title
         medium.image_desc = image_desc
+        medium.order = order
+        medium.is_archive = is_archive
         medium.save()
         messages.success(request, "Changes successfully saved.")
         return redirect("/selection")
@@ -889,7 +898,7 @@ def SearchAll(request):
 
 class MediumList(APIView):
     def get(self, request):
-        qs = MediumForView.objects.filter(is_image_of_the_week=True)
+        qs = MediumForView.objects.filter(is_image_of_the_week=True, is_archive=False).order_by('-order')
         serializer = MediumDataSerializer(qs, many=True)
         return Response(serializer.data)
 
