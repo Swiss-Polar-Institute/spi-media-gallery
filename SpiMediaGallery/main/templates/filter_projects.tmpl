@@ -12,7 +12,8 @@
             </a>
                 <img src="{% static 'images/edit.svg' %}" class="updatemediumModal_btn" href="#" data-toggle="modal"
                             data-target="#updatemediumModal" id="updatemediumModal_btn" data-file-id="{{fields.id}}"
-                             data-file-title="{{fields.title}}" data-file-desc="{{fields.image_desc}}" >
+                             data-file-title="{{fields.title}}" data-file-desc="{{fields.image_desc}}"
+                             data-file-order="{{fields.order}}" data-file-archive="{{fields.is_archive}}" >
 
             </div>
 {% endfor %}
