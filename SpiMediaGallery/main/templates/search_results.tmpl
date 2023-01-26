@@ -3,55 +3,90 @@
 {% block title %}SPI Media Gallery{% endblock %}
 
 {% block extra_head %}
-    <script src="{% static '/js/CollapsibleLists.js' %}"></script>
+  <script src="{% static '/js/CollapsibleLists.js' %}"></script>
 {% endblock %}
 
 {% block body_attributes %}class="d-flex flex-column h-100" onload="CollapsibleLists.apply();" {% endblock %}
 
 {% block body_contents %}
-    <div class="container theme-showcase" role="main">
-        {% include "_top_bar.tmpl" %}
-        {% include "_main_nav.tmpl" %}
-       <div class="row pd-15">
-                <div class="col-lg-2">
-                  <p><span id="medium_count">{{ count }} </span> results</p>
-                </div>
-                <div class="col-lg-2">
-                   <select id="order_by_id">
-                      <option value="">Order by</option>
-                      <option value="datetime_taken">Date ASC</option>
-                      <option value="-datetime_taken">Date DESC</option>
-                   </select>
-                </div>
-       </div>
-       <div class="container">
-            <div class="card-columns" id="page-content">
-                {% for medium in media %}
-                    <div class="card p-1 {{ medium.border_color }}">
-
-                    {% if medium.thumbnail_type == "P" %}
-                        <a href="{{ medium.get_absolute_url }}?search_query={{ search_query }}"><img class="card-img-top" src="{{ medium.thumbnail_url }}" title="{{ medium.file.object_storage_key }}" /></a>
-                    {% else %}
-                        <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
-                            <a href="{{ medium.get_absolute_url }}">
-                                <video preload="metadata">
-                                    <source src="{{ medium.thumbnail_url }}" type="{{ medium.thumbnail_content_type }}">
-                                </video>
-                            </a>
-                        </div>
-                    {% endif %}
-                    </div>
-                {%endfor %}
-            </div>
-            <input type="hidden" id="page_id" value="2">
-            <input type="hidden" id="search_term" value="{{ search_term }}">
-            {% if count > 12 %}
-               <button class="navbar-brand btn btn-primary btn-lg" id="search_load_more_id">Load More</button>
-            {% endif %}
-       </div>
+  <div class="container theme-showcase" role="main">
+    {% include "_top_bar.tmpl" %}
+    {% include "_main_nav.tmpl" %}
+    <div class="row pd-15">
+      <div class="col-lg-2">
+        <p><span id="medium_count">{{ count }} </span> results</p>
+      </div>
+      <div class="col-lg-2">
+        <select id="order_search_all">
+          <option value="">Order by</option>
+          <option value="datetime_taken">Date ASC</option>
+          <option value="-datetime_taken">Date DESC</option>
+        </select>
+      </div>
     </div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="{% static '/js/project_search.js' %}"></script>
+    <div class="row" id="page-content">
+      {% for fields in media %}
+        <div class="col-lg-4 selection-img medium-gallery-img">
+          <a href="/media/{{ fields.id }}">
+            {% if fields.thumbnail_type == "P" %}
+              <img src="{{ fields.thumbnail_url }}">
+            {% else %}
+              <video preload="metadata" class="img-relative">
+                <source src="{{ fields.thumbnail_url }}" type="{{ fields.thumbnail_content_type }}">
+              </video>
+            {% endif %}
+          </a>
+          <div class="updatemediumModal_medium_btn">
+            {% if fields.is_image_of_the_week == True %}
+              <input type="checkbox" id="is_image_of_the_week" class="is_image_of_the_week" name="is_image_of_the_week"
+                     value="{{ fields.is_image_of_the_week }}" data-mfile-id="{{ fields.id }}" checked>
+            {% else %}
+              <input type="checkbox" id="is_image_of_the_week" class="is_image_of_the_week" name="is_image_of_the_week"
+                     data-mfile-id="{{ fields.id }}" value="{{ fields.is_image_of_the_week }}">
+            {% endif %}
+            <label for="is_image_of_the_week">Banner</label>
+
+            <input type="hidden" id="fileid" name="fileid">
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+    <input type="hidden" id="page_id" value="2">
+    <input type="hidden" id="search_term" value={{ search_term }}>
+  </div>
+  <div class="loader">
+    <center>
+      <img class="loading-image" src="{% static 'images/loader.gif' %}" alt="loading..">
+    </center>
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="{% static '/js/project_search.js' %}"></script>
+  <script>
+$(window).scroll(function () {
+     if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
+       page = $("#page_id").val();
+       var search_term = $("#search_term").val();
+       $.ajax({
+           url: '/search_all/',
+           type: "get",
+           data: {
+               page: page,
+               search_term: search_term,
+           },
+           dataType: 'json',
+           beforeSend: function(){
+              $('.loader').show();
+           },
+          complete: function(){
+               $('.loader').hide();
+          },
+           success: function (response) {
+               $("#page-content").append(response.html);
+               $("#page_id").val(response.page_number);
+           }
+       });
+     }
+});
+</script>
 {% endblock %}
-
-

@@ -844,7 +844,7 @@ def SearchAll(request):
     if "page" in request.GET:
         page = int(request.GET.get("page", None))
         search_term = request.GET.get("search_term", None)
-        number_results_per_page = 12
+        number_results_per_page = 15
         starting_number = (page - 1) * number_results_per_page
         ending_number = page * number_results_per_page
         qs = (
@@ -857,6 +857,12 @@ def SearchAll(request):
             | MediumForView.objects.filter(location__icontains=search_term)
             | MediumForView.objects.filter(
                 copyright__public_text__icontains=search_term
+            )
+            | MediumForView.objects.filter(
+                file__object_storage_key__icontains=search_term
+            )
+            | MediumForView.objects.filter(
+                tags__name__name__icontains=search_term
             )
         )
         qs_count = qs.count()
@@ -874,15 +880,43 @@ def SearchAll(request):
             ),
             content_type="application/json",
         )
+    if "orderby" in request.GET:
+        search_term = request.GET["search_term"]
+        qs = (
+                MediumForView.objects.filter(photographer__first_name__icontains=search_term)
+                | MediumForView.objects.filter(photographer__last_name__icontains=search_term)
+                | MediumForView.objects.filter(location__icontains=search_term)
+                | MediumForView.objects.filter(copyright__public_text__icontains=search_term)
+                | MediumForView.objects.filter(file__object_storage_key__icontains=search_term)
+                | MediumForView.objects.filter(tags__name__name__icontains=search_term)
+        ).order_by(request.GET["orderby"])
+        count = qs.count()
+        number_results_per_page = 15
+        paginator = Paginator(qs, number_results_per_page)
+        medium = paginator.get_page(1)
+        html = render_to_string("filter_search_results.tmpl", {"media": medium})
+        return HttpResponse(
+            json.dumps(
+                {
+                    "html": html,
+                    "count": count,
+                    "search_term": search_term,
+                }
+            ),
+            content_type="application/json",
+        )
+
     search_term = request.POST["search_term"]
     qs = (
         MediumForView.objects.filter(photographer__first_name__icontains=search_term)
         | MediumForView.objects.filter(photographer__last_name__icontains=search_term)
         | MediumForView.objects.filter(location__icontains=search_term)
         | MediumForView.objects.filter(copyright__public_text__icontains=search_term)
+        | MediumForView.objects.filter(file__object_storage_key__icontains=search_term)
+        | MediumForView.objects.filter(tags__name__name__icontains=search_term)
     )
     count = qs.count()
-    number_results_per_page = 12
+    number_results_per_page = 15
     paginator = Paginator(qs, number_results_per_page)
     try:
         page_number = int(request.GET.get("page", 1))

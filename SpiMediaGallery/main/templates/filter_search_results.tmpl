@@ -1,16 +1,27 @@
-{% for medium in media %}
-        <div class="card p-1 {{ medium.border_color }}">
+{% load static %}
+{% for fields in media %}
+  <div class="col-lg-4 selection-img medium-gallery-img">
+    <a href="/media/{{ fields.id }}">
+      {% if fields.thumbnail_type == "P" %}
+        <img class="img-relative" src="{{ fields.thumbnail_url }}">
+      {% else %}
+        <video preload="metadata" class="img-relative">
+          <source src="{{ fields.thumbnail_url }}" type="{{ fields.thumbnail_content_type }}">
+        </video>
+      {% endif %}
+    </a>
+    <div class="updatemediumModal_medium_btn">
+      {% if fields.is_image_of_the_week == True %}
+        <input type="checkbox" id="is_image_of_the_week" class="is_image_of_the_week" name="is_image_of_the_week"
+               value="{{ fields.is_image_of_the_week }}" data-mfile-id="{{ fields.id }}" checked>
+      {% else %}
+        <input type="checkbox" id="is_image_of_the_week" class="is_image_of_the_week" name="is_image_of_the_week"
+               data-mfile-id="{{ fields.id }}" value="{{ fields.is_image_of_the_week }}">
+      {% endif %}
+      <label for="is_image_of_the_week">Banner</label>
 
-        {% if medium.thumbnail_type == "P" %}
-            <a href="{{ medium.get_absolute_url }}?search_query={{ search_query }}"><img class="card-img-top" src="{{ medium.thumbnail_url }}" title="{{ medium.file.object_storage_key }}" /></a>
-        {% else %}
-            <div class="embed-responsive {{ medium.video_embed_responsive_ratio }}">
-                <a href="{{ medium.get_absolute_url }}">
-                    <video preload="metadata">
-                        <source src="{{ medium.thumbnail_url }}" type="{{ medium.thumbnail_content_type }}">
-                    </video>
-                </a>
-            </div>
-        {% endif %}
-        </div>
-    {%endfor %}
+      <input type="hidden" id="fileid" name="fileid">
+    </div>
+
+  </div>
+{% endfor %}

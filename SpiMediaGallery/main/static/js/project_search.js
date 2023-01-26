@@ -49,6 +49,23 @@ $(document).ready(function () {
         });
     }
 
+    function order_search_all() {
+        $('#page-content').text('Loading...');
+        var order_by = $("#order_search_all").val();
+        var search_term = $("#search_term").val();
+        $.ajax({
+            url: '/search_all/',
+            type: 'GET',
+            data: {orderby: order_by, search_term: search_term},
+            success: function (response) {
+                console.log("FUCK");
+                $('#page-content').html(response.html);
+                $('#medium_count').html(response.count);
+                $('#search_term').html(response.search_term);
+            }
+        });
+    }
+
     $("#project_id").on('change', function () {
         filter_projects()
     });
@@ -65,12 +82,14 @@ $(document).ready(function () {
         var the_id = $(this).val();
         order_by_projects(the_id)
     });
-
     $("#order_by_id_selection").on('change', function () {
         order_by_projects_selection()
     });
     $("#archive_id_selection").on('change', function () {
         order_by_projects_selection()
+    });
+    $("#order_search_all").on('change', function () {
+        order_search_all();
     });
 
     $("#search_load_more_id").on('click', function () {
