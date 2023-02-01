@@ -155,6 +155,15 @@ $(document).ready(function () {
             url: '/medium/',
             type: 'GET',
             data: {is_image_of_the_week: is_image_of_the_week, id: mfileid},
+            cache: false,
+            beforeSend:function(){
+                if(confirm("Are you sure?")){
+
+                    } else {
+                        location.reload(true);
+                        return false;
+                    }
+            },
             success: function (response) {
                 console.log("True");
             }
