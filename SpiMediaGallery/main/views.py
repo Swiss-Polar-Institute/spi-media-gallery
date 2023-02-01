@@ -758,12 +758,18 @@ class MediumView(TemplateView):
                 medium = Medium.objects.get(id=id)
                 medium.is_image_of_the_week = is_image_of_the_week
                 medium.save()
-
-            information, qs = search_for_tag_name_ids(list_of_tag_ids)
+            if request.GET.get("project_id") != "":
+                information, qs = search_for_tag_name_ids(list_of_tag_ids)
+            else:
+                qs = MediumForView.objects.order_by("datetime_taken")
             if "media_type" in request.GET:
                 media_type = request.GET.get("media_type")
                 if media_type != "":
                     qs = qs.filter(medium_type=media_type)
+            if "order_by_year" in request.GET:
+                order_by_year = request.GET.get("order_by_year")
+                if order_by_year != "":
+                    qs = qs.filter(datetime_taken__year=order_by_year)
             qs_count = qs.count()
             number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
@@ -797,7 +803,8 @@ class MediumView(TemplateView):
                 qs = MediumForView.objects.order_by("datetime_taken")
                 qs_count = qs.count()
                 page_number = page + 1
-                information, qs = search_for_tag_name_ids(list_of_tag_ids)
+                if request.GET.get("project_id") != "":
+                    information, qs = search_for_tag_name_ids(list_of_tag_ids)
                 if "media_type" in request.GET:
                     media_type = request.GET.get("media_type")
                     qs = qs.filter(medium_type=media_type)
@@ -821,6 +828,7 @@ class MediumView(TemplateView):
             peoples = TagName.objects.filter(name__icontains="people")
             number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
+            year_range = range(2013, (datetime.datetime.now().year))
             try:
                 page_number = int(request.GET.get("page", 1))
             except ValueError:
@@ -843,6 +851,7 @@ class MediumView(TemplateView):
                 "photographers": photographers,
                 "peoples": peoples,
                 "count": count,
+                "year_range": year_range,
             },
         )
 
