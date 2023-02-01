@@ -760,6 +760,10 @@ class MediumView(TemplateView):
                 medium.save()
 
             information, qs = search_for_tag_name_ids(list_of_tag_ids)
+            if "media_type" in request.GET:
+                media_type = request.GET.get("media_type")
+                if media_type != "":
+                    qs = qs.filter(medium_type=media_type)
             qs_count = qs.count()
             number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
@@ -794,6 +798,9 @@ class MediumView(TemplateView):
                 qs_count = qs.count()
                 page_number = page + 1
                 information, qs = search_for_tag_name_ids(list_of_tag_ids)
+                if "media_type" in request.GET:
+                    media_type = request.GET.get("media_type")
+                    qs = qs.filter(medium_type=media_type)
                 qs = qs[starting_number:ending_number]
 
                 html = render_to_string("filter_projects_medium.tmpl", {"medium": qs})
