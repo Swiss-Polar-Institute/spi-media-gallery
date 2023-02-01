@@ -722,6 +722,7 @@ class SelectionView(TemplateView):
         title = request.POST["title"]
         image_desc = request.POST["image_desc"]
         order = request.POST["order"]
+        date_archived = request.POST["date_archived"]
         if 'is_archive' in request.POST:
             is_archive = request.POST['is_archive']
         else:
@@ -730,6 +731,7 @@ class SelectionView(TemplateView):
         medium.title = title
         medium.image_desc = image_desc
         medium.order = order
+        medium.date_archived = date_archived
         medium.is_archive = is_archive
         medium.save()
         messages.success(request, "Changes successfully saved.")

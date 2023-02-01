@@ -190,7 +190,7 @@ class Medium(models.Model):
     is_image_of_the_week = models.BooleanField(default=False, help_text="is active")
     is_archive = models.BooleanField(default=False, help_text="is archive")
     order = models.IntegerField(default=1, null=True, blank=True, help_text="Order")
-
+    date_archived = models.DateTimeField(null=True, blank=True)
     duration = models.IntegerField(
         null=True, blank=True, help_text="Duration of the videos, None for photos"
     )

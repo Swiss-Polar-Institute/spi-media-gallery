@@ -62,7 +62,6 @@ $(document).ready(function () {
             type: 'GET',
             data: {orderby: order_by, search_term: search_term},
             success: function (response) {
-                console.log("FUCK");
                 $('#page-content').html(response.html);
                 $('#medium_count').html(response.count);
                 $('#search_term').html(response.search_term);
@@ -124,12 +123,14 @@ $(document).ready(function () {
         var fileId = $(this).data('file-id');
         var fileTitle = $(this).data('file-title');
         var fileDesc = $(this).data('file-desc');
+        var date_archived = $(this).data('file-datearchived');
         var is_archive = $(this).data('file-archive');
         var order = $(this).data('file-order');
-        console.log(order);
+        console.log(date_archived);
         $(".modal-body-spi #fileid").val(fileId);
         $(".modal-body-spi #title").val(fileTitle);
         $(".modal-body-spi #description").val(fileDesc);
+        $(".modal-body-spi #datearchived").val(date_archived);
         if(order != "None" ) {
             $(".modal-body-spi #order").val(order);
         }else{
