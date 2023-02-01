@@ -6,6 +6,7 @@ $(document).ready(function () {
         var photographer_id = $("#photographer_id").val();
         var people_id = $("#people_id").val();
         var media_type = $("#media_type").val();
+        var order_by_year = $("#order_by_year").val();
         $.ajax({
             url: '/medium/',
             type: 'GET',
@@ -15,6 +16,7 @@ $(document).ready(function () {
                 photographer_id: photographer_id,
                 people_id: people_id,
                 media_type: media_type,
+                order_by_year: order_by_year,
             },
             success: function (response) {
                 $('#page-content').html(response.html);
@@ -81,6 +83,9 @@ $(document).ready(function () {
         filter_projects()
     });
     $("#media_type").on('change', function () {
+        filter_projects()
+    });
+    $("#order_by_year").on('change', function () {
         filter_projects()
     });
     $("#order_by_id").on('change', function () {
