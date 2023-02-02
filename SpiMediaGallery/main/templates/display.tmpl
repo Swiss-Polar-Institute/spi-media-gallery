@@ -115,11 +115,11 @@
                     </div>
                     <div class="form-check">
                         {% if medium.is_preselect == True %}
-                           <input type="checkbox" class="form-check-input is_pre_select" value="False"
-                           name="is_pre_select" id="is_pre_select" value="{{ medium.is_preselect }}" checked>
+                           <input type="checkbox" class="form-check-input is_pre_select" name="is_pre_select"
+                           id="is_pre_select" value="{{ medium.is_preselect }}" checked>
                         {% else %}
-                            <input type="checkbox" class="form-check-input is_pre_select" value="False"
-                            name="is_pre_select" id="is_pre_select" value="{{ medium.is_preselect }}">
+                            <input type="checkbox" class="form-check-input is_pre_select" name="is_pre_select"
+                            id="is_pre_select" value="{{ medium.is_preselect }}">
                         {% endif %}
                         <label class="form-check-label" for="is_pre_select">Preselect</label>
                         <input type="hidden" id="medium_id" value="{{ medium.id }}">
