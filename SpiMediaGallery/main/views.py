@@ -772,6 +772,10 @@ class MediumView(TemplateView):
                 order_by_year = request.GET.get("order_by_year")
                 if order_by_year != "":
                     qs = qs.filter(datetime_taken__year=order_by_year)
+            if "preselect_status" in request.GET:
+                preselect_status = request.GET.get("preselect_status")
+                if preselect_status != "":
+                    qs = qs.filter(is_preselect=preselect_status)
             qs_count = qs.count()
             number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
@@ -976,3 +980,18 @@ def get_license_list(request):
 def get_photographer_list(request):
     photographer_list = Photographer.objects.all()
     return {"photographers_list": photographer_list}
+
+
+def Preselect(request):
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        image_comment = request.GET.get("image_comment")
+        is_preselect = request.GET.get("is_pre_select")
+        id = request.GET.get("id")
+        medium = Medium.objects.get(id=id)
+        medium.image_comment = image_comment
+        medium.is_preselect = is_preselect
+        medium.save()
+        return HttpResponse(status=200)
+
+
+

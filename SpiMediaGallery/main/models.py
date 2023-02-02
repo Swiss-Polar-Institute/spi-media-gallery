@@ -187,8 +187,12 @@ class Medium(models.Model):
     image_desc = models.CharField(
         null=True, max_length=1024, help_text="Image description"
     )
+    image_comment = models.CharField(
+        null=True, max_length=1024, help_text="Image comment"
+    )
     is_image_of_the_week = models.BooleanField(default=False, help_text="is active")
     is_archive = models.BooleanField(default=False, help_text="is archive")
+    is_preselect = models.BooleanField(default=False, help_text="is preselect")
     order = models.IntegerField(default=1, null=True, blank=True, help_text="Order")
     date_archived = models.DateTimeField(null=True, blank=True)
     duration = models.IntegerField(
