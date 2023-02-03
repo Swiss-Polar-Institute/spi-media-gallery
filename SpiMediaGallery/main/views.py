@@ -648,10 +648,21 @@ class MediumUploadView(APIView):
                 copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
                 request.data["copyright"] = copyright_data.pk
             else:
-                copyright_obj = Copyright(holder=copyright)
+                copyright_obj = Copyright(holder=copyright, public_text=copyright)
                 copyright_obj.save()
                 copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
                 request.data["copyright"] = copyright_data.pk
+        license = request.data["license"]
+        if license != "":
+            l_count = License.objects.filter(name=license).count()
+            if l_count >= 1:
+                license_data = License.objects.filter(name=license)[:1].get()
+                request.data["license"] = license_data.pk
+            else:
+                license_obj = License(name=license, public_text=license)
+                license_obj.save()
+                license_data = License.objects.filter(name=license)[:1].get()
+                request.data["license"] = license_data.pk
         if "file" in request.data:
             medium_file = request.data["file"]
 

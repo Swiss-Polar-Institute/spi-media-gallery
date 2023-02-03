@@ -26,35 +26,32 @@
        <div class="modal-body" id="uploadModal">
          <div class="form-group">
           <label for="datereceived">Date received</label>
-          <input type="date" class="form-control" id="datereceived" placeholder="Date received">
+          <input type="date" class="form-control" id="datereceived" placeholder="Date received" required>
          </div>
          <div class="form-group">
             <label for="loaction">Location</label>
-            <input type="text" class="form-control" id="location" name="location" placeholder="Location">
+            <input type="text" class="form-control" id="location" name="location" placeholder="Location" required>
          </div>
          <div class="form-group">
            <label for="photographer">Photographer</label>
-           <input type="text" class="form-control" id="photographer" name="photographer" placeholder="Photographer">
+           <input type="text" class="form-control" id="photographer" name="photographer" placeholder="Photographer"
+           required>
          </div>
          <div class="form-group">
            <label for="people">People</label>
-           <input type="text" class="form-control" id="people" placeholder="People">
+           <input type="text" class="form-control" id="people" placeholder="People" required>
          </div>
          <div class="form-group">
            <label for="project">Project</label>
-           <input type="text" class="form-control" id="project" placeholder="Project">
+           <input type="text" class="form-control" id="project" placeholder="Project" required>
          </div>
          <div class="form-group">
            <label for="copyright">Copyright</label>
-           <input type="text" class="form-control" id="copyright" name="copyright" placeholder="Copyright">
+           <input type="text" class="form-control" id="copyright" name="copyright" placeholder="Copyright" required>
          </div>
          <div class="form-group">
            <label for="license">License</label>
-           <select class="form-control" id="license" name="license">
-              {% for license in license_list %}
-                    <option value="{{ license.id }}">{{ license.name }}</option>
-              {% endfor %}
-           </select>
+           <input type="text" class="form-control" id="license" name="license" placeholder="license" required>
          </div>
          <div class="form-group">
            <label for="file_url">File URL</label>
@@ -65,8 +62,8 @@
          <button onClick="add(); return false;" type="button" class="btn btn-primary">Add tag</button>
          <div class="form-group">
            <div class="row mr-0 ml-0" id="tags"><input type="text" name="tag_input[]" class="form-control col-sm-6 pd-2
-           "><input type="text" name="tag_input[]" class="form-control col-sm-6 pd-2"><input
-           type="text" name="tag_input[]" class="form-control col-sm-6 pd-2"></div>
+           " required><input type="text" name="tag_input[]" class="form-control col-sm-6 pd-2" required><input
+           type="text" name="tag_input[]" class="form-control col-sm-6 pd-2" required></div>
           </div>
           <div class="modal-footer">
             <button type="submit" class="btn btn-primary">Upload</button>
