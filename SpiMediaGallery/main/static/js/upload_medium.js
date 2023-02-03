@@ -101,6 +101,7 @@ document.getElementById("medium_form").addEventListener("submit", function(event
         document.getElementById('medium_success_msg').style.display="block";
     }).catch(function(error) {
         console.error("Error:", error);
+        document.getElementById("medium_form").reset();
         document.getElementById('medium_error_msg').style.display="block";
     });
 });
