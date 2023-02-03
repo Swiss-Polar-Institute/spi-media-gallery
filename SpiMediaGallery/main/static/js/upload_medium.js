@@ -3,7 +3,7 @@ function add() {
 
     //Assign different attributes to the element.
     element.setAttribute("type", "text");
-    element.setAttribute("name", "tag_input");
+    element.setAttribute("name", "tag_input[]");
     element.setAttribute("class", "form-control col-sm-6 pd-2");
 
     var tags = document.getElementById("tags");
@@ -47,7 +47,10 @@ document.getElementById("medium_form").addEventListener("submit", function(event
     if(document.getElementById("location").value) {
        location = "Location/" + document.getElementById("location").value;
     }
-    let photographer = document.getElementById("photographer").value;
+    let photographer = "";
+    if(document.getElementById("photographer").value) {
+       photographer = document.getElementById("photographer").value;
+    }
     let people = "";
     if(document.getElementById("people").value) {
         people = "People/" + document.getElementById("people").value;
@@ -60,10 +63,11 @@ document.getElementById("medium_form").addEventListener("submit", function(event
     let license = document.getElementById("license").value;
     let datereceived = document.getElementById("datereceived").value;
     let medium_type = document.getElementById("medium_type").value;
-
+    let tags = document.getElementsByName("tag_input[]");
     // let medium_type_input = document.getElementById("medium_type_input").value;
-    /*let tags = document.getElementById("tags").childNodes;
-    console.log(tags);
+    //let tags = document.getElementById("tags").childNodes;
+    let tags_length = tags.length;
+    /*console.log(tags);
     console.log(tags.length);*/
 
     let data = new FormData();
@@ -71,17 +75,20 @@ document.getElementById("medium_form").addEventListener("submit", function(event
     data.append("medium_type", "P");
     data.append("people", people);
     data.append("location_value", location);
-    data.append("photographer", photographer);
+    data.append("photographer_value", photographer);
     data.append("project", project);
     data.append("copyright", copyright);
     data.append("license", license);
     data.append("datetime_taken", datereceived);
     data.append("medium_type", medium_type);
-
-    /*for(var i = 0; i < tags.length; i++) {
-        console.log(tags[i].value);
+    var fields = [];
+    for(var i = 0; i < tags.length; i++) {
+        /*console.log(tags[i].value);*/
+        fields.push(tags[i].value);
         data.append("tag" + i, tags[i].value);
-    }*/
+    }
+    let tags_m = fields.join(",");
+    data.append("tags_value", tags_m);
     fetch("/api/v1/medium/", {
         method: "POST",
         body: data
@@ -94,5 +101,6 @@ document.getElementById("medium_form").addEventListener("submit", function(event
         document.getElementById('medium_success_msg').style.display="block";
     }).catch(function(error) {
         console.error("Error:", error);
+        document.getElementById('medium_error_msg').style.display="block";
     });
 });
