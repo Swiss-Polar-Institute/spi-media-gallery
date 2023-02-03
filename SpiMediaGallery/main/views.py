@@ -612,6 +612,46 @@ class ImportFromProjectApplicationCallback(View):
 class MediumUploadView(APIView):
     def post(self, request):
         request.data._mutable = True
+        photographer = request.data["photographer_value"]
+        if photographer != "":
+            photographer_str_count = len(photographer.split())
+            if photographer_str_count > 1:
+                photographername_split = photographer.split()
+                p_count = Photographer.objects.filter(first_name=photographername_split[0],
+                                                      last_name=photographername_split[1]).count()
+                if p_count >= 1:
+                    photographers = Photographer.objects.filter(first_name=photographername_split[0],
+                                                                last_name=photographername_split[1])[:1].get()
+                    request.data["photographer"] = photographers.pk
+                else:
+                    photographer_obj = Photographer(first_name=photographername_split[0],
+                                                    last_name=photographername_split[1])
+                    photographer_obj.save()
+                    photographers = Photographer.objects.filter(first_name=photographername_split[0],
+                                                                last_name=photographername_split[1])[:1].get()
+                    request.data["photographer"] = photographers.pk
+            else:
+                p_count = Photographer.objects.filter(first_name=photographer).count()
+                if p_count >= 1:
+                    photographers = Photographer.objects.filter(first_name=photographer)[:1].get()
+                    request.data["photographer"] = photographers.pk
+                else:
+                    photographer_obj = Photographer(first_name=photographer)
+                    photographer_obj.save()
+                    photographers = Photographer.objects.filter(first_name=photographer)[:1].get()
+                    request.data["photographer"] = photographers.pk
+
+        copyright = request.data["copyright"]
+        if copyright != "":
+            c_count = Copyright.objects.filter(holder=copyright).count()
+            if c_count >= 1:
+                copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
+                request.data["copyright"] = copyright_data.pk
+            else:
+                copyright_obj = Copyright(holder=copyright)
+                copyright_obj.save()
+                copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
+                request.data["copyright"] = copyright_data.pk
         if "file" in request.data:
             medium_file = request.data["file"]
 
@@ -629,6 +669,13 @@ class MediumUploadView(APIView):
             request.data["height"] = height
             request.data["width"] = width
         tags = []
+        tags_values = request.data["tags_value"]
+        if tags_values != "":
+            tags_str_count = len(tags_values.split(","))
+            print(tags_str_count)
+            tags_split = tags_values.split(",")
+            for i in range(tags_str_count):
+                tags.append(tags_split[i])
         if "people" in request.data:
             tags.append(request.data["people"])
         if "location_value" in request.data:
