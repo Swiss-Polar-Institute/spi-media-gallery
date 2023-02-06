@@ -79,6 +79,10 @@ class ViewsTest(TestCase):
                     "medium_type": "P",
                     "people": "fred",
                     "project": "joe",
+                    "photographer_value": "bar",
+                    "copyright": "Ducati",
+                    "license": "900SS",
+                    "tags_value": ["Landscape", "Landscape/test"],
                     "file": fp,
                 },
             )
@@ -91,4 +95,4 @@ class ViewsTest(TestCase):
             m.datetime_taken, datetime.strptime("2002-02-02 +0000", "%Y-%m-%d %z")
         )
         self.assertEqual(m.medium_type, "P")
-        self.assertEqual(new_tags.count(), 2)
+        self.assertEqual(new_tags.count(), 3)
