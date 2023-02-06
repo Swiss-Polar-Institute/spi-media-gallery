@@ -5,6 +5,9 @@ $(document).ready(function () {
         var location_id = $("#location_id").val();
         var photographer_id = $("#photographer_id").val();
         var people_id = $("#people_id").val();
+        var media_type = $("#media_type").val();
+        var order_by_year = $("#order_by_year").val();
+        var preselect_status = $("#preselect_status").val();
         $.ajax({
             url: '/medium/',
             type: 'GET',
@@ -12,7 +15,10 @@ $(document).ready(function () {
                 project_id: project_id,
                 location_id: location_id,
                 photographer_id: photographer_id,
-                people_id: people_id
+                people_id: people_id,
+                media_type: media_type,
+                order_by_year: order_by_year,
+                preselect_status: preselect_status,
             },
             success: function (response) {
                 $('#page-content').html(response.html);
@@ -58,7 +64,6 @@ $(document).ready(function () {
             type: 'GET',
             data: {orderby: order_by, search_term: search_term},
             success: function (response) {
-                console.log("FUCK");
                 $('#page-content').html(response.html);
                 $('#medium_count').html(response.count);
                 $('#search_term').html(response.search_term);
@@ -76,6 +81,15 @@ $(document).ready(function () {
         filter_projects()
     });
     $("#people_id").on('change', function () {
+        filter_projects()
+    });
+    $("#media_type").on('change', function () {
+        filter_projects()
+    });
+    $("#order_by_year").on('change', function () {
+        filter_projects()
+    });
+    $("#preselect_status").on('change', function () {
         filter_projects()
     });
     $("#order_by_id").on('change', function () {
@@ -114,12 +128,14 @@ $(document).ready(function () {
         var fileId = $(this).data('file-id');
         var fileTitle = $(this).data('file-title');
         var fileDesc = $(this).data('file-desc');
+        var date_archived = $(this).data('file-datearchived');
         var is_archive = $(this).data('file-archive');
         var order = $(this).data('file-order');
-        console.log(order);
+        console.log(date_archived);
         $(".modal-body-spi #fileid").val(fileId);
         $(".modal-body-spi #title").val(fileTitle);
         $(".modal-body-spi #description").val(fileDesc);
+        $(".modal-body-spi #datearchived").val(date_archived);
         if(order != "None" ) {
             $(".modal-body-spi #order").val(order);
         }else{
@@ -150,6 +166,15 @@ $(document).ready(function () {
             url: '/medium/',
             type: 'GET',
             data: {is_image_of_the_week: is_image_of_the_week, id: mfileid},
+            cache: false,
+            beforeSend:function(){
+                if(confirm("Are you sure?")){
+
+                    } else {
+                        location.reload(true);
+                        return false;
+                    }
+            },
             success: function (response) {
                 console.log("True");
             }
@@ -161,5 +186,31 @@ $(document).ready(function () {
         } else if ($(this).not(":checked")) {
             $(this).val("False");
         }
+    });
+    function medium_ajax() {
+       var image_comment = $("#image_comment").val();
+       var is_pre_select = $("#is_pre_select").val();
+       var mfileid = $("#medium_id").val();
+        console.log("test");
+        $.ajax({
+            url: '/preselect_image/',
+            type: 'GET',
+            data: {image_comment: image_comment, is_pre_select: is_pre_select, id: mfileid},
+            cache: false,
+            success: function (response) {
+                console.log("True");
+            }
+        });
+    }
+    $(document).on("change", "#is_pre_select", function () {
+        if ($(this).is(":checked")) {
+            $(this).val("True");
+        } else if ($(this).not(":checked")) {
+            $(this).val("False");
+        }
+        medium_ajax();
+    });
+    $(document).on("change keyup paste", "#image_comment", function () {
+        medium_ajax();
     });
 });

@@ -15,6 +15,7 @@
         <div class="row pd-15">
                 <div class="col-lg-2">
                    <select id="project_id">
+                            <option value="">Select Project</option>
                       {% for project in projects %}
                             <option value="{{ project.id }}">{{ project.name|cut:'SPI project/' }}</option>
                       {% endfor %}
@@ -41,6 +42,13 @@
                       {% endfor %}
                    </select>
                 </div>
+                <div class="col-lg-2">
+                   <select id="media_type">
+                      <option value="">Media Type</option>
+                      <option value="P">Images</option>
+                      <option value="V">Video</option>
+                   </select>
+                </div>
        </div>
        <div class="row pd-15">
                 <div class="col-lg-2">
@@ -51,6 +59,21 @@
                       <option value="">Order by</option>
                       <option value="datetime_taken">Date ASC</option>
                       <option value="-datetime_taken">Date DESC</option>
+                   </select>
+                </div>
+                <div class="col-lg-2">
+                   <select id="order_by_year">
+                      <option value="">Order by Year</option>
+                      {% for y in year_range %}
+                        <option value="{{ y }}">{{ y }}</option>
+                      {% endfor %}
+                   </select>
+                </div>
+                <div class="col-lg-2">
+                   <select id="preselect_status">
+                      <option value="">Select status</option>
+                      <option value="True">Preselect</option>
+                      <option value="False">Not Preselect</option>
                    </select>
                 </div>
        </div>
@@ -100,6 +123,8 @@ $(window).scroll(function () {
        var location_id = $("#location_id").val();
        var photographer_id = $("#photographer_id").val();
        var people_id = $("#people_id").val();
+       var media_type = $("#media_type").val();
+       var order_by_year = $("#order_by_year").val();
        $.ajax({
            url: '/medium/',
            type: "get",
@@ -108,7 +133,9 @@ $(window).scroll(function () {
                project_id: project_id,
                location_id: location_id,
                photographer_id: photographer_id,
-               people_id: people_id
+               people_id: people_id,
+               media_type: media_type,
+               order_by_year: order_by_year
            },
            dataType: 'json',
            beforeSend: function(){

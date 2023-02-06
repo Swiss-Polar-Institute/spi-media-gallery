@@ -1,5 +1,6 @@
 {% extends '_base.tmpl' %}
 {% load leaflet_tags %}
+{% load static %}
 {% block title %}SPI Media Gallery - Display media{% endblock %}
 
 {% block extra_head %}
@@ -102,14 +103,31 @@
                     {% else %}
                         <p>Photo doesn't have location information at the moment.</p>
                     {% endif %}
-                    Go to random:
-                    {% include "_random_selection.tmpl" %}
+
                     <p>
                     <small>
                         File path: {{ medium.file.object_storage_key }}
                     </small>
                     </p>
+                    <div class="form-group">
+                        <label for="image_comment">Comment</label>
+                         <textarea class="form-control" id="image_comment" name="image_comment" rows="4" cols="30">{{ medium.image_comment }}</textarea>
+                    </div>
+                    <div class="form-check">
+                        {% if medium.is_preselect == True %}
+                           <input type="checkbox" class="form-check-input is_pre_select" name="is_pre_select"
+                           id="is_pre_select" value="{{ medium.is_preselect }}" checked>
+                        {% else %}
+                            <input type="checkbox" class="form-check-input is_pre_select" name="is_pre_select"
+                            id="is_pre_select" value="{{ medium.is_preselect }}">
+                        {% endif %}
+                        <label class="form-check-label" for="is_pre_select">Preselect</label>
+                        <input type="hidden" id="medium_id" value="{{ medium.id }}">
+                    </div>
                 </div>
             </div>
         </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="{% static '/js/project_search.js' %}"></script>
 {% endblock %}

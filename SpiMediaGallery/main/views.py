@@ -612,6 +612,57 @@ class ImportFromProjectApplicationCallback(View):
 class MediumUploadView(APIView):
     def post(self, request):
         request.data._mutable = True
+        photographer = request.data["photographer_value"]
+        if photographer != "":
+            photographer_str_count = len(photographer.split())
+            if photographer_str_count > 1:
+                photographername_split = photographer.split()
+                p_count = Photographer.objects.filter(first_name=photographername_split[0],
+                                                      last_name=photographername_split[1]).count()
+                if p_count >= 1:
+                    photographers = Photographer.objects.filter(first_name=photographername_split[0],
+                                                                last_name=photographername_split[1])[:1].get()
+                    request.data["photographer"] = photographers.pk
+                else:
+                    photographer_obj = Photographer(first_name=photographername_split[0],
+                                                    last_name=photographername_split[1])
+                    photographer_obj.save()
+                    photographers = Photographer.objects.filter(first_name=photographername_split[0],
+                                                                last_name=photographername_split[1])[:1].get()
+                    request.data["photographer"] = photographers.pk
+            else:
+                p_count = Photographer.objects.filter(first_name=photographer).count()
+                if p_count >= 1:
+                    photographers = Photographer.objects.filter(first_name=photographer)[:1].get()
+                    request.data["photographer"] = photographers.pk
+                else:
+                    photographer_obj = Photographer(first_name=photographer)
+                    photographer_obj.save()
+                    photographers = Photographer.objects.filter(first_name=photographer)[:1].get()
+                    request.data["photographer"] = photographers.pk
+
+        copyright = request.data["copyright"]
+        if copyright != "":
+            c_count = Copyright.objects.filter(holder=copyright).count()
+            if c_count >= 1:
+                copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
+                request.data["copyright"] = copyright_data.pk
+            else:
+                copyright_obj = Copyright(holder=copyright, public_text=copyright)
+                copyright_obj.save()
+                copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
+                request.data["copyright"] = copyright_data.pk
+        license = request.data["license"]
+        if license != "":
+            l_count = License.objects.filter(name=license).count()
+            if l_count >= 1:
+                license_data = License.objects.filter(name=license)[:1].get()
+                request.data["license"] = license_data.pk
+            else:
+                license_obj = License(name=license, public_text=license)
+                license_obj.save()
+                license_data = License.objects.filter(name=license)[:1].get()
+                request.data["license"] = license_data.pk
         if "file" in request.data:
             medium_file = request.data["file"]
 
@@ -629,6 +680,13 @@ class MediumUploadView(APIView):
             request.data["height"] = height
             request.data["width"] = width
         tags = []
+        tags_values = request.data["tags_value"]
+        if tags_values != "":
+            tags_str_count = len(tags_values.split(","))
+            print(tags_str_count)
+            tags_split = tags_values.split(",")
+            for i in range(tags_str_count):
+                tags.append(tags_split[i])
         if "people" in request.data:
             tags.append(request.data["people"])
         if "location_value" in request.data:
@@ -722,6 +780,7 @@ class SelectionView(TemplateView):
         title = request.POST["title"]
         image_desc = request.POST["image_desc"]
         order = request.POST["order"]
+        date_archived = request.POST["date_archived"]
         if 'is_archive' in request.POST:
             is_archive = request.POST['is_archive']
         else:
@@ -730,6 +789,7 @@ class SelectionView(TemplateView):
         medium.title = title
         medium.image_desc = image_desc
         medium.order = order
+        medium.date_archived = date_archived
         medium.is_archive = is_archive
         medium.save()
         messages.success(request, "Changes successfully saved.")
@@ -758,8 +818,22 @@ class MediumView(TemplateView):
                 medium = Medium.objects.get(id=id)
                 medium.is_image_of_the_week = is_image_of_the_week
                 medium.save()
-
-            information, qs = search_for_tag_name_ids(list_of_tag_ids)
+            if request.GET.get("project_id") != "":
+                information, qs = search_for_tag_name_ids(list_of_tag_ids)
+            else:
+                qs = MediumForView.objects.order_by("datetime_taken")
+            if "media_type" in request.GET:
+                media_type = request.GET.get("media_type")
+                if media_type != "":
+                    qs = qs.filter(medium_type=media_type)
+            if "order_by_year" in request.GET:
+                order_by_year = request.GET.get("order_by_year")
+                if order_by_year != "":
+                    qs = qs.filter(datetime_taken__year=order_by_year)
+            if "preselect_status" in request.GET:
+                preselect_status = request.GET.get("preselect_status")
+                if preselect_status != "":
+                    qs = qs.filter(is_preselect=preselect_status)
             qs_count = qs.count()
             number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
@@ -793,7 +867,12 @@ class MediumView(TemplateView):
                 qs = MediumForView.objects.order_by("datetime_taken")
                 qs_count = qs.count()
                 page_number = page + 1
-                information, qs = search_for_tag_name_ids(list_of_tag_ids)
+                if request.GET.get("project_id") != "":
+                    information, qs = search_for_tag_name_ids(list_of_tag_ids)
+                if "media_type" in request.GET:
+                    media_type = request.GET.get("media_type")
+                    if request.GET.get("media_type") != "":
+                        qs = qs.filter(medium_type=media_type)
                 qs = qs[starting_number:ending_number]
 
                 html = render_to_string("filter_projects_medium.tmpl", {"medium": qs})
@@ -814,6 +893,7 @@ class MediumView(TemplateView):
             peoples = TagName.objects.filter(name__icontains="people")
             number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
+            year_range = range(2013, (datetime.datetime.now().year))
             try:
                 page_number = int(request.GET.get("page", 1))
             except ValueError:
@@ -836,6 +916,7 @@ class MediumView(TemplateView):
                 "photographers": photographers,
                 "peoples": peoples,
                 "count": count,
+                "year_range": year_range,
             },
         )
 
@@ -957,3 +1038,18 @@ def get_license_list(request):
 def get_photographer_list(request):
     photographer_list = Photographer.objects.all()
     return {"photographers_list": photographer_list}
+
+
+def Preselect(request):
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        image_comment = request.GET.get("image_comment")
+        is_preselect = request.GET.get("is_pre_select")
+        id = request.GET.get("id")
+        medium = Medium.objects.get(id=id)
+        medium.image_comment = image_comment
+        medium.is_preselect = is_preselect
+        medium.save()
+        return HttpResponse(status=200)
+
+
+

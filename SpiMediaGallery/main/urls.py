@@ -60,4 +60,5 @@ urlpatterns = [
     path("selection/", SelectionView.as_view(), name="selection_view"),
     path("medium/", MediumView.as_view(), name="medium_view"),
     path("search_all/", views.SearchAll, name="search_all"),
+    path("preselect_image/", views.Preselect, name="preselect_image"),
 ]
