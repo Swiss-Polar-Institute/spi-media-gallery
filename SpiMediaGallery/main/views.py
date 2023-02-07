@@ -823,6 +823,10 @@ class MediumView(TemplateView):
                 medium.is_image_of_the_week = is_image_of_the_week
                 medium.save()
             information, qs = search_for_tag_name_ids(list_of_tag_ids)
+            # if request.GET.get("project_id") != "":
+            #     information, qs = search_for_tag_name_ids(list_of_tag_ids)
+            # else:
+            #     qs = MediumForView.objects.order_by("datetime_taken")
             if "media_type" in request.GET:
                 media_type = request.GET.get("media_type")
                 if media_type != "":
