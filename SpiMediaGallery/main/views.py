@@ -801,27 +801,28 @@ class MediumView(TemplateView):
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
             list_of_tag_ids = []
             if "project_id" in request.GET:
-                project_id = request.GET.get("project_id")
-                list_of_tag_ids.append(project_id)
+                if request.GET.get("project_id") != "":
+                    project_id = request.GET.get("project_id")
+                    list_of_tag_ids.append(project_id)
             if "location_id" in request.GET:
-                location_id = request.GET.get("location_id")
-                list_of_tag_ids.append(location_id)
+                if request.GET.get("location_id") != "":
+                    location_id = request.GET.get("location_id")
+                    list_of_tag_ids.append(location_id)
             if "photographer_id" in request.GET:
-                photographer_id = request.GET.get("photographer_id")
-                list_of_tag_ids.append(photographer_id)
+                if request.GET.get("photographer_id") != "":
+                    photographer_id = request.GET.get("photographer_id")
+                    list_of_tag_ids.append(photographer_id)
             if "people_id" in request.GET:
-                people_id = request.GET.get("people_id")
-                list_of_tag_ids.append(people_id)
+                if request.GET.get("people_id") != "":
+                    people_id = request.GET.get("people_id")
+                    list_of_tag_ids.append(people_id)
             if "is_image_of_the_week" in request.GET:
                 is_image_of_the_week = request.GET.get("is_image_of_the_week")
                 id = request.GET.get("id")
                 medium = Medium.objects.get(id=id)
                 medium.is_image_of_the_week = is_image_of_the_week
                 medium.save()
-            if request.GET.get("project_id") != "":
-                information, qs = search_for_tag_name_ids(list_of_tag_ids)
-            else:
-                qs = MediumForView.objects.order_by("datetime_taken")
+            information, qs = search_for_tag_name_ids(list_of_tag_ids)
             if "media_type" in request.GET:
                 media_type = request.GET.get("media_type")
                 if media_type != "":
