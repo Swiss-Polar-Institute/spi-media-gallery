@@ -21,15 +21,17 @@
                       {% endfor %}
                    </select>
                 </div>
-                <div class="col-lg-2">
+                <div class="col-lg-3">
                    <select id="location_id">
+                   <option value="">Select Location</option>
                       {% for location in locations %}
                             <option value="{{ location.id }}">{{ location.name|cut:'Location/' }}</option>
                       {% endfor %}
                    </select>
                 </div>
-                <div class="col-lg-2">
+                <div class="col-lg-3">
                    <select id="photographer_id">
+                      <option value="">Select Photographer</option>
                       {% for photographer in photographers %}
                             <option value="{{ photographer.id }}">{{ photographer.name|cut:'Photographer/' }}</option>
                       {% endfor %}
@@ -37,6 +39,7 @@
                 </div>
                 <div class="col-lg-2">
                    <select id="people_id">
+                      <option value="">Select People</option>
                       {% for people in peoples %}
                             <option value="{{ people.id }}">{{ people.name|cut:'People/' }}</option>
                       {% endfor %}
