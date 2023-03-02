@@ -53,13 +53,13 @@ services:
       - minio
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc alias set myminio http://0.0.0.0:9000 minio minio123;
-      /usr/bin/mc mb myminio/spi-media-gallery-original;
-      /usr/bin/mc policy set public myminio/spi-media-gallery-original;
-      /usr/bin/mc mb myminio/spi-media-gallery-processed
-      /usr/bin/mc policy set public myminio/spi-media-gallery-processed;
-      /usr/bin/mc mb myminio/spi-media-gallery-imported
-      /usr/bin/mc policy set public myminio/spi-media-gallery-imported;
+      mc alias set myminio http://minio:9000 minio minio123;
+      mc mb myminio/spi-media-gallery-original;
+      mc policy set public myminio/spi-media-gallery-original;
+      mc mb myminio/spi-media-gallery-processed
+      mc policy set public myminio/spi-media-gallery-processed;
+      mc mb myminio/spi-media-gallery-imported
+      mc policy set public myminio/spi-media-gallery-imported;
       exit 0;
       "
 

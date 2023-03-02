@@ -95,4 +95,4 @@ class ViewsTest(TestCase):
             m.datetime_taken, datetime.strptime("2002-02-02 +0000", "%Y-%m-%d %z")
         )
         self.assertEqual(m.medium_type, "P")
-        self.assertEqual(new_tags.count(), 3)
+        self.assertEqual(new_tags.count(), 4)

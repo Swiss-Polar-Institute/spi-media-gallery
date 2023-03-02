@@ -1,9 +1,10 @@
 from django.utils import timezone
 from rest_framework import serializers
 
+from .medium_for_view import MediumForView
 from .models import Copyright, File, License, Medium, Photographer, Tag
 from .utils import set_tags
-from .medium_for_view import MediumForView
+
 
 class TageSerializer(serializers.ModelSerializer):
     importer = serializers.CharField(default="M")
@@ -69,7 +70,6 @@ class MediumDataSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['file'] = MediumForView.large_resolution_url(instance)
+        representation["file"] = MediumForView.large_resolution_url(instance)
 
         return representation
-    

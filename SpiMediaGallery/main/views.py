@@ -26,11 +26,20 @@ from rest_framework.views import APIView
 from . import utils
 from .decorators import api_key_required
 from .medium_for_view import MediumForView
-from .models import (Copyright, File, License, Medium, MediumResized,
-                     Photographer, RemoteMedium, TagName)
 from .serializers import MediumDataSerializer, MediumSerializer
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
+
+from .models import (  # isort:skip
+    Copyright,
+    File,
+    License,
+    Medium,
+    MediumResized,
+    Photographer,
+    RemoteMedium,
+    TagName,
+)
 
 from .forms import (  # isort:skip
     AddReferrerForm,
@@ -617,28 +626,40 @@ class MediumUploadView(APIView):
             photographer_str_count = len(photographer.split())
             if photographer_str_count > 1:
                 photographername_split = photographer.split()
-                p_count = Photographer.objects.filter(first_name=photographername_split[0],
-                                                      last_name=photographername_split[1]).count()
+                p_count = Photographer.objects.filter(
+                    first_name=photographername_split[0],
+                    last_name=photographername_split[1],
+                ).count()
                 if p_count >= 1:
-                    photographers = Photographer.objects.filter(first_name=photographername_split[0],
-                                                                last_name=photographername_split[1])[:1].get()
+                    photographers = Photographer.objects.filter(
+                        first_name=photographername_split[0],
+                        last_name=photographername_split[1],
+                    )[:1].get()
                     request.data["photographer"] = photographers.pk
                 else:
-                    photographer_obj = Photographer(first_name=photographername_split[0],
-                                                    last_name=photographername_split[1])
+                    photographer_obj = Photographer(
+                        first_name=photographername_split[0],
+                        last_name=photographername_split[1],
+                    )
                     photographer_obj.save()
-                    photographers = Photographer.objects.filter(first_name=photographername_split[0],
-                                                                last_name=photographername_split[1])[:1].get()
+                    photographers = Photographer.objects.filter(
+                        first_name=photographername_split[0],
+                        last_name=photographername_split[1],
+                    )[:1].get()
                     request.data["photographer"] = photographers.pk
             else:
                 p_count = Photographer.objects.filter(first_name=photographer).count()
                 if p_count >= 1:
-                    photographers = Photographer.objects.filter(first_name=photographer)[:1].get()
+                    photographers = Photographer.objects.filter(
+                        first_name=photographer
+                    )[:1].get()
                     request.data["photographer"] = photographers.pk
                 else:
                     photographer_obj = Photographer(first_name=photographer)
                     photographer_obj.save()
-                    photographers = Photographer.objects.filter(first_name=photographer)[:1].get()
+                    photographers = Photographer.objects.filter(
+                        first_name=photographer
+                    )[:1].get()
                     request.data["photographer"] = photographers.pk
 
         copyright = request.data["copyright"]
@@ -693,6 +714,8 @@ class MediumUploadView(APIView):
             tags.append(request.data["location_value"])
         if "project" in request.data:
             tags.append(request.data["project"])
+        if "photographer_value" in request.data:
+            tags.append(f"Photographer/{request.data['photographer_value']}")
         request.data["tags"] = tags
         serializer = MediumSerializer(data=request.data)
         if serializer.is_valid():
@@ -707,11 +730,15 @@ class SelectionView(TemplateView):
 
             if "orderby" in request.GET:
                 order_by_text = request.GET.get("orderby")
-                qs = MediumForView.objects.filter(is_image_of_the_week=True).order_by(order_by_text)
+                qs = MediumForView.objects.filter(is_image_of_the_week=True).order_by(
+                    order_by_text
+                )
                 if "archive_type" in request.GET:
                     archive_type = request.GET.get("archive_type")
                     if archive_type != "":
-                        qs = MediumForView.objects.filter(is_image_of_the_week=True, is_archive=archive_type).order_by(order_by_text)
+                        qs = MediumForView.objects.filter(
+                            is_image_of_the_week=True, is_archive=archive_type
+                        ).order_by(order_by_text)
                 qs_count = qs.count()
                 number_results_per_page = 15
                 paginator = Paginator(qs, number_results_per_page)
@@ -781,8 +808,8 @@ class SelectionView(TemplateView):
         image_desc = request.POST["image_desc"]
         order = request.POST["order"]
         date_archived = request.POST["date_archived"]
-        if 'is_archive' in request.POST:
-            is_archive = request.POST['is_archive']
+        if "is_archive" in request.POST:
+            is_archive = request.POST["is_archive"]
         else:
             is_archive = False
         medium = Medium.objects.get(id=id)
@@ -947,9 +974,7 @@ def SearchAll(request):
             | MediumForView.objects.filter(
                 file__object_storage_key__icontains=search_term
             )
-            | MediumForView.objects.filter(
-                tags__name__name__icontains=search_term
-            )
+            | MediumForView.objects.filter(tags__name__name__icontains=search_term)
         )
         qs_count = qs.count()
         page_number = page + 1
@@ -969,12 +994,20 @@ def SearchAll(request):
     if "orderby" in request.GET:
         search_term = request.GET["search_term"]
         qs = (
-                MediumForView.objects.filter(photographer__first_name__icontains=search_term)
-                | MediumForView.objects.filter(photographer__last_name__icontains=search_term)
-                | MediumForView.objects.filter(location__icontains=search_term)
-                | MediumForView.objects.filter(copyright__public_text__icontains=search_term)
-                | MediumForView.objects.filter(file__object_storage_key__icontains=search_term)
-                | MediumForView.objects.filter(tags__name__name__icontains=search_term)
+            MediumForView.objects.filter(
+                photographer__first_name__icontains=search_term
+            )
+            | MediumForView.objects.filter(
+                photographer__last_name__icontains=search_term
+            )
+            | MediumForView.objects.filter(location__icontains=search_term)
+            | MediumForView.objects.filter(
+                copyright__public_text__icontains=search_term
+            )
+            | MediumForView.objects.filter(
+                file__object_storage_key__icontains=search_term
+            )
+            | MediumForView.objects.filter(tags__name__name__icontains=search_term)
         ).order_by(request.GET["orderby"])
         count = qs.count()
         number_results_per_page = 15
@@ -1018,7 +1051,9 @@ def SearchAll(request):
 
 class MediumList(APIView):
     def get(self, request):
-        qs = MediumForView.objects.filter(is_image_of_the_week=True, is_archive=False).order_by('-order')
+        qs = MediumForView.objects.filter(
+            is_image_of_the_week=True, is_archive=False
+        ).order_by("-order")
         serializer = MediumDataSerializer(qs, many=True)
         return Response(serializer.data)
 
@@ -1055,6 +1090,3 @@ def Preselect(request):
         medium.is_preselect = is_preselect
         medium.save()
         return HttpResponse(status=200)
-
-
-

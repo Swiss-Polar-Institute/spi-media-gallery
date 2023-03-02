@@ -57,7 +57,7 @@ document.getElementById("medium_form").addEventListener("submit", function(event
     }
     let project = "";
     if(document.getElementById("project").value) {
-        project = "Project/" + document.getElementById("project").value;
+        project = "SPI project/" + document.getElementById("project").value;
     }
     let copyright = document.getElementById("copyright").value;
     let license = document.getElementById("license").value;
