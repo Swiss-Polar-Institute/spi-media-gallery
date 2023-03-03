@@ -38,13 +38,19 @@
                    <select id="archive_id_selection">
                       <option value="">Select status</option>
                       <option value="True">Archive</option>
-                      <option value="False">Not archive</option>
+                      <option value="False" selected="selected">Online</option>
                    </select>
                 </div>
        </div>
+       <p>by default, the feature image is the heaviest</p>
        <div class="row" id="page-content-selection">
         {% for fields in medium %}
             <div class="col-lg-4 selection-img medium-gallery-img">
+                <img src="{% static 'images/edit.svg' %}" class="updatemediumModal_btn" href="#" data-toggle="modal"
+                            data-target="#updatemediumModal" id="updatemediumModal_btn" data-file-id="{{fields.id}}"
+                             data-file-title="{{fields.title}}" data-file-desc="{{fields.image_desc}}"
+                             data-file-datearchived="{{ fields.date_archived|date:"Y-m-d" }}" data-file-order="{{fields.order}}"
+                             data-file-archive="{{fields.is_archive}}" >
               <a href="/media/{{ fields.id }}">
                 {% if fields.thumbnail_type == "P" %}
                   <img src="{{ fields.thumbnail_url }}" >
@@ -54,12 +60,6 @@
                   </video>
                 {% endif %}
                 </a>
-                <img src="{% static 'images/edit.svg' %}" class="updatemediumModal_btn" href="#" data-toggle="modal"
-                            data-target="#updatemediumModal" id="updatemediumModal_btn" data-file-id="{{fields.id}}"
-                             data-file-title="{{fields.title}}" data-file-desc="{{fields.image_desc}}"
-                             data-file-datearchived="{{ fields.date_archived|date:"Y-m-d" }}" data-file-order="{{fields.order}}"
-                             data-file-archive="{{fields.is_archive}}" >
-
             </div>
         {% endfor %}
         </div>

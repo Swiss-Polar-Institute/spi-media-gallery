@@ -124,20 +124,20 @@ class CopyrightAdmin(admin.ModelAdmin):
 
 class TagAdmin(admin.ModelAdmin):
     list_display = (
-        "tag_name",
+        "name_name",
         "importer",
     )
     ordering = (
-        "name",
+        "name__name",
         "importer",
     )
     search_fields = (
-        "tag__name",
+        "name__name",
         "importer",
     )
     list_select_related = ("name",)
 
-    def tag_name(self, obj):
+    def name_name(self, obj):
         if obj.name is not None:
             return obj.name.name
 

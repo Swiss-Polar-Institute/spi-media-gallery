@@ -130,11 +130,9 @@ select {
     left: 0;
 }
 .updatemediumModal_btn{
-    position: absolute;
-    top: 30px;
-    left: 30px;
     width: 20px;
     cursor: pointer;
+    margin-bottom: 5px;
 }
 .updatemediumModal_medium_btn{
     position: absolute;
@@ -170,7 +168,7 @@ select {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border: 1px solid #DC0220;
+    border: 3px solid #0093ff;
 }
 .loading-image {
   position: absolute;

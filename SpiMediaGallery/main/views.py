@@ -20,6 +20,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.generic import TemplateView, View
 from rest_framework import status
+from rest_framework.authentication import BaseAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -202,6 +203,11 @@ def search_for_filenames(filename):
     )
 
     return information, qs
+
+
+class BasicAuthentication(BaseAuthentication):
+    def authenticate(self, request):
+        return None
 
 
 class Search(TemplateView):
@@ -619,6 +625,8 @@ class ImportFromProjectApplicationCallback(View):
 
 
 class MediumUploadView(APIView):
+    authentication_classes = [BasicAuthentication]
+
     def post(self, request):
         request.data._mutable = True
         photographer = request.data["photographer_value"]
@@ -769,7 +777,9 @@ class SelectionView(TemplateView):
             )
 
         try:
-            qs = MediumForView.objects.filter(is_image_of_the_week=True)
+            qs = MediumForView.objects.filter(
+                is_image_of_the_week=True, is_archive=False
+            )
             count = qs.count()
             locations = TagName.objects.filter(name__icontains="location")
             projects = TagName.objects.filter(name__icontains="spi project")
@@ -816,7 +826,8 @@ class SelectionView(TemplateView):
         medium.title = title
         medium.image_desc = image_desc
         medium.order = order
-        medium.date_archived = date_archived
+        if date_archived != "":
+            medium.date_archived = date_archived
         medium.is_archive = is_archive
         medium.save()
         messages.success(request, "Changes successfully saved.")
@@ -1050,6 +1061,8 @@ def SearchAll(request):
 
 
 class MediumList(APIView):
+    authentication_classes = [BasicAuthentication]
+
     def get(self, request):
         qs = MediumForView.objects.filter(
             is_image_of_the_week=True, is_archive=False
@@ -1059,6 +1072,8 @@ class MediumList(APIView):
 
 
 class MediumBanner(APIView):
+    authentication_classes = [BasicAuthentication]
+
     def get(self, request):
         qs = MediumForView.objects.filter(is_image_of_the_week=True, medium_type="P")
         serializer = MediumDataSerializer(qs, many=True)
