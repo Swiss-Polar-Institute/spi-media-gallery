@@ -935,6 +935,37 @@ class MediumView(TemplateView):
             photographers = TagName.objects.filter(name__icontains="photographer")
             peoples = TagName.objects.filter(name__icontains="people")
             number_results_per_page = 15
+            list_of_cookie_tag_ids = []
+            if "project_id" in request.COOKIES.keys():
+                project_id = request.COOKIES.get("project_id", "default")
+                if project_id != "":
+                    list_of_cookie_tag_ids.append(project_id)
+            if "location_id" in request.COOKIES.keys():
+                location_id = request.COOKIES.get("location_id", "default")
+                if location_id != "":
+                    list_of_cookie_tag_ids.append(location_id)
+            if "photographer_id" in request.COOKIES.keys():
+                photographer_id = request.COOKIES.get("photographer_id", "default")
+                if photographer_id != "":
+                    list_of_cookie_tag_ids.append(photographer_id)
+            if "people_id" in request.COOKIES.keys():
+                people_id = request.COOKIES.get("people_id", "default")
+                if people_id != "":
+                    list_of_cookie_tag_ids.append(people_id)
+            information, qs = search_for_tag_name_ids(list_of_cookie_tag_ids)
+            if "media_type" in request.COOKIES.keys():
+                media_type = request.COOKIES.get("media_type", "default")
+                if media_type != "":
+                    qs = qs.filter(medium_type=media_type)
+            if "order_by_year" in request.COOKIES.keys():
+                order_by_year = request.COOKIES.get("order_by_year", "default")
+                if order_by_year != "":
+                    qs = qs.filter(datetime_taken__year=order_by_year)
+            if "preselect_status" in request.COOKIES.keys():
+                preselect_status = request.COOKIES.get("preselect_status", "default")
+                if preselect_status != "":
+                    qs = qs.filter(is_preselect=preselect_status)
+            count = qs.count()
             paginator = Paginator(qs, number_results_per_page)
             year_range = range(2013, (datetime.datetime.now().year))
             try:
