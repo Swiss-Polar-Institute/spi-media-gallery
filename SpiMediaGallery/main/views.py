@@ -1041,6 +1041,7 @@ def SearchAll(request):
             search_term = request.COOKIES.get('search_term')
         else:
             search_term = request.GET["search_term"]
+        order_by = request.GET["orderby"]
         qs = (
             MediumForView.objects.filter(
                 photographer__first_name__icontains=search_term
@@ -1056,7 +1057,9 @@ def SearchAll(request):
                 file__object_storage_key__icontains=search_term
             )
             | MediumForView.objects.filter(tags__name__name__icontains=search_term)
-        ).order_by(request.GET["orderby"])
+        )
+        if order_by != "":
+            qs = qs.order_by(order_by)
         count = qs.count()
         number_results_per_page = 15
         paginator = Paginator(qs, number_results_per_page)
