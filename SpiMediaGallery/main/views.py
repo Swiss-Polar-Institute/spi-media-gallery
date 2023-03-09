@@ -998,7 +998,10 @@ class MediumView(TemplateView):
 def SearchAll(request):
     if "page" in request.GET:
         page = int(request.GET.get("page", None))
-        search_term = request.GET.get("search_term", None)
+        if "search_term" in request.COOKIES.keys():
+            search_term = request.COOKIES.get('search_term')
+        else:
+            search_term = request.GET.get("search_term", None)
         number_results_per_page = 15
         starting_number = (page - 1) * number_results_per_page
         ending_number = page * number_results_per_page
@@ -1034,7 +1037,10 @@ def SearchAll(request):
             content_type="application/json",
         )
     if "orderby" in request.GET:
-        search_term = request.GET["search_term"]
+        if "search_term" in request.COOKIES.keys():
+            search_term = request.COOKIES.get('search_term')
+        else:
+            search_term = request.GET["search_term"]
         qs = (
             MediumForView.objects.filter(
                 photographer__first_name__icontains=search_term
@@ -1067,7 +1073,12 @@ def SearchAll(request):
             content_type="application/json",
         )
 
-    search_term = request.POST["search_term"]
+    if request.method == "POST":
+        search_term = request.POST["search_term"]
+    else:
+        if "search_term" in request.COOKIES.keys():
+            search_term = request.COOKIES.get('search_term')
+
     qs = (
         MediumForView.objects.filter(photographer__first_name__icontains=search_term)
         | MediumForView.objects.filter(photographer__last_name__icontains=search_term)
