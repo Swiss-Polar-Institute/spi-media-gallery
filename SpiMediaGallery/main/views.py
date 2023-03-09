@@ -935,6 +935,37 @@ class MediumView(TemplateView):
             photographers = TagName.objects.filter(name__icontains="photographer")
             peoples = TagName.objects.filter(name__icontains="people")
             number_results_per_page = 15
+            list_of_cookie_tag_ids = []
+            if "project_id" in request.COOKIES.keys():
+                project_id = request.COOKIES.get("project_id", "default")
+                if project_id != "":
+                    list_of_cookie_tag_ids.append(project_id)
+            if "location_id" in request.COOKIES.keys():
+                location_id = request.COOKIES.get("location_id", "default")
+                if location_id != "":
+                    list_of_cookie_tag_ids.append(location_id)
+            if "photographer_id" in request.COOKIES.keys():
+                photographer_id = request.COOKIES.get("photographer_id", "default")
+                if photographer_id != "":
+                    list_of_cookie_tag_ids.append(photographer_id)
+            if "people_id" in request.COOKIES.keys():
+                people_id = request.COOKIES.get("people_id", "default")
+                if people_id != "":
+                    list_of_cookie_tag_ids.append(people_id)
+            information, qs = search_for_tag_name_ids(list_of_cookie_tag_ids)
+            if "media_type" in request.COOKIES.keys():
+                media_type = request.COOKIES.get("media_type", "default")
+                if media_type != "":
+                    qs = qs.filter(medium_type=media_type)
+            if "order_by_year" in request.COOKIES.keys():
+                order_by_year = request.COOKIES.get("order_by_year", "default")
+                if order_by_year != "":
+                    qs = qs.filter(datetime_taken__year=order_by_year)
+            if "preselect_status" in request.COOKIES.keys():
+                preselect_status = request.COOKIES.get("preselect_status", "default")
+                if preselect_status != "":
+                    qs = qs.filter(is_preselect=preselect_status)
+            count = qs.count()
             paginator = Paginator(qs, number_results_per_page)
             year_range = range(2013, (datetime.datetime.now().year))
             try:
@@ -967,7 +998,10 @@ class MediumView(TemplateView):
 def SearchAll(request):
     if "page" in request.GET:
         page = int(request.GET.get("page", None))
-        search_term = request.GET.get("search_term", None)
+        if "search_term" in request.COOKIES.keys():
+            search_term = request.COOKIES.get('search_term')
+        else:
+            search_term = request.GET.get("search_term", None)
         number_results_per_page = 15
         starting_number = (page - 1) * number_results_per_page
         ending_number = page * number_results_per_page
@@ -1003,7 +1037,10 @@ def SearchAll(request):
             content_type="application/json",
         )
     if "orderby" in request.GET:
-        search_term = request.GET["search_term"]
+        if "search_term" in request.COOKIES.keys():
+            search_term = request.COOKIES.get('search_term')
+        else:
+            search_term = request.GET["search_term"]
         qs = (
             MediumForView.objects.filter(
                 photographer__first_name__icontains=search_term
@@ -1036,7 +1073,12 @@ def SearchAll(request):
             content_type="application/json",
         )
 
-    search_term = request.POST["search_term"]
+    if request.method == "POST":
+        search_term = request.POST["search_term"]
+    else:
+        if "search_term" in request.COOKIES.keys():
+            search_term = request.COOKIES.get('search_term')
+
     qs = (
         MediumForView.objects.filter(photographer__first_name__icontains=search_term)
         | MediumForView.objects.filter(photographer__last_name__icontains=search_term)
