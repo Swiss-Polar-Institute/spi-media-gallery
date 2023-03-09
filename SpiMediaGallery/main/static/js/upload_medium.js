@@ -13,15 +13,15 @@ function add() {
 }
 
 function validateFileExtension(fld) {
-    if(!/(\.png|\.jpg|\.jpeg|\.mp4|\.mov|\.mkv|\.heic)$/i.test(fld.value)) {
-        alert("Invalid file type.");
+    if(!/(\.png|\.jpg|\.jpeg|\.mp4|\.mov|\.mkv|\.heic|\.avi)$/i.test(fld.value)) {
+        alert("Invalid file type. Only png, jpg, jpeg, mp4, mov mkv heic or avi are supported");
         fld.form.reset();
         fld.focus();
         return false;
     }
     const fileSize = fld.files[0].size / 1024 / 1024;
-     if (fileSize > 5) {
-        alert('File size exceeds 5 MiB');
+     if (fileSize > 100) {
+        alert('File size exceeds 100 MiB');
         fld.form.reset();
         fld.focus();
         return false;
@@ -29,7 +29,8 @@ function validateFileExtension(fld) {
      const file = fld.files[0];
      const  fileType = file['type'];
      const validImageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/heic'];
-     const validVideoTypes = ['video/mp4', 'video/mov', 'video/mkv'];
+     const validVideoTypes = ['video/mp4', 'video/mov', 'video/mkv', 'video/x-msvideo'];
+     console.log(fileType);
      if (validImageTypes.includes(fileType)) {
         document.getElementById("medium_type").value = "P";
      }
