@@ -878,9 +878,9 @@ class MediumView(TemplateView):
                 preselect_status = request.GET.get("preselect_status")
                 if preselect_status != "":
                     qs = qs.filter(is_preselect=preselect_status)
-            # if "orderby" in request.GET:
-            #     order_by_text = request.GET.get("orderby")
-            #     qs = qs.order_by(order_by_text)
+            if "orderby" in request.GET:
+                order_by_text = request.GET.get("orderby")
+                qs = qs.order_by(order_by_text)
             qs_count = qs.count()
             number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
