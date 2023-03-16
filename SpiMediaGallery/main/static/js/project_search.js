@@ -70,8 +70,7 @@ $(document).ready(function () {
         filter_projects()
     });
     $("#order_by_id").on('change', function () {
-        var the_id = $(this).val();
-        order_by_projects(the_id)
+        filter_projects()
     });
     $("#order_by_id_selection").on('change', function () {
         order_by_projects_selection()
@@ -217,6 +216,7 @@ if(typeof $.cookie != 'undefined') {
         var media_type = $("#media_type").val();
         var order_by_year = $("#order_by_year").val();
         var preselect_status = $("#preselect_status").val();
+        var orderby = $("#order_by_id").val();
         $.ajax({
             url: '/medium/',
             type: 'GET',
@@ -228,6 +228,7 @@ if(typeof $.cookie != 'undefined') {
                 media_type: media_type,
                 order_by_year: order_by_year,
                 preselect_status: preselect_status,
+                orderby: orderby,
             },
             success: function (response) {
                 $.cookie('project_id', project_id);

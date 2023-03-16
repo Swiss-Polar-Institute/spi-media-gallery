@@ -130,9 +130,14 @@ select {
     left: 0;
 }
 .updatemediumModal_btn{
+    margin-bottom: 5px;
+    position: absolute;
+    display: flex;
+    top: 30px;
+    left: 30px;
     width: 20px;
     cursor: pointer;
-    margin-bottom: 5px;
+    align-items: center;
 }
 .updatemediumModal_medium_btn{
     position: absolute;

@@ -878,6 +878,9 @@ class MediumView(TemplateView):
                 preselect_status = request.GET.get("preselect_status")
                 if preselect_status != "":
                     qs = qs.filter(is_preselect=preselect_status)
+            # if "orderby" in request.GET:
+            #     order_by_text = request.GET.get("orderby")
+            #     qs = qs.order_by(order_by_text)
             qs_count = qs.count()
             number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
@@ -888,20 +891,20 @@ class MediumView(TemplateView):
             medium = paginator.get_page(page_number)
             html = render_to_string("filter_projects_medium.tmpl", {"medium": medium})
 
-            if "orderby" in request.GET:
-                order_by_text = request.GET.get("orderby")
-                qs = MediumForView.objects.order_by(order_by_text)
-                qs_count = qs.count()
-                number_results_per_page = 15
-                paginator = Paginator(qs, number_results_per_page)
-                try:
-                    page_number = int(request.GET.get("page", 1))
-                except ValueError:
-                    page_number = 1
-                medium = paginator.get_page(page_number)
-                html = render_to_string(
-                    "filter_projects_medium.tmpl", {"medium": medium}
-                )
+            # if "orderby" in request.GET:
+            #     order_by_text = request.GET.get("orderby")
+            #     qs = MediumForView.objects.order_by(order_by_text)
+            #     qs_count = qs.count()
+            #     number_results_per_page = 15
+            #     paginator = Paginator(qs, number_results_per_page)
+            #     try:
+            #         page_number = int(request.GET.get("page", 1))
+            #     except ValueError:
+            #         page_number = 1
+            #     medium = paginator.get_page(page_number)
+            #     html = render_to_string(
+            #         "filter_projects_medium.tmpl", {"medium": medium}
+            #     )
 
             if "page" in request.GET:
                 page = int(request.GET.get("page", None))
