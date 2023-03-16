@@ -15,6 +15,7 @@ from django.core.files.images import get_image_dimensions
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.db.models import Sum
+from django.db.models.functions import ExtractYear
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -916,6 +917,10 @@ class MediumView(TemplateView):
                     media_type = request.GET.get("media_type")
                     if request.GET.get("media_type") != "":
                         qs = qs.filter(medium_type=media_type)
+                if "order_by_year" in request.GET:
+                    order_by_year = request.GET.get("order_by_year")
+                    if order_by_year != "":
+                        qs = qs.filter(datetime_taken__year=order_by_year)
                 qs = qs[starting_number:ending_number]
 
                 html = render_to_string("filter_projects_medium.tmpl", {"medium": qs})
@@ -930,6 +935,7 @@ class MediumView(TemplateView):
         try:
             qs = MediumForView.objects.order_by("datetime_taken")
             count = qs.count()
+            year_range = [x.year for x in list(qs.dates("datetime_taken", "year"))]
             locations = TagName.objects.filter(name__icontains="location")
             projects = TagName.objects.filter(name__icontains="spi project")
             photographers = TagName.objects.filter(name__icontains="photographer")
@@ -967,7 +973,6 @@ class MediumView(TemplateView):
                     qs = qs.filter(is_preselect=preselect_status)
             count = qs.count()
             paginator = Paginator(qs, number_results_per_page)
-            year_range = range(2013, (datetime.datetime.now().year))
             try:
                 page_number = int(request.GET.get("page", 1))
             except ValueError:

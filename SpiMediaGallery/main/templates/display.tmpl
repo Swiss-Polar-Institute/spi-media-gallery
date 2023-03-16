@@ -80,7 +80,7 @@
                     </p>
                     <p>
                     {% if medium.datetime_taken %}
-                        Date taken: {{ medium.datetime_taken }}
+                        Date taken: {{ medium.datetime_taken|date:"Y-m-d"}}
                     {% else %}
                         Date taken: unknown
                     {% endif %}
