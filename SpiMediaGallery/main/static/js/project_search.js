@@ -12,7 +12,12 @@ $(document).ready(function () {
             }
         });
     }
-
+if(typeof $.cookie != 'undefined') {
+    var order_by_cookie = $.cookie("order_by");
+    var archive_type_cookie = $.cookie("archive_type");
+    $('#order_by_id_selection').val(order_by_cookie).attr('selected', 'selected');
+    $('#archive_id_selection').val(archive_type_cookie).attr('selected', 'selected');
+}
     function order_by_projects_selection() {
         $('#page-content').text('Loading...');
         order_by = $("#order_by_id_selection").val()
@@ -22,6 +27,8 @@ $(document).ready(function () {
             type: 'GET',
             data: {orderby: order_by, archive_type: archive_type},
             success: function (response) {
+                $.cookie('order_by', order_by);
+                $.cookie('archive_type', archive_type);
                 $('#page-content-selection').html(response.html);
                 $('#medium_count').html(response.count);
             }
@@ -198,6 +205,7 @@ if(typeof $.cookie != 'undefined') {
     var order_by_year_cookie = $.cookie("order_by_year");
     var preselect_status_cookie = $.cookie("preselect_status");
     var search_term_cookie = $.cookie("search_term");
+    var orderby = $.cookie("orderby");
     $('#project_id').val(project_id_cookie).attr('selected', 'selected');
     $('#location_id').val(location_id_cookie).attr('selected', 'selected');
     $('#photographer_id').val(photographer_id_cookie).attr('selected', 'selected');
@@ -206,6 +214,7 @@ if(typeof $.cookie != 'undefined') {
     $('#order_by_year').val(order_by_year_cookie).attr('selected', 'selected');
     $('#preselect_status').val(preselect_status_cookie).attr('selected', 'selected');
     $('#search_all').val(search_term_cookie);
+    $('#order_by_id').val(orderby);
 }
     function filter_projects(ID) {
         $('#page-content').text('Loading...');
@@ -238,6 +247,7 @@ if(typeof $.cookie != 'undefined') {
                 $.cookie('media_type', media_type);
                 $.cookie('order_by_year', order_by_year);
                 $.cookie('preselect_status', preselect_status);
+                $.cookie('orderby', orderby);
                 $('#page-content').html(response.html);
                 $('#medium_count').html(response.count);
 
