@@ -15,7 +15,6 @@ from django.core.files.images import get_image_dimensions
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.db.models import Sum
-from django.db.models.functions import ExtractYear
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -778,9 +777,7 @@ class SelectionView(TemplateView):
             )
 
         try:
-            qs = MediumForView.objects.filter(
-                is_image_of_the_week=True
-            )
+            qs = MediumForView.objects.filter(is_image_of_the_week=True)
             if "archive_type" in request.COOKIES.keys():
                 archive_type = request.COOKIES.get("archive_type", "")
                 if archive_type != "":
@@ -888,7 +885,8 @@ class MediumView(TemplateView):
                     qs = qs.filter(is_preselect=preselect_status)
             if "orderby" in request.GET:
                 order_by_text = request.GET.get("orderby")
-                qs = qs.order_by(order_by_text)
+                if order_by_text != "":
+                    qs = qs.order_by(order_by_text)
             qs_count = qs.count()
             number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
@@ -1004,7 +1002,7 @@ def SearchAll(request):
     if "page" in request.GET:
         page = int(request.GET.get("page", None))
         if "search_term" in request.COOKIES.keys():
-            search_term = request.COOKIES.get('search_term')
+            search_term = request.COOKIES.get("search_term")
         else:
             search_term = request.GET.get("search_term", None)
         number_results_per_page = 15
@@ -1043,7 +1041,7 @@ def SearchAll(request):
         )
     if "orderby" in request.GET:
         if "search_term" in request.COOKIES.keys():
-            search_term = request.COOKIES.get('search_term')
+            search_term = request.COOKIES.get("search_term")
         else:
             search_term = request.GET["search_term"]
         order_by = request.GET["orderby"]
@@ -1085,7 +1083,7 @@ def SearchAll(request):
         search_term = request.POST["search_term"]
     else:
         if "search_term" in request.COOKIES.keys():
-            search_term = request.COOKIES.get('search_term')
+            search_term = request.COOKIES.get("search_term")
 
     qs = (
         MediumForView.objects.filter(photographer__first_name__icontains=search_term)
