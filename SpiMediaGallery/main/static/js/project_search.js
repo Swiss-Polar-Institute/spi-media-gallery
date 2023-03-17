@@ -1,55 +1,4 @@
 $(document).ready(function () {
-    var project_id_cookie = $.cookie("project_id");
-    var location_id_cookie = $.cookie("location_id");
-    var photographer_id_cookie = $.cookie("photographer_id");
-    var people_id_cookie = $.cookie("people_id");
-    var media_type_cookie = $.cookie("media_type");
-    var order_by_year_cookie = $.cookie("order_by_year");
-    var preselect_status_cookie = $.cookie("preselect_status");
-    var search_term_cookie = $.cookie("search_term");
-    $('#project_id').val(project_id_cookie).attr('selected','selected');
-    $('#location_id').val(location_id_cookie).attr('selected','selected');
-    $('#photographer_id').val(photographer_id_cookie).attr('selected','selected');
-    $('#people_id').val(people_id_cookie).attr('selected','selected');
-    $('#media_type').val(media_type_cookie).attr('selected','selected');
-    $('#order_by_year').val(order_by_year_cookie).attr('selected','selected');
-    $('#preselect_status').val(preselect_status_cookie).attr('selected','selected');
-    $('#search_all').val(search_term_cookie);
-    function filter_projects(ID) {
-        $('#page-content').text('Loading...');
-        var project_id = $("#project_id").val();
-        var location_id = $("#location_id").val();
-        var photographer_id = $("#photographer_id").val();
-        var people_id = $("#people_id").val();
-        var media_type = $("#media_type").val();
-        var order_by_year = $("#order_by_year").val();
-        var preselect_status = $("#preselect_status").val();
-        $.ajax({
-            url: '/medium/',
-            type: 'GET',
-            data: {
-                project_id: project_id,
-                location_id: location_id,
-                photographer_id: photographer_id,
-                people_id: people_id,
-                media_type: media_type,
-                order_by_year: order_by_year,
-                preselect_status: preselect_status,
-            },
-            success: function (response) {
-                $.cookie('project_id', project_id);
-                $.cookie('location_id', location_id);
-                $.cookie('photographer_id', photographer_id);
-                $.cookie('people_id', people_id);
-                $.cookie('media_type', media_type);
-                $.cookie('order_by_year', order_by_year);
-                $.cookie('preselect_status', preselect_status);
-                $('#page-content').html(response.html);
-                $('#medium_count').html(response.count);
-
-            }
-        });
-    }
 
     function order_by_projects(ID) {
         $('#page-content').text('Loading...');
@@ -63,7 +12,12 @@ $(document).ready(function () {
             }
         });
     }
-
+if(typeof $.cookie != 'undefined') {
+    var order_by_cookie = $.cookie("order_by");
+    var archive_type_cookie = $.cookie("archive_type");
+    $('#order_by_id_selection').val(order_by_cookie).attr('selected', 'selected');
+    $('#archive_id_selection').val(archive_type_cookie).attr('selected', 'selected');
+}
     function order_by_projects_selection() {
         $('#page-content').text('Loading...');
         order_by = $("#order_by_id_selection").val()
@@ -73,6 +27,8 @@ $(document).ready(function () {
             type: 'GET',
             data: {orderby: order_by, archive_type: archive_type},
             success: function (response) {
+                $.cookie('order_by', order_by);
+                $.cookie('archive_type', archive_type);
                 $('#page-content-selection').html(response.html);
                 $('#medium_count').html(response.count);
             }
@@ -121,8 +77,7 @@ $(document).ready(function () {
         filter_projects()
     });
     $("#order_by_id").on('change', function () {
-        var the_id = $(this).val();
-        order_by_projects(the_id)
+        filter_projects()
     });
     $("#order_by_id_selection").on('change', function () {
         order_by_projects_selection()
@@ -159,6 +114,7 @@ $(document).ready(function () {
         var date_archived = $(this).data('file-datearchived');
         var is_archive = $(this).data('file-archive');
         var order = $(this).data('file-order');
+        console.log(fileId);
         console.log(date_archived);
         $(".modal-body-spi #fileid").val(fileId);
         $(".modal-body-spi #title").val(fileTitle);
@@ -178,8 +134,6 @@ $(document).ready(function () {
     });
     $("#search_all").change(function () {
         var search_term = $(this).val();
-
-
     });
     $(document).on("change", ".is_image_of_the_week", function () {
         if ($(this).is(":checked")) {
@@ -242,6 +196,64 @@ $(document).ready(function () {
         medium_ajax();
     });
 });
+if(typeof $.cookie != 'undefined') {
+    var project_id_cookie = $.cookie("project_id");
+    var location_id_cookie = $.cookie("location_id");
+    var photographer_id_cookie = $.cookie("photographer_id");
+    var people_id_cookie = $.cookie("people_id");
+    var media_type_cookie = $.cookie("media_type");
+    var order_by_year_cookie = $.cookie("order_by_year");
+    var preselect_status_cookie = $.cookie("preselect_status");
+    var search_term_cookie = $.cookie("search_term");
+    var orderby = $.cookie("orderby");
+    $('#project_id').val(project_id_cookie).attr('selected', 'selected');
+    $('#location_id').val(location_id_cookie).attr('selected', 'selected');
+    $('#photographer_id').val(photographer_id_cookie).attr('selected', 'selected');
+    $('#people_id').val(people_id_cookie).attr('selected', 'selected');
+    $('#media_type').val(media_type_cookie).attr('selected', 'selected');
+    $('#order_by_year').val(order_by_year_cookie).attr('selected', 'selected');
+    $('#preselect_status').val(preselect_status_cookie).attr('selected', 'selected');
+    $('#search_all').val(search_term_cookie);
+    $('#order_by_id').val(orderby);
+}
+    function filter_projects(ID) {
+        $('#page-content').text('Loading...');
+        var project_id = $("#project_id").val();
+        var location_id = $("#location_id").val();
+        var photographer_id = $("#photographer_id").val();
+        var people_id = $("#people_id").val();
+        var media_type = $("#media_type").val();
+        var order_by_year = $("#order_by_year").val();
+        var preselect_status = $("#preselect_status").val();
+        var orderby = $("#order_by_id").val();
+        $.ajax({
+            url: '/medium/',
+            type: 'GET',
+            data: {
+                project_id: project_id,
+                location_id: location_id,
+                photographer_id: photographer_id,
+                people_id: people_id,
+                media_type: media_type,
+                order_by_year: order_by_year,
+                preselect_status: preselect_status,
+                orderby: orderby,
+            },
+            success: function (response) {
+                $.cookie('project_id', project_id);
+                $.cookie('location_id', location_id);
+                $.cookie('photographer_id', photographer_id);
+                $.cookie('people_id', people_id);
+                $.cookie('media_type', media_type);
+                $.cookie('order_by_year', order_by_year);
+                $.cookie('preselect_status', preselect_status);
+                $.cookie('orderby', orderby);
+                $('#page-content').html(response.html);
+                $('#medium_count').html(response.count);
+
+            }
+        });
+    }
 $(window).on("unload", function() {
    $.cookies.del('project_id');
    $.cookies.del('location_id');

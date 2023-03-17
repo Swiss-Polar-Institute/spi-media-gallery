@@ -779,8 +779,16 @@ class SelectionView(TemplateView):
 
         try:
             qs = MediumForView.objects.filter(
-                is_image_of_the_week=True, is_archive=False
+                is_image_of_the_week=True
             )
+            if "archive_type" in request.COOKIES.keys():
+                archive_type = request.COOKIES.get("archive_type", "")
+                if archive_type != "":
+                    qs = qs.filter(is_archive=archive_type)
+            if "order_by" in request.COOKIES.keys():
+                order_by = request.COOKIES.get("order_by", "default")
+                if order_by != "":
+                    qs = qs.order_by(order_by)
             count = qs.count()
             locations = TagName.objects.filter(name__icontains="location")
             projects = TagName.objects.filter(name__icontains="spi project")
@@ -878,6 +886,9 @@ class MediumView(TemplateView):
                 preselect_status = request.GET.get("preselect_status")
                 if preselect_status != "":
                     qs = qs.filter(is_preselect=preselect_status)
+            if "orderby" in request.GET:
+                order_by_text = request.GET.get("orderby")
+                qs = qs.order_by(order_by_text)
             qs_count = qs.count()
             number_results_per_page = 15
             paginator = Paginator(qs, number_results_per_page)
@@ -887,21 +898,6 @@ class MediumView(TemplateView):
                 page_number = 1
             medium = paginator.get_page(page_number)
             html = render_to_string("filter_projects_medium.tmpl", {"medium": medium})
-
-            if "orderby" in request.GET:
-                order_by_text = request.GET.get("orderby")
-                qs = MediumForView.objects.order_by(order_by_text)
-                qs_count = qs.count()
-                number_results_per_page = 15
-                paginator = Paginator(qs, number_results_per_page)
-                try:
-                    page_number = int(request.GET.get("page", 1))
-                except ValueError:
-                    page_number = 1
-                medium = paginator.get_page(page_number)
-                html = render_to_string(
-                    "filter_projects_medium.tmpl", {"medium": medium}
-                )
 
             if "page" in request.GET:
                 page = int(request.GET.get("page", None))
@@ -971,6 +967,10 @@ class MediumView(TemplateView):
                 preselect_status = request.COOKIES.get("preselect_status", "default")
                 if preselect_status != "":
                     qs = qs.filter(is_preselect=preselect_status)
+            if "orderby" in request.COOKIES.keys():
+                orderby = request.COOKIES.get("orderby", "default")
+                if orderby != "":
+                    qs = qs.order_by(orderby)
             count = qs.count()
             paginator = Paginator(qs, number_results_per_page)
             try:
