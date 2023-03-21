@@ -1023,7 +1023,7 @@ def SearchAll(request):
                 file__object_storage_key__icontains=search_term
             )
             | MediumForView.objects.filter(tags__name__name__icontains=search_term)
-        )
+        ).distinct()
         qs_count = qs.count()
         page_number = page + 1
         qs = qs[starting_number:ending_number]
@@ -1060,7 +1060,7 @@ def SearchAll(request):
                 file__object_storage_key__icontains=search_term
             )
             | MediumForView.objects.filter(tags__name__name__icontains=search_term)
-        )
+        ).distinct()
         if order_by != "":
             qs = qs.order_by(order_by)
         count = qs.count()
@@ -1092,7 +1092,7 @@ def SearchAll(request):
         | MediumForView.objects.filter(copyright__public_text__icontains=search_term)
         | MediumForView.objects.filter(file__object_storage_key__icontains=search_term)
         | MediumForView.objects.filter(tags__name__name__icontains=search_term)
-    )
+    ).distinct()
     count = qs.count()
     number_results_per_page = 15
     paginator = Paginator(qs, number_results_per_page)
