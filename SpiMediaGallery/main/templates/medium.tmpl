@@ -92,6 +92,7 @@
                   </video>
                 {% endif %}
                 </a>
+                {% if fields.thumbnail_type == "P" %}
                 <div class="updatemediumModal_medium_btn">
                 {% if fields.is_image_of_the_week == True %}
                     <input type="checkbox" id="is_image_of_the_week" class="is_image_of_the_week" name="is_image_of_the_week"
@@ -103,7 +104,8 @@
                  <label for="is_image_of_the_week">Banner</label>
 
                  <input type="hidden" id="fileid" name="fileid">
-             </div>
+                </div>
+                {% endif %}
 
             </div>
         {% endfor %}
