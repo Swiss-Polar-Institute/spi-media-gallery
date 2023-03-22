@@ -1093,7 +1093,7 @@ def SearchAll(request):
         | MediumForView.objects.filter(file__object_storage_key__icontains=search_term)
         | MediumForView.objects.filter(tags__name__name__icontains=search_term)
     ).distinct()
-    if "order_search_all" in request.COOKIES.keys():
+    if "order_search_all" in request.COOKIES.keys() and request.COOKIES.get("order_search_all") != "":
         order_search_all = request.COOKIES.get("order_search_all")
         qs = qs.order_by(order_search_all)
     count = qs.count()
