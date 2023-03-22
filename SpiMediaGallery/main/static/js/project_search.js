@@ -15,8 +15,12 @@ $(document).ready(function () {
 if(typeof $.cookie != 'undefined') {
     var order_by_cookie = $.cookie("order_by");
     var archive_type_cookie = $.cookie("archive_type");
+    var order_search_all_cookie = $.cookie("order_search_all");
+    var search_all_cookie = $.cookie("search_term");
     $('#order_by_id_selection').val(order_by_cookie).attr('selected', 'selected');
     $('#archive_id_selection').val(archive_type_cookie).attr('selected', 'selected');
+    $('#order_search_all').val(order_search_all_cookie).attr('selected', 'selected');
+    $('#search_all').val(search_all_cookie).attr('selected', 'selected');
 }
     function order_by_projects_selection() {
         $('#page-content').text('Loading...');
@@ -37,15 +41,17 @@ if(typeof $.cookie != 'undefined') {
 
     function order_search_all() {
         $('#page-content').text('Loading...');
-        var order_by = $("#order_search_all").val();
-        var search_term = $("#search_term").val();
+        var order_search_all = $("#order_search_all").val();
+        var search_term = $("#search_all").val();
         $.ajax({
             url: '/search_all/',
             type: 'GET',
-            data: {orderby: order_by, search_term: search_term},
+            data: {orderby: order_search_all, search_term: search_term},
             success: function (response) {
                 $('#page-content').html(response.html);
                 $('#medium_count').html(response.count);
+                $.cookie('order_search_all', order_search_all);
+                $.cookie('search_term', search_term);
                 $('#search_term').html(response.search_term);
             }
         });
