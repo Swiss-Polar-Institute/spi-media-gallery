@@ -999,6 +999,7 @@ class MediumView(TemplateView):
 
 
 def SearchAll(request):
+    search_term = ""
     if "page" in request.GET:
         page = int(request.GET.get("page", None))
         if "search_term" in request.COOKIES.keys():

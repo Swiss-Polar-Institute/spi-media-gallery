@@ -9,6 +9,7 @@
 {% block body_attributes %}class="d-flex flex-column h-100" onload="CollapsibleLists.apply();" {% endblock %}
 
 {% block body_contents %}
+{% csrf_token %}
   <div class="container theme-showcase" role="main">
     {% include "_top_bar.tmpl" %}
     {% include "_main_nav.tmpl" %}
@@ -44,4 +45,6 @@
       </ul>
     </div>
   </div>
+  <script src="{% static '/js/project_search.js' %}"></script>
+  <script src="{% static '/js/jquery.cookie.min.js' %}"></script>
 {% endblock %}

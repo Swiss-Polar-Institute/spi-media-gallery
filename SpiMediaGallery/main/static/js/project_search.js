@@ -1,5 +1,10 @@
 $(document).ready(function () {
 
+    $("#search_all_form").on('submit', function () {
+        var search_term = $('#search_all').val();
+        $.cookie('search_term', search_term,{ expires: 7, path: '/' });
+    });
+
     function order_by_projects(ID) {
         $('#page-content').text('Loading...');
         $.ajax({
@@ -50,8 +55,8 @@ if(typeof $.cookie != 'undefined') {
             success: function (response) {
                 $('#page-content').html(response.html);
                 $('#medium_count').html(response.count);
-                $.cookie('order_search_all', order_search_all);
-                $.cookie('search_term', search_term);
+                $.cookie('order_search_all', order_search_all,{ expires: 7, path: '/' });
+                $.cookie('search_term', search_term,{ expires: 7, path: '/' });
                 $('#search_term').html(response.search_term);
             }
         });
@@ -59,10 +64,6 @@ if(typeof $.cookie != 'undefined') {
 
     $("#project_id").on('change', function () {
         filter_projects()
-    });
-    $("#search_all_form").on('submit', function () {
-        var search_term = $('#search_all').val();
-        $.cookie('search_term', search_term);
     });
     $("#location_id").on('change', function () {
         filter_projects()
@@ -138,9 +139,9 @@ if(typeof $.cookie != 'undefined') {
             $('.modal-body-spi #is_archive').prop('checked', false);
         }
     });
-    $("#search_all").change(function () {
+    /*$("#search_all").change(function () {
         var search_term = $(this).val();
-    });
+    });*/
     $(document).on("change", ".is_image_of_the_week", function () {
         if ($(this).is(":checked")) {
             $(this).val("True");
