@@ -78,6 +78,7 @@ ul {
   top: 50%;
   -ms-transform: translateX(50%) translateY(-50%);
   transform: translateX(50%) translateY(-50%);
+  width: 50%;
 }
 .home-text{
     text-align: center;
