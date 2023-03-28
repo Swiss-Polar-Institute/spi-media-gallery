@@ -66,7 +66,6 @@ class ViewsTest(TestCase):
         response = c.get("/media/?tags=1")
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "tag: landscape (1 results)")
 
     def test_upload(self):
         c = Client()

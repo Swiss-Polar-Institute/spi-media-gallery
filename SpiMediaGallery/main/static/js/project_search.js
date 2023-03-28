@@ -233,6 +233,14 @@ if(typeof $.cookie != 'undefined') {
         var order_by_year = $("#order_by_year").val();
         var preselect_status = $("#preselect_status").val();
         var orderby = $("#order_by_id").val();
+        $.cookie('project_id', project_id);
+        $.cookie('location_id', location_id);
+        $.cookie('photographer_id', photographer_id);
+        $.cookie('people_id', people_id);
+        $.cookie('media_type', media_type);
+        $.cookie('order_by_year', order_by_year);
+        $.cookie('preselect_status', preselect_status);
+        $.cookie('orderby', orderby);
         $.ajax({
             url: '/medium/',
             type: 'GET',
@@ -247,14 +255,6 @@ if(typeof $.cookie != 'undefined') {
                 orderby: orderby,
             },
             success: function (response) {
-                $.cookie('project_id', project_id);
-                $.cookie('location_id', location_id);
-                $.cookie('photographer_id', photographer_id);
-                $.cookie('people_id', people_id);
-                $.cookie('media_type', media_type);
-                $.cookie('order_by_year', order_by_year);
-                $.cookie('preselect_status', preselect_status);
-                $.cookie('orderby', orderby);
                 $('#page-content').html(response.html);
                 $('#medium_count').html(response.count);
 

@@ -213,6 +213,7 @@ class BasicAuthentication(BaseAuthentication):
 class Search(TemplateView):
     # @print_sql_decorator(count_only=False)
     def get(self, request, *args, **kwargs):
+        list_of_tag_ids = 0
         if "tags" in request.GET:
             list_of_tag_ids = request.GET.getlist("tags")
             information, qs = search_for_tag_name_ids(list_of_tag_ids)
@@ -293,7 +294,7 @@ class Search(TemplateView):
             }
             return render(request, "error.tmpl", error, status=400)
 
-        number_results_per_page = 100
+        number_results_per_page = 15
 
         media_type_filter = request.GET.get("media_type", None)
         qs = add_filter_for_media_type(qs, media_type_filter)
@@ -316,19 +317,20 @@ class Search(TemplateView):
             request.META["QUERY_STRING"]
         )
 
-        paginator_count = paginator.count
-
-        if paginator_count <= number_results_per_page:
-            information["current_results_information"] = "{} results".format(
-                paginator_count
-            )
-        else:
-            maximum_number = min(page_number * number_results_per_page, paginator_count)
-
-            information["current_results_information"] = "{}-{} of {} results".format(
-                (page_number - 1) * number_results_per_page + 1,
-                maximum_number,
-                paginator_count,
+        information["count"] = qs.count()
+        information["tag_id"] = list_of_tag_ids[0]
+        if "page" in request.GET and media.number == page_number:
+            html = render_to_string("filter_search.tmpl", {"media": media})
+            return HttpResponse(
+                json.dumps(
+                    {
+                        "html": html,
+                        "count": information["count"],
+                        "page_number": page_number + 1,
+                        "tags": information["tag_id"],
+                    }
+                ),
+                content_type="application/json",
             )
 
         return render(request, "search.tmpl", information)
@@ -842,93 +844,9 @@ class SelectionView(TemplateView):
 
 class MediumView(TemplateView):
     def get(self, request, *args, **kwargs):
-        if request.headers.get("x-requested-with") == "XMLHttpRequest":
-            list_of_tag_ids = []
-            if "project_id" in request.GET:
-                if request.GET.get("project_id") != "":
-                    project_id = request.GET.get("project_id")
-                    list_of_tag_ids.append(project_id)
-            if "location_id" in request.GET:
-                if request.GET.get("location_id") != "":
-                    location_id = request.GET.get("location_id")
-                    list_of_tag_ids.append(location_id)
-            if "photographer_id" in request.GET:
-                if request.GET.get("photographer_id") != "":
-                    photographer_id = request.GET.get("photographer_id")
-                    list_of_tag_ids.append(photographer_id)
-            if "people_id" in request.GET:
-                if request.GET.get("people_id") != "":
-                    people_id = request.GET.get("people_id")
-                    list_of_tag_ids.append(people_id)
-            if "is_image_of_the_week" in request.GET:
-                is_image_of_the_week = request.GET.get("is_image_of_the_week")
-                id = request.GET.get("id")
-                medium = Medium.objects.get(id=id)
-                medium.is_image_of_the_week = is_image_of_the_week
-                medium.save()
-            information, qs = search_for_tag_name_ids(list_of_tag_ids)
-            # if request.GET.get("project_id") != "":
-            #     information, qs = search_for_tag_name_ids(list_of_tag_ids)
-            # else:
-            #     qs = MediumForView.objects.order_by("datetime_taken")
-            if "media_type" in request.GET:
-                media_type = request.GET.get("media_type")
-                if media_type != "":
-                    qs = qs.filter(medium_type=media_type)
-            if "order_by_year" in request.GET:
-                order_by_year = request.GET.get("order_by_year")
-                if order_by_year != "":
-                    qs = qs.filter(datetime_taken__year=order_by_year)
-            if "preselect_status" in request.GET:
-                preselect_status = request.GET.get("preselect_status")
-                if preselect_status != "":
-                    qs = qs.filter(is_preselect=preselect_status)
-            if "orderby" in request.GET:
-                order_by_text = request.GET.get("orderby")
-                if order_by_text != "":
-                    qs = qs.order_by(order_by_text)
-            qs_count = qs.count()
-            number_results_per_page = 15
-            paginator = Paginator(qs, number_results_per_page)
-            try:
-                page_number = int(request.GET.get("page", 1))
-            except ValueError:
-                page_number = 1
-            medium = paginator.get_page(page_number)
-            html = render_to_string("filter_projects_medium.tmpl", {"medium": medium})
-
-            if "page" in request.GET:
-                page = int(request.GET.get("page", None))
-                number_results_per_page = 15
-                starting_number = (page - 1) * number_results_per_page
-                ending_number = page * number_results_per_page
-                qs = MediumForView.objects.order_by("datetime_taken")
-                qs_count = qs.count()
-                page_number = page + 1
-                if request.GET.get("project_id") != "":
-                    information, qs = search_for_tag_name_ids(list_of_tag_ids)
-                if "media_type" in request.GET:
-                    media_type = request.GET.get("media_type")
-                    if request.GET.get("media_type") != "":
-                        qs = qs.filter(medium_type=media_type)
-                if "order_by_year" in request.GET:
-                    order_by_year = request.GET.get("order_by_year")
-                    if order_by_year != "":
-                        qs = qs.filter(datetime_taken__year=order_by_year)
-                qs = qs[starting_number:ending_number]
-
-                html = render_to_string("filter_projects_medium.tmpl", {"medium": qs})
-
-            return HttpResponse(
-                json.dumps(
-                    {"html": html, "count": qs_count, "page_number": page_number}
-                ),
-                content_type="application/json",
-            )
 
         try:
             qs = MediumForView.objects.order_by("datetime_taken")
-            count = qs.count()
             year_range = [x.year for x in list(qs.dates("datetime_taken", "year"))]
             locations = TagName.objects.filter(name__icontains="location")
             projects = TagName.objects.filter(name__icontains="spi project")
@@ -967,7 +885,10 @@ class MediumView(TemplateView):
                     qs = qs.filter(is_preselect=preselect_status)
             if "orderby" in request.COOKIES.keys():
                 orderby = request.COOKIES.get("orderby", "default")
-                if orderby != "":
+                if orderby == "none":
+                    qs = qs.filter(datetime_taken__year=None)
+                elif orderby != "":
+                    qs = qs.exclude(datetime_taken__year=None)
                     qs = qs.order_by(orderby)
             count = qs.count()
             paginator = Paginator(qs, number_results_per_page)
@@ -981,6 +902,25 @@ class MediumView(TemplateView):
             error = {"error_message": "Media not found"}
             return render(request, "error.tmpl", error, status=404)
 
+        if "page" in request.GET and medium.number == page_number:
+            html = render_to_string("filter_projects_medium.tmpl", {"medium": medium})
+
+            return HttpResponse(
+                json.dumps(
+                    {"html": html, "count": count, "page_number": page_number + 1}
+                ),
+                content_type="application/json",
+            )
+
+        elif (
+            request.headers.get("x-requested-with") == "XMLHttpRequest"
+            and medium.number == page_number
+        ):
+            html = render_to_string("filter_projects_medium.tmpl", {"medium": medium})
+            return HttpResponse(
+                json.dumps({"html": html, "count": count, "page_number": page_number}),
+                content_type="application/json",
+            )
         search_query = request.GET.get("search_query", None)
         return render(
             request,
@@ -1006,6 +946,7 @@ def SearchAll(request):
             search_term = request.COOKIES.get("search_term")
         else:
             search_term = request.GET.get("search_term", None)
+        search_term = search_term.replace("%20", " ")
         number_results_per_page = 15
         starting_number = (page - 1) * number_results_per_page
         ending_number = page * number_results_per_page
@@ -1025,6 +966,16 @@ def SearchAll(request):
             )
             | MediumForView.objects.filter(tags__name__name__icontains=search_term)
         ).distinct()
+        if (
+            "order_search_all" in request.COOKIES.keys()
+            and request.COOKIES.get("order_search_all") != ""
+        ):
+            order_search_all = request.COOKIES.get("order_search_all")
+            if order_search_all == "none":
+                qs = qs.filter(datetime_taken__year=None)
+            else:
+                qs = qs.exclude(datetime_taken__year=None)
+                qs = qs.order_by(order_search_all)
         qs_count = qs.count()
         page_number = page + 1
         qs = qs[starting_number:ending_number]
@@ -1045,6 +996,7 @@ def SearchAll(request):
             search_term = request.COOKIES.get("search_term")
         else:
             search_term = request.GET["search_term"]
+        search_term = search_term.replace("%20", " ")
         order_by = request.GET["orderby"]
         qs = (
             MediumForView.objects.filter(
@@ -1062,7 +1014,10 @@ def SearchAll(request):
             )
             | MediumForView.objects.filter(tags__name__name__icontains=search_term)
         ).distinct()
-        if order_by != "":
+        if order_by == "none":
+            qs = qs.filter(datetime_taken__year=None)
+        elif order_by != "":
+            qs = qs.exclude(datetime_taken__year=None)
             qs = qs.order_by(order_by)
         count = qs.count()
         number_results_per_page = 15
@@ -1085,7 +1040,7 @@ def SearchAll(request):
     else:
         if "search_term" in request.COOKIES.keys():
             search_term = request.COOKIES.get("search_term")
-
+    search_term = search_term.replace("%20", " ")
     qs = (
         MediumForView.objects.filter(photographer__first_name__icontains=search_term)
         | MediumForView.objects.filter(photographer__last_name__icontains=search_term)
@@ -1094,9 +1049,16 @@ def SearchAll(request):
         | MediumForView.objects.filter(file__object_storage_key__icontains=search_term)
         | MediumForView.objects.filter(tags__name__name__icontains=search_term)
     ).distinct()
-    if "order_search_all" in request.COOKIES.keys() and request.COOKIES.get("order_search_all") != "":
+    if (
+        "order_search_all" in request.COOKIES.keys()
+        and request.COOKIES.get("order_search_all") != ""
+    ):
         order_search_all = request.COOKIES.get("order_search_all")
-        qs = qs.order_by(order_search_all)
+        if order_search_all == "none":
+            qs = qs.filter(datetime_taken__year=None)
+        else:
+            qs = qs.exclude(datetime_taken__year=None)
+            qs = qs.order_by(order_search_all)
     count = qs.count()
     number_results_per_page = 15
     paginator = Paginator(qs, number_results_per_page)
