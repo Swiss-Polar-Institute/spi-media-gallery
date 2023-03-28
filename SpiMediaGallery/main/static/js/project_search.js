@@ -7,6 +7,7 @@ $(document).ready(function () {
 
     function order_by_projects(ID) {
         $('#page-content').text('Loading...');
+        $('#page_id').val("2");
         $.ajax({
             url: '/medium/',
             type: 'GET',
@@ -29,6 +30,7 @@ if(typeof $.cookie != 'undefined') {
 }
     function order_by_projects_selection() {
         $('#page-content').text('Loading...');
+        $('#page_id').val("2");
         order_by = $("#order_by_id_selection").val()
         archive_type = $("#archive_id_selection").val()
         $.ajax({
@@ -46,6 +48,7 @@ if(typeof $.cookie != 'undefined') {
 
     function order_search_all() {
         $('#page-content').text('Loading...');
+        $('#page_id').val("2");
         var order_search_all = $("#order_search_all").val();
         var search_term = $("#search_all").val();
         $.ajax({
@@ -225,6 +228,7 @@ if(typeof $.cookie != 'undefined') {
 }
     function filter_projects(ID) {
         $('#page-content').text('Loading...');
+        $('#page_id').val("2");
         var project_id = $("#project_id").val();
         var location_id = $("#location_id").val();
         var photographer_id = $("#photographer_id").val();

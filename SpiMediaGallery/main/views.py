@@ -940,100 +940,6 @@ class MediumView(TemplateView):
 
 def SearchAll(request):
     search_term = ""
-    if "page" in request.GET:
-        page = int(request.GET.get("page", None))
-        if "search_term" in request.COOKIES.keys():
-            search_term = request.COOKIES.get("search_term")
-        else:
-            search_term = request.GET.get("search_term", None)
-        search_term = search_term.replace("%20", " ")
-        number_results_per_page = 15
-        starting_number = (page - 1) * number_results_per_page
-        ending_number = page * number_results_per_page
-        qs = (
-            MediumForView.objects.filter(
-                photographer__first_name__icontains=search_term
-            )
-            | MediumForView.objects.filter(
-                photographer__last_name__icontains=search_term
-            )
-            | MediumForView.objects.filter(location__icontains=search_term)
-            | MediumForView.objects.filter(
-                copyright__public_text__icontains=search_term
-            )
-            | MediumForView.objects.filter(
-                file__object_storage_key__icontains=search_term
-            )
-            | MediumForView.objects.filter(tags__name__name__icontains=search_term)
-        ).distinct()
-        if (
-            "order_search_all" in request.COOKIES.keys()
-            and request.COOKIES.get("order_search_all") != ""
-        ):
-            order_search_all = request.COOKIES.get("order_search_all")
-            if order_search_all == "none":
-                qs = qs.filter(datetime_taken__year=None)
-            else:
-                qs = qs.exclude(datetime_taken__year=None)
-                qs = qs.order_by(order_search_all)
-        qs_count = qs.count()
-        page_number = page + 1
-        qs = qs[starting_number:ending_number]
-        html = render_to_string("filter_search_results.tmpl", {"media": qs})
-        return HttpResponse(
-            json.dumps(
-                {
-                    "html": html,
-                    "count": qs_count,
-                    "page_number": page_number,
-                    "search_term": search_term,
-                }
-            ),
-            content_type="application/json",
-        )
-    if "orderby" in request.GET:
-        if "search_term" in request.COOKIES.keys():
-            search_term = request.COOKIES.get("search_term")
-        else:
-            search_term = request.GET["search_term"]
-        search_term = search_term.replace("%20", " ")
-        order_by = request.GET["orderby"]
-        qs = (
-            MediumForView.objects.filter(
-                photographer__first_name__icontains=search_term
-            )
-            | MediumForView.objects.filter(
-                photographer__last_name__icontains=search_term
-            )
-            | MediumForView.objects.filter(location__icontains=search_term)
-            | MediumForView.objects.filter(
-                copyright__public_text__icontains=search_term
-            )
-            | MediumForView.objects.filter(
-                file__object_storage_key__icontains=search_term
-            )
-            | MediumForView.objects.filter(tags__name__name__icontains=search_term)
-        ).distinct()
-        if order_by == "none":
-            qs = qs.filter(datetime_taken__year=None)
-        elif order_by != "":
-            qs = qs.exclude(datetime_taken__year=None)
-            qs = qs.order_by(order_by)
-        count = qs.count()
-        number_results_per_page = 15
-        paginator = Paginator(qs, number_results_per_page)
-        medium = paginator.get_page(1)
-        html = render_to_string("filter_search_results.tmpl", {"media": medium})
-        return HttpResponse(
-            json.dumps(
-                {
-                    "html": html,
-                    "count": count,
-                    "search_term": search_term,
-                }
-            ),
-            content_type="application/json",
-        )
 
     if request.method == "POST":
         search_term = request.POST["search_term"]
@@ -1067,6 +973,29 @@ def SearchAll(request):
     except ValueError:
         page_number = 1
     medium = paginator.get_page(page_number)
+
+    if "page" in request.GET and medium.number == page_number:
+        html = render_to_string("filter_search_results.tmpl", {"media": medium})
+        return HttpResponse(
+            json.dumps(
+                {
+                    "html": html,
+                    "count": count,
+                    "page_number": page_number + 1,
+                    "search_term": search_term,
+                }
+            ),
+            content_type="application/json",
+        )
+    elif (
+            request.headers.get("x-requested-with") == "XMLHttpRequest"
+            and medium.number == page_number
+    ):
+        html = render_to_string("filter_projects_medium.tmpl", {"medium": medium})
+        return HttpResponse(
+            json.dumps({"html": html, "count": count, "page_number": page_number}),
+            content_type="application/json",
+        )
     return render(
         request,
         "search_results.tmpl",
