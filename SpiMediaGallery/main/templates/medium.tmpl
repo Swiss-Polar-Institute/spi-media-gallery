@@ -126,6 +126,7 @@
 $(window).scroll(function () {
      if ($(window).scrollTop() >= $(document).height() - $(window).height() - 10) {
        page = $("#page_id").val();
+       console.log(page)
        var project_id = $("#project_id").val();
        var location_id = $("#location_id").val();
        var photographer_id = $("#photographer_id").val();
@@ -135,6 +136,7 @@ $(window).scroll(function () {
        $.ajax({
            url: '/medium/',
            type: "get",
+           async: false,
            data: {
                page: page,
                project_id: project_id,

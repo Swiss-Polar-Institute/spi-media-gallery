@@ -74,6 +74,7 @@ $(window).scroll(function () {
        $.ajax({
            url: '/search_all/',
            type: "get",
+           async: false,
            data: {
                page: page,
                search_term: search_term,

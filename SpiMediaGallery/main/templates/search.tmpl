@@ -66,6 +66,7 @@ $(window).scroll(function () {
        $.ajax({
            url: '/media/',
            type: "get",
+           async: false,
            data: {
                page: page,
                tags: tags,
