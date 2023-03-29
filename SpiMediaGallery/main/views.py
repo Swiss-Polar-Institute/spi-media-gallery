@@ -988,8 +988,8 @@ def SearchAll(request):
             content_type="application/json",
         )
     elif (
-            request.headers.get("x-requested-with") == "XMLHttpRequest"
-            and medium.number == page_number
+        request.headers.get("x-requested-with") == "XMLHttpRequest"
+        and medium.number == page_number
     ):
         html = render_to_string("filter_projects_medium.tmpl", {"medium": medium})
         return HttpResponse(

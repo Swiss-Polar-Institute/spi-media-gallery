@@ -51,6 +51,8 @@ if(typeof $.cookie != 'undefined') {
         $('#page_id').val("2");
         var order_search_all = $("#order_search_all").val();
         var search_term = $("#search_all").val();
+        $.cookie('order_search_all', order_search_all,{ expires: 7, path: '/' });
+        $.cookie('search_term', search_term,{ expires: 7, path: '/' });
         $.ajax({
             url: '/search_all/',
             type: 'GET',
@@ -58,8 +60,6 @@ if(typeof $.cookie != 'undefined') {
             success: function (response) {
                 $('#page-content').html(response.html);
                 $('#medium_count').html(response.count);
-                $.cookie('order_search_all', order_search_all,{ expires: 7, path: '/' });
-                $.cookie('search_term', search_term,{ expires: 7, path: '/' });
                 $('#search_term').html(response.search_term);
             }
         });
