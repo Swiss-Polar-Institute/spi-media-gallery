@@ -85,6 +85,7 @@ class LocationEntryCoordinates(forms.ModelForm):
             "photographer",
             "license",
             "copyright",
+            "is_image_of_the_week",
         )
         readonly_fields = ("preview",)
 

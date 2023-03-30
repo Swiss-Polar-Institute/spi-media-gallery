@@ -36,6 +36,7 @@ class MediumAdmin(OSMGeoAdmin):
         "duration_mmss",
         "tags_list",
         "datetime_imported",
+        "is_image_of_the_week",
     )
     ordering = (
         "file__object_storage_key",
@@ -47,6 +48,7 @@ class MediumAdmin(OSMGeoAdmin):
         "duration",
         "public",
         "datetime_imported",
+        "is_image_of_the_week",
     )
     search_fields = (
         "file__object_storage_key",

@@ -740,15 +740,16 @@ class SelectionView(TemplateView):
 
             if "orderby" in request.GET:
                 order_by_text = request.GET.get("orderby")
-                qs = MediumForView.objects.filter(is_image_of_the_week=True).order_by(
-                    order_by_text
-                )
+                qs = MediumForView.objects.filter(is_image_of_the_week=True)
+
                 if "archive_type" in request.GET:
                     archive_type = request.GET.get("archive_type")
                     if archive_type != "":
                         qs = MediumForView.objects.filter(
                             is_image_of_the_week=True, is_archive=archive_type
-                        ).order_by(order_by_text)
+                        )
+                if order_by_text != "":
+                    qs = qs.order_by(order_by_text)
                 qs_count = qs.count()
                 number_results_per_page = 15
                 paginator = Paginator(qs, number_results_per_page)
@@ -916,6 +917,13 @@ class MediumView(TemplateView):
             request.headers.get("x-requested-with") == "XMLHttpRequest"
             and medium.number == page_number
         ):
+            if "is_image_of_the_week" in request.GET:
+                is_image_of_the_week = request.GET.get("is_image_of_the_week")
+                id = request.GET.get("id")
+                medium_update = Medium.objects.get(id=id)
+                medium_update.is_image_of_the_week = is_image_of_the_week
+                medium_update.save()
+
             html = render_to_string("filter_projects_medium.tmpl", {"medium": medium})
             return HttpResponse(
                 json.dumps({"html": html, "count": count, "page_number": page_number}),
