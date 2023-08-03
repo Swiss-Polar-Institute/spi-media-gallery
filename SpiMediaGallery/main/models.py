@@ -183,12 +183,12 @@ class Medium(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
 
     medium_type = models.CharField(max_length=1, choices=MEDIUM_TYPES)
-    title = models.TextField(null=True, blank=True)
+    title = models.TextField(null=False, blank=True, default="")
     image_desc = models.CharField(
-        null=True, max_length=1024, help_text="Image description"
+        null=False, max_length=1024, help_text="Image description", default=""
     )
     image_comment = models.CharField(
-        null=True, max_length=1024, help_text="Image comment"
+        null=False, max_length=1024, help_text="Image comment", default=""
     )
     is_image_of_the_week = models.BooleanField(default=False, help_text="is active")
     is_archive = models.BooleanField(default=False, help_text="is archive")
