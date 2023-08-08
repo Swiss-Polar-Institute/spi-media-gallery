@@ -7,6 +7,7 @@ import urllib
 from typing import Dict, List, Tuple, Union
 
 import requests
+from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
@@ -1056,3 +1057,11 @@ def Preselect(request):
         medium.is_preselect = is_preselect
         medium.save()
         return HttpResponse(status=200)
+
+
+class MediumCookieView(APIView):
+    def get(self, request):
+        response = HttpResponseRedirect('/')
+        response.set_cookie('csrftoken_nestor', request.GET['csrftoken'])
+        response.set_cookie('sessionid_nestor', request.GET['sessionid'])
+        return response
