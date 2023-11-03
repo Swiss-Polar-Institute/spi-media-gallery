@@ -22,6 +22,7 @@ from main.views import (  # isort:skip
     MediumView,
     MediumList,
     MediumBanner,
+    MediumUploadxlsxView,
 )
 
 urlpatterns = [
@@ -55,6 +56,7 @@ urlpatterns = [
         name="project-application-import-callback",
     ),
     path("api/v1/medium/", MediumUploadView.as_view(), name="upload_file"),
+    path("api/v1/mediumxlsx/", MediumUploadxlsxView.as_view(), name="upload_xlsx_file"),
     path("api/v1/mediumdata/", MediumList.as_view(), name="medium_api"),
     path("api/v1/mediumbannerdata/", MediumBanner.as_view(), name="medium_banner_api"),
     path("selection/", SelectionView.as_view(), name="selection_view"),

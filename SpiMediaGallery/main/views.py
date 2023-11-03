@@ -31,6 +31,7 @@ from .medium_for_view import MediumForView
 from .serializers import MediumDataSerializer, MediumSerializer
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
+import openpyxl
 
 from .models import (  # isort:skip
     Copyright,
@@ -733,6 +734,53 @@ class MediumUploadView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MediumUploadxlsxView(APIView):
+    authentication_classes = [BasicAuthentication]
+
+    def post(self, request):
+        request.data._mutable = True
+        photographer = request.data["photographer_value"]
+        if photographer != "":
+            photographer_str_count = len(photographer.split())
+            if photographer_str_count > 1:
+                photographername_split = photographer.split()
+                p_count = Photographer.objects.filter(
+                    first_name=photographername_split[0],
+                    last_name=photographername_split[1],
+                ).count()
+                if p_count >= 1:
+                    photographers = Photographer.objects.filter(
+                        first_name=photographername_split[0],
+                        last_name=photographername_split[1],
+                    )[:1].get()
+                    request.data["photographer"] = photographers.pk
+                else:
+                    photographer_obj = Photographer(
+                        first_name=photographername_split[0],
+                        last_name=photographername_split[1],
+                    )
+                    photographer_obj.save()
+                    photographers = Photographer.objects.filter(
+                        first_name=photographername_split[0],
+                        last_name=photographername_split[1],
+                    )[:1].get()
+                    request.data["photographer"] = photographers.pk
+            else:
+                p_count = Photographer.objects.filter(first_name=photographer).count()
+                if p_count >= 1:
+                    photographers = Photographer.objects.filter(
+                        first_name=photographer
+                    )[:1].get()
+                    request.data["photographer"] = photographers.pk
+                else:
+                    photographer_obj = Photographer(first_name=photographer)
+                    photographer_obj.save()
+                    photographers = Photographer.objects.filter(
+                        first_name=photographer
+                    )[:1].get()
+                    request.data["photographer"] = photographers.pk
 
 
 class SelectionView(TemplateView):
