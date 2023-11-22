@@ -80,7 +80,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Upload CSV</h5>
-        <button type="button" class="close" id="close_mu" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close" id="close_mu_csv" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -92,8 +92,8 @@
          </div>
          <div class="form-group">
            <label for="file_url">File URL</label>
-           <input type="file" class="form-control-file" id="file_input" placeholder="File URL"
-           onchange="return validateFileExtension(this)">
+           <input type="file" name="xlsx_file" class="form-control-file" id="xlsx_file" placeholder="File URL"
+           onchange="return validateCSVFileExtension(this)">
          </div>
          <input type="hidden" id="medium_type" name="medium_type">
           <div class="modal-footer">

@@ -32,6 +32,7 @@ from .serializers import MediumDataSerializer, MediumSerializer
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
 import openpyxl
+from openpyxl import load_workbook
 
 from .models import (  # isort:skip
     Copyright,
@@ -698,10 +699,8 @@ class MediumUploadView(APIView):
                 request.data["license"] = license_data.pk
         if "file" in request.data:
             medium_file = request.data["file"]
-
             spi_s3 = SpiS3Utils(bucket_name="imported")
             spi_s3.put_object(medium_file.name, medium_file)
-
             file = File()
             file.object_storage_key = medium_file.name
             file.md5 = utils.hash_of_file(medium_file)
@@ -741,46 +740,125 @@ class MediumUploadxlsxView(APIView):
 
     def post(self, request):
         request.data._mutable = True
-        photographer = request.data["photographer_value"]
-        if photographer != "":
-            photographer_str_count = len(photographer.split())
-            if photographer_str_count > 1:
-                photographername_split = photographer.split()
-                p_count = Photographer.objects.filter(
-                    first_name=photographername_split[0],
-                    last_name=photographername_split[1],
-                ).count()
-                if p_count >= 1:
-                    photographers = Photographer.objects.filter(
+        uploaded_file = request.FILES['xlsx_file']
+        wb = openpyxl.load_workbook(uploaded_file)
+        worksheet = wb.active
+        request.data._mutable = True
+        upload_data = []
+        for row in worksheet.iter_rows(min_row=2, values_only=True):
+            picture_data = dict(zip(['file', 'datetime_taken', 'location_value', 'photographer_value', 'people', 'project', 'copyright', 'license', 'tags_value'], row))
+            picture_data['medium_type'] = "p"
+            photographer = row[3]
+            if photographer != None:
+                photographer_str_count = len(photographer.split())
+                if photographer_str_count > 1:
+                    photographername_split = photographer.split()
+                    p_count = Photographer.objects.filter(
                         first_name=photographername_split[0],
                         last_name=photographername_split[1],
-                    )[:1].get()
-                    request.data["photographer"] = photographers.pk
+                    ).count()
+                    if p_count >= 1:
+                        photographers = Photographer.objects.filter(
+                            first_name=photographername_split[0],
+                            last_name=photographername_split[1],
+                        )[:1].get()
+                        photographers_pk = photographers.pk
+                    else:
+                        photographer_obj = Photographer(
+                            first_name=photographername_split[0],
+                            last_name=photographername_split[1],
+                        )
+                        photographer_obj.save()
+                        photographers = Photographer.objects.filter(
+                            first_name=photographername_split[0],
+                            last_name=photographername_split[1],
+                        )[:1].get()
+                        photographers_pk = photographers.pk
                 else:
-                    photographer_obj = Photographer(
-                        first_name=photographername_split[0],
-                        last_name=photographername_split[1],
-                    )
-                    photographer_obj.save()
-                    photographers = Photographer.objects.filter(
-                        first_name=photographername_split[0],
-                        last_name=photographername_split[1],
-                    )[:1].get()
-                    request.data["photographer"] = photographers.pk
-            else:
-                p_count = Photographer.objects.filter(first_name=photographer).count()
-                if p_count >= 1:
-                    photographers = Photographer.objects.filter(
-                        first_name=photographer
-                    )[:1].get()
-                    request.data["photographer"] = photographers.pk
+                    p_count = Photographer.objects.filter(first_name=photographer).count()
+                    if p_count >= 1:
+                        photographers = Photographer.objects.filter(
+                            first_name=photographer
+                        )[:1].get()
+                        photographers_pk = photographers.pk
+                    else:
+                        photographer_obj = Photographer(first_name=photographer)
+                        photographer_obj.save()
+                        photographers = Photographer.objects.filter(
+                            first_name=photographer
+                        )[:1].get()
+                        photographers_pk = photographers.pk
+            picture_data['photographer_value'] = photographers_pk
+            copyright = row[6]
+            if copyright != None:
+                c_count = Copyright.objects.filter(holder=copyright).count()
+                if c_count >= 1:
+                    copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
+                    copyright_pk = copyright_data.pk
                 else:
-                    photographer_obj = Photographer(first_name=photographer)
-                    photographer_obj.save()
-                    photographers = Photographer.objects.filter(
-                        first_name=photographer
-                    )[:1].get()
-                    request.data["photographer"] = photographers.pk
+                    copyright_obj = Copyright(holder=copyright, public_text=copyright)
+                    copyright_obj.save()
+                    copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
+                    copyright_pk = copyright_data.pk
+            picture_data['copyright'] = copyright_pk
+            license = row[7]
+            if license != None:
+                l_count = License.objects.filter(name=license).count()
+                if l_count >= 1:
+                    license_data = License.objects.filter(name=license)[:1].get()
+                    license_pk = license_data.pk
+                    picture_data['license'] = license_pk
+                else:
+                    license_obj = License(name=license, public_text=license)
+                    license_obj.save()
+                    license_data = License.objects.filter(name=license)[:1].get()
+                    license_pk = license_data.pk
+                    picture_data['license'] = license_pk
+            if row[0] != None:
+                filepath = request.data["filepath"]
+                file_name = row[0]
+                medium_file = filepath + file_name
+                spi_s3 = SpiS3Utils(bucket_name="imported")
+                spi_s3.put_object(file_name, medium_file)
+                file = File()
+                file.object_storage_key = file_name
+                file.md5 = utils.hash_of_file(medium_file)
+                file.size = medium_file.size
+                file.bucket = File.IMPORTED
+                file.save()
+                request.data["file"] = file.pk
+                width, height = get_image_dimensions(medium_file)
+                request.data["height"] = height
+                request.data["width"] = width
+                picture_data['file'] = file.pk
+            tags = []
+            tags_values = row[8]
+            if tags_values != "":
+                tags_str_count = len(tags_values.split(","))
+                tags_split = tags_values.split(",")
+                for i in range(tags_str_count):
+                    tags.append(tags_split[i])
+            if row[4] != None:
+                tags.append(row[4])
+            if row[2] != None:
+                locations_value = row[2]
+                locations_str_count = len(locations_value.split(","))
+                locations_split = locations_value.split(",")
+                for i in range(locations_str_count):
+                    tags.append(locations_split[i])
+            if row[5] != None:
+                tags.append(row[5])
+            if row[3] != None:
+                tags.append(f"Photographer/{row[3]}")
+            tags_pk = tags
+            picture_data['tags_value'] = tags_pk
+            upload_data.append(picture_data)
+        serializer = MediumSerializer(data=upload_data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class SelectionView(TemplateView):
