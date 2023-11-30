@@ -5,6 +5,8 @@ import os
 import re
 import urllib
 from typing import Dict, List, Tuple, Union
+from PIL import Image
+from io import BytesIO
 
 import requests
 from django.http import HttpResponseRedirect
@@ -28,11 +30,11 @@ from rest_framework.views import APIView
 from . import utils
 from .decorators import api_key_required
 from .medium_for_view import MediumForView
-from .serializers import MediumDataSerializer, MediumSerializer
+from .serializers import MediumDataSerializer, MediumSerializer, MediumXLSXSerializer
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
 import openpyxl
-from openpyxl import load_workbook
+import hashlib
 
 from .models import (  # isort:skip
     Copyright,
@@ -206,6 +208,48 @@ def search_for_filenames(filename):
     )
 
     return information, qs
+
+
+def get_image_data_from_url(url):
+    # Fetch the image from the URL
+    response = requests.get(url)
+
+    # Open the image using Pillow
+    image = Image.open(BytesIO(response.content))
+
+    # Get the width and height
+    width, height = image.size
+
+    return width, height
+
+
+def get_md5_from_url(request, image_url):
+    try:
+        response = requests.get(image_url)
+        if response.status_code == 200:
+            # Calculate the MD5 hash
+            md5_hash = hashlib.md5(response.content).hexdigest()
+            return md5_hash
+        else:
+            return HttpResponse(f'Failed to fetch image. Status code: {response.status_code}')
+    except Exception as e:
+        return HttpResponse(f'Error: {str(e)}')
+
+
+def get_image_file_size_from_url(url):
+    # Fetch the image from the URL
+    response = requests.head(url)
+
+    # Check if the request was successful (status code 200)
+    if response.status_code == 200:
+        # Get the file size from the Content-Length header
+        file_size = int(response.headers.get('Content-Length', 0))
+
+        return file_size
+    else:
+        # Handle the case where the request was not successful
+        print(f"Failed to fetch image from {url}. Status code: {response.status_code}")
+        return None
 
 
 class BasicAuthentication(BaseAuthentication):
@@ -715,7 +759,6 @@ class MediumUploadView(APIView):
         tags_values = request.data["tags_value"]
         if tags_values != "":
             tags_str_count = len(tags_values.split(","))
-            print(tags_str_count)
             tags_split = tags_values.split(",")
             for i in range(tags_str_count):
                 tags.append(tags_split[i])
@@ -743,11 +786,10 @@ class MediumUploadxlsxView(APIView):
         uploaded_file = request.FILES['xlsx_file']
         wb = openpyxl.load_workbook(uploaded_file)
         worksheet = wb.active
-        request.data._mutable = True
         upload_data = []
         for row in worksheet.iter_rows(min_row=2, values_only=True):
-            picture_data = dict(zip(['file', 'datetime_taken', 'location_value', 'photographer_value', 'people', 'project', 'copyright', 'license', 'tags_value'], row))
-            picture_data['medium_type'] = "p"
+            picture_data = dict(zip(['file', 'datetime_taken', 'location_value', 'photographer_value', 'people', 'project', 'copyright', 'license', 'tags'], row))
+            picture_data['medium_type'] = "P"
             photographer = row[3]
             if photographer != None:
                 photographer_str_count = len(photographer.split())
@@ -788,7 +830,7 @@ class MediumUploadxlsxView(APIView):
                             first_name=photographer
                         )[:1].get()
                         photographers_pk = photographers.pk
-            picture_data['photographer_value'] = photographers_pk
+                picture_data['photographer'] = photographers_pk
             copyright = row[6]
             if copyright != None:
                 c_count = Copyright.objects.filter(holder=copyright).count()
@@ -800,7 +842,7 @@ class MediumUploadxlsxView(APIView):
                     copyright_obj.save()
                     copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
                     copyright_pk = copyright_data.pk
-            picture_data['copyright'] = copyright_pk
+                picture_data['copyright'] = copyright_pk
             license = row[7]
             if license != None:
                 l_count = License.objects.filter(name=license).count()
@@ -822,38 +864,43 @@ class MediumUploadxlsxView(APIView):
                 spi_s3.put_object(file_name, medium_file)
                 file = File()
                 file.object_storage_key = file_name
-                file.md5 = utils.hash_of_file(medium_file)
-                file.size = medium_file.size
+                file.md5 = get_md5_from_url(request, medium_file)
+                file.size = get_image_file_size_from_url(medium_file)
                 file.bucket = File.IMPORTED
                 file.save()
-                request.data["file"] = file.pk
-                width, height = get_image_dimensions(medium_file)
-                request.data["height"] = height
-                request.data["width"] = width
                 picture_data['file'] = file.pk
+                width, height = get_image_data_from_url(medium_file)
+                picture_data["height"] = height
+                picture_data["width"] = width
             tags = []
             tags_values = row[8]
-            if tags_values != "":
+            if tags_values != None:
+                tags_values = tags_values.replace(";", ",")
+                picture_data['tags_values'] = tags_values
                 tags_str_count = len(tags_values.split(","))
                 tags_split = tags_values.split(",")
                 for i in range(tags_str_count):
                     tags.append(tags_split[i])
             if row[4] != None:
-                tags.append(row[4])
+                tags.append("People/" + row[4])
             if row[2] != None:
                 locations_value = row[2]
-                locations_str_count = len(locations_value.split(","))
-                locations_split = locations_value.split(",")
+                locations_dict = []
+                locations_str_count = len(locations_value.split(";"))
+                locations_split = locations_value.split(";")
                 for i in range(locations_str_count):
-                    tags.append(locations_split[i])
+                    locations_dict.append("Location/" + locations_split[i])
+                    tags.append("Location/" + locations_split[i])
+                picture_data['location_value'] = locations_dict
             if row[5] != None:
-                tags.append(row[5])
+                tags.append("SPI project/" + row[5])
             if row[3] != None:
                 tags.append(f"Photographer/{row[3]}")
-            tags_pk = tags
-            picture_data['tags_value'] = tags_pk
+            tags_dic = []
+            tags_dic.append(tags)
+            picture_data['tags'] = tags_dic
             upload_data.append(picture_data)
-        serializer = MediumSerializer(data=upload_data, many=True)
+        serializer = MediumXLSXSerializer(data=upload_data, many=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
