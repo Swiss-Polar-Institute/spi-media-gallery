@@ -48,26 +48,6 @@ function validateFileExtension(fld) {
         fld.focus();
         return false;
     }
-    // const fileSize = fld.files[0].size / 1024 / 1024;
-    //  if (fileSize > 100) {
-    //     alert('File size exceeds 100 MiB');
-    //     fld.form.reset();
-    //     fld.focus();
-    //     return false;
-    //  }
-    //  const file = fld.files[0];
-    //  const  fileType = file['type'];
-    //  const validImageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/heic'];
-    //  const validVideoTypes = ['video/mp4', 'video/mov', 'video/mkv', 'video/x-msvideo'];
-    //  console.log(fileType);
-    //  if (validImageTypes.includes(fileType)) {
-    //     document.getElementById("medium_type").value = "P";
-    //  }
-    //  if (validVideoTypes.includes(fileType)) {
-    //     document.getElementById("medium_type").value = "V";
-    //  }
-    //  console.log(fileType);
-    // return true;
  }
 
 document.getElementById("medium_form").addEventListener("submit", function(event) {

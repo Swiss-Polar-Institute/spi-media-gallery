@@ -1,15 +1,15 @@
 import csv
 import datetime
+import hashlib
 import json
 import os
 import re
 import urllib
-from typing import Dict, List, Tuple, Union
-from PIL import Image
 from io import BytesIO
+from typing import Dict, List, Tuple, Union
 
+import openpyxl
 import requests
-from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
@@ -18,10 +18,12 @@ from django.core.files.images import get_image_dimensions
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.db.models import Sum
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.generic import TemplateView, View
+from PIL import Image
 from rest_framework import status
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.response import Response
@@ -30,11 +32,14 @@ from rest_framework.views import APIView
 from . import utils
 from .decorators import api_key_required
 from .medium_for_view import MediumForView
-from .serializers import MediumDataSerializer, MediumSerializer, MediumXLSXSerializer
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
-import openpyxl
-import hashlib
+
+from .serializers import (  # isort:skip
+    MediumDataSerializer,
+    MediumSerializer,
+    MediumXLSXSerializer,
+)
 
 from .models import (  # isort:skip
     Copyright,
@@ -231,9 +236,11 @@ def get_md5_from_url(request, image_url):
             md5_hash = hashlib.md5(response.content).hexdigest()
             return md5_hash
         else:
-            return HttpResponse(f'Failed to fetch image. Status code: {response.status_code}')
+            return HttpResponse(
+                f"Failed to fetch image. Status code: {response.status_code}"
+            )
     except Exception as e:
-        return HttpResponse(f'Error: {str(e)}')
+        return HttpResponse(f"Error: {str(e)}")
 
 
 def get_image_file_size_from_url(url):
@@ -243,7 +250,7 @@ def get_image_file_size_from_url(url):
     # Check if the request was successful (status code 200)
     if response.status_code == 200:
         # Get the file size from the Content-Length header
-        file_size = int(response.headers.get('Content-Length', 0))
+        file_size = int(response.headers.get("Content-Length", 0))
 
         return file_size
     else:
@@ -783,15 +790,30 @@ class MediumUploadxlsxView(APIView):
 
     def post(self, request):
         request.data._mutable = True
-        uploaded_file = request.FILES['xlsx_file']
+        uploaded_file = request.FILES["xlsx_file"]
         wb = openpyxl.load_workbook(uploaded_file)
         worksheet = wb.active
         upload_data = []
         for row in worksheet.iter_rows(min_row=2, values_only=True):
-            picture_data = dict(zip(['file', 'datetime_taken', 'location_value', 'photographer_value', 'people', 'project', 'copyright', 'license', 'tags'], row))
-            picture_data['medium_type'] = "P"
+            picture_data = dict(
+                zip(
+                    [
+                        "file",
+                        "datetime_taken",
+                        "location_value",
+                        "photographer_value",
+                        "people",
+                        "project",
+                        "copyright",
+                        "license",
+                        "tags",
+                    ],
+                    row,
+                )
+            )
+            picture_data["medium_type"] = "P"
             photographer = row[3]
-            if photographer != None:
+            if photographer is not None:
                 photographer_str_count = len(photographer.split())
                 if photographer_str_count > 1:
                     photographername_split = photographer.split()
@@ -817,7 +839,9 @@ class MediumUploadxlsxView(APIView):
                         )[:1].get()
                         photographers_pk = photographers.pk
                 else:
-                    p_count = Photographer.objects.filter(first_name=photographer).count()
+                    p_count = Photographer.objects.filter(
+                        first_name=photographer
+                    ).count()
                     if p_count >= 1:
                         photographers = Photographer.objects.filter(
                             first_name=photographer
@@ -830,33 +854,37 @@ class MediumUploadxlsxView(APIView):
                             first_name=photographer
                         )[:1].get()
                         photographers_pk = photographers.pk
-                picture_data['photographer'] = photographers_pk
+                picture_data["photographer"] = photographers_pk
             copyright = row[6]
-            if copyright != None:
+            if copyright is not None:
                 c_count = Copyright.objects.filter(holder=copyright).count()
                 if c_count >= 1:
-                    copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
+                    copyright_data = Copyright.objects.filter(holder=copyright)[
+                        :1
+                    ].get()
                     copyright_pk = copyright_data.pk
                 else:
                     copyright_obj = Copyright(holder=copyright, public_text=copyright)
                     copyright_obj.save()
-                    copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
+                    copyright_data = Copyright.objects.filter(holder=copyright)[
+                        :1
+                    ].get()
                     copyright_pk = copyright_data.pk
-                picture_data['copyright'] = copyright_pk
+                picture_data["copyright"] = copyright_pk
             license = row[7]
-            if license != None:
+            if license is not None:
                 l_count = License.objects.filter(name=license).count()
                 if l_count >= 1:
                     license_data = License.objects.filter(name=license)[:1].get()
                     license_pk = license_data.pk
-                    picture_data['license'] = license_pk
+                    picture_data["license"] = license_pk
                 else:
                     license_obj = License(name=license, public_text=license)
                     license_obj.save()
                     license_data = License.objects.filter(name=license)[:1].get()
                     license_pk = license_data.pk
-                    picture_data['license'] = license_pk
-            if row[0] != None:
+                    picture_data["license"] = license_pk
+            if row[0] is not None:
                 filepath = request.data["filepath"]
                 file_name = row[0]
                 medium_file = filepath + file_name
@@ -868,22 +896,22 @@ class MediumUploadxlsxView(APIView):
                 file.size = get_image_file_size_from_url(medium_file)
                 file.bucket = File.IMPORTED
                 file.save()
-                picture_data['file'] = file.pk
+                picture_data["file"] = file.pk
                 width, height = get_image_data_from_url(medium_file)
                 picture_data["height"] = height
                 picture_data["width"] = width
             tags = []
             tags_values = row[8]
-            if tags_values != None:
+            if tags_values is not None:
                 tags_values = tags_values.replace(";", ",")
-                picture_data['tags_values'] = tags_values
+                picture_data["tags_values"] = tags_values
                 tags_str_count = len(tags_values.split(","))
                 tags_split = tags_values.split(",")
                 for i in range(tags_str_count):
                     tags.append(tags_split[i])
-            if row[4] != None:
+            if row[4] is not None:
                 tags.append("People/" + row[4])
-            if row[2] != None:
+            if row[2] is not None:
                 locations_value = row[2]
                 locations_dict = []
                 locations_str_count = len(locations_value.split(";"))
@@ -891,21 +919,20 @@ class MediumUploadxlsxView(APIView):
                 for i in range(locations_str_count):
                     locations_dict.append("Location/" + locations_split[i])
                     tags.append("Location/" + locations_split[i])
-                picture_data['location_value'] = locations_dict
-            if row[5] != None:
+                picture_data["location_value"] = locations_dict
+            if row[5] is not None:
                 tags.append("SPI project/" + row[5])
-            if row[3] != None:
+            if row[3] is not None:
                 tags.append(f"Photographer/{row[3]}")
             tags_dic = []
             tags_dic.append(tags)
-            picture_data['tags'] = tags_dic
+            picture_data["tags"] = tags_dic
             upload_data.append(picture_data)
         serializer = MediumXLSXSerializer(data=upload_data, many=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class SelectionView(TemplateView):
@@ -1234,7 +1261,7 @@ def Preselect(request):
 
 class MediumCookieView(APIView):
     def get(self, request):
-        response = HttpResponseRedirect('/')
-        response.set_cookie('csrftoken_nestor', request.GET['csrftoken'])
-        response.set_cookie('sessionid_nestor', request.GET['sessionid'])
+        response = HttpResponseRedirect("/")
+        response.set_cookie("csrftoken_nestor", request.GET["csrftoken"])
+        response.set_cookie("sessionid_nestor", request.GET["sessionid"])
         return response
