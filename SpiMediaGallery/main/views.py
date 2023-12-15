@@ -887,12 +887,13 @@ class MediumUploadxlsxView(APIView):
             if row[0] is not None:
                 filepath = request.data["filepath"]
                 file_name = row[0]
-                fullpath = filepath+file_name
-                medium_file = self.process_image(fullpath)
-                spi_s3 = SpiS3Utils(bucket_name="imported")
-                spi_s3.put_object(file_name, medium_file)
+                file_name_list = file_name.split("/")
+                filename = file_name_list[-1]
+                medium_file = filepath+file_name
+                # spi_s3 = SpiS3Utils(bucket_name="imported")
+                # spi_s3.put_object(file_name, medium_file)
                 file = File()
-                file.object_storage_key = file_name
+                file.object_storage_key = filename
                 file.md5 = get_md5_from_url(request, medium_file)
                 file.size = get_image_file_size_from_url(medium_file)
                 file.bucket = File.IMPORTED
@@ -934,16 +935,6 @@ class MediumUploadxlsxView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def process_image(self, image_path):
-        try:
-            # Access a custom setting variable from settings
-            media_root_path = settings.STATIC_ROOT
-            image_absolute_path = os.path.join(image_path)
-            with open(image_absolute_path, 'rb') as f:
-                return f
-        except Exception as e:
-            return None
 
 
 class SelectionView(TemplateView):
