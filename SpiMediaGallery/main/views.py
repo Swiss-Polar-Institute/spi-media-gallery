@@ -38,7 +38,6 @@ from .utils import percentage_of
 from .serializers import (  # isort:skip
     MediumDataSerializer,
     MediumSerializer,
-    MediumXLSXSerializer,
 )
 
 from .models import (  # isort:skip
@@ -793,7 +792,6 @@ class MediumUploadxlsxView(APIView):
         uploaded_file = request.FILES["xlsx_file"]
         wb = openpyxl.load_workbook(uploaded_file)
         worksheet = wb.active
-        upload_data = []
         for row in worksheet.iter_rows(min_row=2, values_only=True):
             picture_data = dict(
                 zip(
@@ -812,7 +810,7 @@ class MediumUploadxlsxView(APIView):
                 )
             )
             picture_data["medium_type"] = "P"
-            photographer = row[3]
+            photographer = picture_data["photographer_value"]
             if photographer is not None:
                 photographer_str_count = len(photographer.split())
                 if photographer_str_count > 1:
@@ -855,7 +853,7 @@ class MediumUploadxlsxView(APIView):
                         )[:1].get()
                         photographers_pk = photographers.pk
                 picture_data["photographer"] = photographers_pk
-            copyright = row[6]
+            copyright = picture_data["copyright"]
             if copyright is not None:
                 c_count = Copyright.objects.filter(holder=copyright).count()
                 if c_count >= 1:
@@ -871,7 +869,7 @@ class MediumUploadxlsxView(APIView):
                     ].get()
                     copyright_pk = copyright_data.pk
                 picture_data["copyright"] = copyright_pk
-            license = row[7]
+            license = picture_data["license"]
             if license is not None:
                 l_count = License.objects.filter(name=license).count()
                 if l_count >= 1:
@@ -884,16 +882,14 @@ class MediumUploadxlsxView(APIView):
                     license_data = License.objects.filter(name=license)[:1].get()
                     license_pk = license_data.pk
                     picture_data["license"] = license_pk
-            if row[0] is not None:
+            if picture_data["file"] is not None:
                 filepath = request.data["filepath"]
-                file_name = row[0]
-                file_name_list = file_name.split("/")
-                filename = file_name_list[-1]
-                medium_file = filepath+file_name
+                file_name = picture_data["file"]
+                medium_file = filepath + file_name
                 # spi_s3 = SpiS3Utils(bucket_name="imported")
                 # spi_s3.put_object(file_name, medium_file)
                 file = File()
-                file.object_storage_key = filename
+                file.object_storage_key = file_name
                 file.md5 = get_md5_from_url(request, medium_file)
                 file.size = get_image_file_size_from_url(medium_file)
                 file.bucket = File.IMPORTED
@@ -903,38 +899,33 @@ class MediumUploadxlsxView(APIView):
                 picture_data["height"] = height
                 picture_data["width"] = width
             tags = []
-            tags_values = row[8]
+            tags_values = picture_data["tags"]
             if tags_values is not None:
-                tags_values = tags_values.replace(";", ",")
-                picture_data["tags_values"] = tags_values
-                tags_str_count = len(tags_values.split(","))
-                tags_split = tags_values.split(",")
+                tags_str_count = len(tags_values.split(";"))
+                tags_split = tags_values.replace("; ", ";").split(";")
                 for i in range(tags_str_count):
                     tags.append(tags_split[i])
-            if row[4] is not None:
-                tags.append("People/" + row[4])
-            if row[2] is not None:
-                locations_value = row[2]
-                locations_dict = []
-                locations_str_count = len(locations_value.split(";"))
-                locations_split = locations_value.split(";")
-                for i in range(locations_str_count):
-                    locations_dict.append("Location/" + locations_split[i])
-                    tags.append("Location/" + locations_split[i])
-                picture_data["location_value"] = locations_dict
-            if row[5] is not None:
-                tags.append("SPI project/" + row[5])
-            if row[3] is not None:
-                tags.append(f"Photographer/{row[3]}")
-            tags_dic = []
-            tags_dic.append(tags)
-            picture_data["tags"] = tags_dic
-            upload_data.append(picture_data)
-        serializer = MediumXLSXSerializer(data=upload_data, many=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if picture_data["people"] is not None:
+                tags.append(f"People/{picture_data['people']}")
+            if picture_data["location_value"] is not None:
+                location_count = len(picture_data["location_value"].split(";"))
+                location_split = (
+                    picture_data["location_value"].replace("; ", ";").split(";")
+                )
+                for i in range(location_count):
+                    tags.append(f"Location/{location_split[i]}")
+            if picture_data["project"] is not None:
+                tags.append(f"SPI project/{picture_data['project']}")
+                if picture_data["photographer_value"] is not None:
+                    tags.append(f"Photographer/{picture_data['photographer_value']}")
+
+            picture_data["tags"] = tags
+            serializer = MediumSerializer(data=picture_data)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class SelectionView(TemplateView):
