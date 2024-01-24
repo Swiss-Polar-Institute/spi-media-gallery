@@ -1,13 +1,15 @@
 import csv
 import datetime
+import hashlib
 import json
 import os
 import re
 import urllib
+from io import BytesIO
 from typing import Dict, List, Tuple, Union
 
+import openpyxl
 import requests
-from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
@@ -16,10 +18,12 @@ from django.core.files.images import get_image_dimensions
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.db.models import Sum
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.generic import TemplateView, View
+from PIL import Image
 from rest_framework import status
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.response import Response
@@ -28,9 +32,13 @@ from rest_framework.views import APIView
 from . import utils
 from .decorators import api_key_required
 from .medium_for_view import MediumForView
-from .serializers import MediumDataSerializer, MediumSerializer
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
+
+from .serializers import (  # isort:skip
+    MediumDataSerializer,
+    MediumSerializer,
+)
 
 from .models import (  # isort:skip
     Copyright,
@@ -204,6 +212,50 @@ def search_for_filenames(filename):
     )
 
     return information, qs
+
+
+def get_image_data_from_url(url):
+    # Fetch the image from the URL
+    response = requests.get(url)
+
+    # Open the image using Pillow
+    image = Image.open(BytesIO(response.content))
+
+    # Get the width and height
+    width, height = image.size
+
+    return width, height
+
+
+def get_md5_from_url(request, image_url):
+    try:
+        response = requests.get(image_url)
+        if response.status_code == 200:
+            # Calculate the MD5 hash
+            md5_hash = hashlib.md5(response.content).hexdigest()
+            return md5_hash
+        else:
+            return HttpResponse(
+                f"Failed to fetch image. Status code: {response.status_code}"
+            )
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}")
+
+
+def get_image_file_size_from_url(url):
+    # Fetch the image from the URL
+    response = requests.head(url)
+
+    # Check if the request was successful (status code 200)
+    if response.status_code == 200:
+        # Get the file size from the Content-Length header
+        file_size = int(response.headers.get("Content-Length", 0))
+
+        return file_size
+    else:
+        # Handle the case where the request was not successful
+        print(f"Failed to fetch image from {url}. Status code: {response.status_code}")
+        return None
 
 
 class BasicAuthentication(BaseAuthentication):
@@ -697,10 +749,8 @@ class MediumUploadView(APIView):
                 request.data["license"] = license_data.pk
         if "file" in request.data:
             medium_file = request.data["file"]
-
             spi_s3 = SpiS3Utils(bucket_name="imported")
             spi_s3.put_object(medium_file.name, medium_file)
-
             file = File()
             file.object_storage_key = medium_file.name
             file.md5 = utils.hash_of_file(medium_file)
@@ -715,7 +765,6 @@ class MediumUploadView(APIView):
         tags_values = request.data["tags_value"]
         if tags_values != "":
             tags_str_count = len(tags_values.split(","))
-            print(tags_str_count)
             tags_split = tags_values.split(",")
             for i in range(tags_str_count):
                 tags.append(tags_split[i])
@@ -733,6 +782,150 @@ class MediumUploadView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MediumUploadxlsxView(APIView):
+    authentication_classes = [BasicAuthentication]
+
+    def post(self, request):
+        request.data._mutable = True
+        uploaded_file = request.FILES["xlsx_file"]
+        wb = openpyxl.load_workbook(uploaded_file)
+        worksheet = wb.active
+        for row in worksheet.iter_rows(min_row=2, values_only=True):
+            picture_data = dict(
+                zip(
+                    [
+                        "file",
+                        "datetime_taken",
+                        "location_value",
+                        "photographer_value",
+                        "people",
+                        "project",
+                        "copyright",
+                        "license",
+                        "tags",
+                    ],
+                    row,
+                )
+            )
+            picture_data["medium_type"] = "P"
+            photographer = picture_data["photographer_value"]
+            if photographer is not None:
+                photographer_str_count = len(photographer.split())
+                if photographer_str_count > 1:
+                    photographername_split = photographer.split()
+                    p_count = Photographer.objects.filter(
+                        first_name=photographername_split[0],
+                        last_name=photographername_split[1],
+                    ).count()
+                    if p_count >= 1:
+                        photographers = Photographer.objects.filter(
+                            first_name=photographername_split[0],
+                            last_name=photographername_split[1],
+                        )[:1].get()
+                        photographers_pk = photographers.pk
+                    else:
+                        photographer_obj = Photographer(
+                            first_name=photographername_split[0],
+                            last_name=photographername_split[1],
+                        )
+                        photographer_obj.save()
+                        photographers = Photographer.objects.filter(
+                            first_name=photographername_split[0],
+                            last_name=photographername_split[1],
+                        )[:1].get()
+                        photographers_pk = photographers.pk
+                else:
+                    p_count = Photographer.objects.filter(
+                        first_name=photographer
+                    ).count()
+                    if p_count >= 1:
+                        photographers = Photographer.objects.filter(
+                            first_name=photographer
+                        )[:1].get()
+                        photographers_pk = photographers.pk
+                    else:
+                        photographer_obj = Photographer(first_name=photographer)
+                        photographer_obj.save()
+                        photographers = Photographer.objects.filter(
+                            first_name=photographer
+                        )[:1].get()
+                        photographers_pk = photographers.pk
+                picture_data["photographer"] = photographers_pk
+            copyright = picture_data["copyright"]
+            if copyright is not None:
+                c_count = Copyright.objects.filter(holder=copyright).count()
+                if c_count >= 1:
+                    copyright_data = Copyright.objects.filter(holder=copyright)[
+                        :1
+                    ].get()
+                    copyright_pk = copyright_data.pk
+                else:
+                    copyright_obj = Copyright(holder=copyright, public_text=copyright)
+                    copyright_obj.save()
+                    copyright_data = Copyright.objects.filter(holder=copyright)[
+                        :1
+                    ].get()
+                    copyright_pk = copyright_data.pk
+                picture_data["copyright"] = copyright_pk
+            license = picture_data["license"]
+            if license is not None:
+                l_count = License.objects.filter(name=license).count()
+                if l_count >= 1:
+                    license_data = License.objects.filter(name=license)[:1].get()
+                    license_pk = license_data.pk
+                    picture_data["license"] = license_pk
+                else:
+                    license_obj = License(name=license, public_text=license)
+                    license_obj.save()
+                    license_data = License.objects.filter(name=license)[:1].get()
+                    license_pk = license_data.pk
+                    picture_data["license"] = license_pk
+            if picture_data["file"] is not None:
+                filepath = request.data["filepath"]
+                file_name = picture_data["file"]
+                medium_file = filepath + file_name
+                # spi_s3 = SpiS3Utils(bucket_name="imported")
+                # spi_s3.put_object(file_name, medium_file)
+                file = File()
+                file.object_storage_key = file_name
+                file.md5 = get_md5_from_url(request, medium_file)
+                file.size = get_image_file_size_from_url(medium_file)
+                file.bucket = File.IMPORTED
+                file.save()
+                picture_data["file"] = file.pk
+                width, height = get_image_data_from_url(medium_file)
+                picture_data["height"] = height
+                picture_data["width"] = width
+            tags = []
+            tags_values = picture_data["tags"]
+            if tags_values is not None:
+                tags_str_count = len(tags_values.split(";"))
+                tags_split = tags_values.replace("; ", ";").split(";")
+                for i in range(tags_str_count):
+                    tags.append(tags_split[i])
+            if picture_data["people"] is not None:
+                tags.append(f"People/{picture_data['people']}")
+            if picture_data["location_value"] is not None:
+                location_count = len(picture_data["location_value"].split(";"))
+                location_split = (
+                    picture_data["location_value"].replace("; ", ";").split(";")
+                )
+                for i in range(location_count):
+                    tags.append(f"Location/{location_split[i]}")
+            if picture_data["project"] is not None:
+                tags.append(f"SPI project/{picture_data['project']}")
+                if picture_data["photographer_value"] is not None:
+                    tags.append(f"Photographer/{picture_data['photographer_value']}")
+
+            picture_data["tags"] = tags
+            serializer = MediumSerializer(data=picture_data)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class SelectionView(TemplateView):
@@ -1061,7 +1254,7 @@ def Preselect(request):
 
 class MediumCookieView(APIView):
     def get(self, request):
-        response = HttpResponseRedirect('/')
-        response.set_cookie('csrftoken_nestor', request.GET['csrftoken'])
-        response.set_cookie('sessionid_nestor', request.GET['sessionid'])
+        response = HttpResponseRedirect("/")
+        response.set_cookie("csrftoken_nestor", request.GET["csrftoken"])
+        response.set_cookie("sessionid_nestor", request.GET["sessionid"])
         return response

@@ -33,6 +33,27 @@ class MediumSerializer(serializers.ModelSerializer):
         return medium
 
 
+class MediumXLSXSerializer(serializers.ModelSerializer):
+    tags = TageSerializer(required=False, many=True, read_only=True)
+    datetime_imported = serializers.DateTimeField(default=timezone.now)
+
+    class Meta:
+        model = Medium
+        fields = "__all__"
+
+    def create(self, validated_data):
+        medium = Medium.objects.create(**validated_data)
+        tags_name = []
+        for index, inner_list in enumerate(self.initial_data):
+            for value in inner_list:
+                if value.startswith("tags"):
+                    tags_name.append(value)
+
+        for tag in tags_name:
+            set_tags(medium, tag, "M")
+        return medium
+
+
 class PhotographerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Photographer

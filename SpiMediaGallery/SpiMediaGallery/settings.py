@@ -171,7 +171,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CACHE_ENABLED = os.getenv("CACHE_ENABLED", "1")
+CACHE_ENABLED = os.getenv("CACHE_ENABLED", "0")
 
 if CACHE_ENABLED == "1":
     CACHES = {

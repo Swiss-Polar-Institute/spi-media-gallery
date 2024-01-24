@@ -41,6 +41,15 @@ function validateFileExtension(fld) {
     return true;
  }
 
+ function validateCSVFileExtension(fld) {
+    if(!/(\.xlsx|\.csv|\.jpeg|\.mp4|\.mov|\.mkv|\.heic|\.avi)$/i.test(fld.value)) {
+        alert("Invalid file type. Only xlsx, jpg, jpeg, mp4, mov mkv heic or avi are supported");
+        fld.form.reset();
+        fld.focus();
+        return false;
+    }
+ }
+
 document.getElementById("medium_form").addEventListener("submit", function(event) {
     event.preventDefault();
     let file_input = document.getElementById("file_input");
@@ -102,6 +111,36 @@ document.getElementById("medium_form").addEventListener("submit", function(event
         } else {
             document.getElementById("medium_form").reset();
             document.getElementById('close_mu').click();
+            document.getElementById('medium_error_msg').style.display="block";
+        }
+    }).catch(function(error) {
+        console.error("Error:", error);
+        document.getElementById("medium_form").reset();
+        document.getElementById('close_mu').click();
+        document.getElementById('medium_error_msg').style.display="block";
+    });
+});
+
+document.getElementById("medium_form_csv").addEventListener("submit", function(event) {
+    event.preventDefault();
+    let xlsx_file = document.getElementById("xlsx_file");
+    let filepath = document.getElementById("filepath").value;
+    let medium_type = document.getElementById("medium_type").value;
+    let data = new FormData();
+    data.append("xlsx_file", xlsx_file.files[0]);
+    data.append("medium_type", "P");
+    data.append("filepath", filepath);
+    fetch("/api/v1/mediumxlsx/", {
+        method: "POST",
+        body: data
+    }).then(function(data) {
+        if(data.status === 201) {
+            document.getElementById("medium_form_csv").reset();
+            document.getElementById('close_mu_csv').click();
+            document.getElementById('medium_success_msg').style.display = "block";
+        } else {
+            document.getElementById("medium_form_csv").reset();
+            document.getElementById('close_mu_csv').click();
             document.getElementById('medium_error_msg').style.display="block";
         }
     }).catch(function(error) {
