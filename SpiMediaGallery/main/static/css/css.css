@@ -196,3 +196,15 @@ select {
     margin-top: -100px;
     z-index:2;
 }
+.delete-btn{
+    display: inline-block;
+    padding-top: 0.1125rem;
+    padding-bottom: 0.1125rem;
+    margin-right: 1rem;
+    font-size: 1.1rem;
+    line-height: inherit;
+    white-space: nowrap;
+    background: #DC0220;
+    color: #ffffff !important;
+    border: none;
+}

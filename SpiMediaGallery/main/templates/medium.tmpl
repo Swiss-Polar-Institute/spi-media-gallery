@@ -80,6 +80,9 @@
                       <option value="False">Not Preselect</option>
                    </select>
                 </div>
+                <div class="col-lg-2">
+                   <a class="delete-btn btn btn-primary btn-lg" id="delete_media">Delete</a>
+                </div>
        </div>
        <div class="row" id="page-content">
         {% for fields in medium %}
@@ -105,6 +108,9 @@
                  <label for="is_image_of_the_week">Banner</label>
 
                  <input type="hidden" id="fileid" name="fileid">
+                  <input type="checkbox" style="margin-left:8px" id="is_image_delete" class="is_image_delete" name="is_image_delete"
+                    data-mfile-id="{{ fields.id }}" value="{{ fields.is_image_delete }}" > <label for="is_image_delete">Delete</label>
+
                 </div>
                 {% endif %}
 

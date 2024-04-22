@@ -1118,6 +1118,15 @@ class MediumView(TemplateView):
                 medium_update.is_image_of_the_week = is_image_of_the_week
                 medium_update.save()
 
+            if "delete_ids" in request.GET:
+                delete_ids = request.GET.get("delete_ids")
+                delete_ids = delete_ids.split(',')
+                for id in delete_ids:
+                    medium_objects = MediumResized.objects.filter(medium_id=id)
+                    medium_objects.delete()
+                    obj = Medium.objects.get(id=id)
+                    obj.delete()
+
             html = render_to_string("filter_projects_medium.tmpl", {"medium": medium})
             return HttpResponse(
                 json.dumps({"html": html, "count": count, "page_number": page_number}),

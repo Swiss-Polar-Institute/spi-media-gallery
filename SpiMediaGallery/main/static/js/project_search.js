@@ -172,6 +172,33 @@ if(typeof $.cookie != 'undefined') {
             }
         });
     });
+    $(document).on("click", "#delete_media", function (){
+        var checkedValues = [];
+        $('.is_image_delete:checked').each(function() {
+            checkedValues.push($(this).data('mfile-id'));
+        });
+        var checkedValues = checkedValues.join(",");
+        var total_images = $('.is_image_delete:checked').length;
+        console.log(typeof(checkedValues));
+        console.log(checkedValues);
+        $.ajax({
+            url: '/medium/',
+            type: 'GET',
+            data: {delete_ids: checkedValues},
+            cache: false,
+            beforeSend:function(){
+                if(confirm("Are you sure you would like to delete "+total_images+" photos?")){
+
+                    } else {
+                        location.reload(true);
+                        return false;
+                    }
+            },
+            success: function (response) {
+                 location.reload();
+            }
+        });
+    });
     $(document).on("change", ".is_archive", function () {
         if ($(this).is(":checked")) {
             $(this).val("True");
