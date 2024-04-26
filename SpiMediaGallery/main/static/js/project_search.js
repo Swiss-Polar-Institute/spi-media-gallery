@@ -179,25 +179,29 @@ if(typeof $.cookie != 'undefined') {
         });
         var checkedValues = checkedValues.join(",");
         var total_images = $('.is_image_delete:checked').length;
-        console.log(typeof(checkedValues));
-        console.log(checkedValues);
-        $.ajax({
-            url: '/medium/',
-            type: 'GET',
-            data: {delete_ids: checkedValues},
-            cache: false,
-            beforeSend:function(){
-                if(confirm("Are you sure you would like to delete "+total_images+" photos?")){
+        if(total_images>0) {
+            console.log(typeof (checkedValues));
+            console.log(checkedValues);
+            $.ajax({
+                url: '/medium/',
+                type: 'GET',
+                data: {delete_ids: checkedValues},
+                cache: false,
+                beforeSend: function () {
+                    if (confirm("Are you sure you would like to delete " + total_images + " photos?")) {
 
                     } else {
                         location.reload(true);
                         return false;
                     }
-            },
-            success: function (response) {
-                 location.reload();
-            }
-        });
+                },
+                success: function (response) {
+                    location.reload();
+                }
+            });
+        }else{
+            alert("Please select a photo to delete");
+        }
     });
     $(document).on("change", ".is_archive", function () {
         if ($(this).is(":checked")) {
