@@ -1074,6 +1074,10 @@ class MediumView(TemplateView):
                 order_by_year = request.COOKIES.get("order_by_year", "default")
                 if order_by_year != "":
                     qs = qs.filter(datetime_taken__year=order_by_year)
+            if "order_by_dpi" in request.COOKIES.keys():
+                order_by_dpi = request.COOKIES.get("order_by_dpi", "default")
+                if order_by_dpi != "":
+                    qs = qs.filter(file=order_by_dpi)
             if "preselect_status" in request.COOKIES.keys():
                 preselect_status = request.COOKIES.get("preselect_status", "default")
                 if preselect_status != "":

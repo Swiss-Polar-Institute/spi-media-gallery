@@ -83,6 +83,9 @@ if(typeof $.cookie != 'undefined') {
     $("#order_by_year").on('change', function () {
         filter_projects()
     });
+    $("#dpi_filter").on('change', function () {
+        filter_projects()
+    });
     $("#preselect_status").on('change', function () {
         filter_projects()
     });

@@ -81,6 +81,13 @@
                    </select>
                 </div>
                 <div class="col-lg-2">
+                   <select id="dpi_filter">
+                      <option value="">Sort by DPI</option>
+                      <option value="dpi">Low to High</option>
+                      <option value="-dpi">High to Low</option>
+                   </select>
+                </div>
+                <div class="col-lg-2">
                    <a class="delete-btn btn btn-primary btn-lg" id="delete_media">Delete</a>
                 </div>
        </div>
@@ -139,6 +146,7 @@ $(window).scroll(function () {
        var people_id = $("#people_id").val();
        var media_type = $("#media_type").val();
        var order_by_year = $("#order_by_year").val();
+       var order_by_dpi = $("#dpi_filter").val();
        $.ajax({
            url: '/medium/',
            type: "get",
@@ -151,6 +159,7 @@ $(window).scroll(function () {
                people_id: people_id,
                media_type: media_type,
                order_by_year: order_by_year
+               order_by_dpi: order_by_dpi
            },
            dataType: 'json',
            beforeSend: function(){
