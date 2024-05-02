@@ -190,49 +190,51 @@ class Resizer(object):
 
         for medium in media_to_be_resized:
             # Download Media file from the bucket
-            print("Will resize:", medium.file.object_storage_key)
+            if medium.file is not None:
+                print("Will resize:", medium.file.object_storage_key)
+                suffix = utils.get_file_extension(medium.file.object_storage_key)
+                medium_file = tempfile.NamedTemporaryFile(suffix="." + suffix, delete=False)
+                medium_file.close()
+                start_download = time.time()
+                try:
+                    self._download_medium(medium, medium_file.name)
+                except ClientError:
+                    print("Cannot download: {}".format(medium.file.object_storage_key))
+                    continue
 
-            suffix = utils.get_file_extension(medium.file.object_storage_key)
-            medium_file = tempfile.NamedTemporaryFile(suffix="." + suffix, delete=False)
-            medium_file.close()
-            start_download = time.time()
+                download_time = time.time() - start_download
 
-            try:
-                self._download_medium(medium, medium_file.name)
-            except ClientError:
-                print("Cannot download: {}".format(medium.file.object_storage_key))
-                continue
+                assert os.stat(medium_file.name).st_size == medium.file.size
 
-            download_time = time.time() - start_download
-
-            assert os.stat(medium_file.name).st_size == medium.file.size
-
-            if verbose:
-                speed = (medium.file.size / 1024 / 1024) / download_time  # MB/s
-                print(
-                    "Download Stats. Size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(
-                        utils.bytes_to_human_readable(medium.file.size),
-                        utils.seconds_to_human_readable(download_time),
-                        speed,
-                        medium.file.object_storage_key,
+                if verbose:
+                    speed = (medium.file.size / 1024 / 1024) / download_time  # MB/s
+                    print(
+                        "Download Stats. Size: {} Time: {} Speed: {:.2f} MB/s File: {}".format(
+                            utils.bytes_to_human_readable(medium.file.size),
+                            utils.seconds_to_human_readable(download_time),
+                            speed,
+                            medium.file.object_storage_key,
+                        )
                     )
-                )
 
-            if medium.file.md5 is None:
-                md5_media_file = utils.hash_of_file_path(medium_file.name)
-                medium.file.md5 = md5_media_file
-                medium.file.save()
+                if medium.file.md5 is None:
+                    md5_media_file = utils.hash_of_file_path(medium_file.name)
+                    medium.file.md5 = md5_media_file
+                    medium.file.save()
 
-            self._resize_medium(medium, medium_file.name, self._sizes_type)
+                self._resize_medium(medium, medium_file.name, self._sizes_type)
 
-            print("Finished: medium.id: {}".format(medium.id))
+                print("Finished: medium.id: {}".format(medium.id))
 
-            os.remove(medium_file.name)
+                os.remove(medium_file.name)
 
-            if self._medium_type == Medium.PHOTO:
-                progress_report.increment_and_print_if_needed()
+                if self._medium_type == Medium.PHOTO:
+                    progress_report.increment_and_print_if_needed()
+                else:
+                    progress_report.increment_steps_and_print_if_needed(medium.file.size)
             else:
-                progress_report.increment_steps_and_print_if_needed(medium.file.size)
+                print("Medium file is None. Skipping this medium.")
+
 
     # @transaction.atomic
     # Getting some:
@@ -309,6 +311,9 @@ class Resizer(object):
             os.remove(file_to_delete)
 
     def _download_medium(self, medium, download_path):
+        if medium.file is None:
+            print("Medium file is None. Unable to download.")
+            return
         bucket_name = medium.file.bucket_name()
 
         if bucket_name not in self._media_buckets:

@@ -13,13 +13,13 @@ def import_resize_update_tags_from_project_application():
 
     # Resizes the photos
     bucket_name_resized = "processed"
-    sizes_type = ["T", "S", "L"]
+    sizes_type = ["T", "S", "M", "L", "O"]
     media_type = "Photos"
     resizer = Resizer(bucket_name_resized, sizes_type, media_type)
     resizer.resize_media()
 
     # Resizes the videos
-    sizes_type = ["S", "L"]
+    sizes_type = ["T", "S", "L"]
     media_type = "Videos"
     resizer = Resizer(bucket_name_resized, sizes_type, media_type)
     resizer.resize_media()
