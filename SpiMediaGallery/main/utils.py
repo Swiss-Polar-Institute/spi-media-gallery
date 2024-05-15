@@ -243,6 +243,7 @@ def get_medium_information(image_filepath: str) -> Dict[str, str]:
         datetime_original = exif[date_field]
 
         possible_formats = [
+            "%Y:%m:%d %H:%M:%S.%f",  # Added format for fractional seconds
             "%Y:%m:%d %H:%M:  ",
             "%Y:%m:%d %H:%MZ",
             "%Y:%m:%d %H:%M:%S%z",
