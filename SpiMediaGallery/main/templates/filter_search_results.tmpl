@@ -1,9 +1,9 @@
 {% load static %}
 {% for fields in media %}
   <div class="col-lg-4 selection-img medium-gallery-img">
-    <a href="/media/{{ fields.id }}">
+    <a href="/media/{{ fields.id }}" target="_blank">
       {% if fields.thumbnail_type == "P" %}
-        <img class="img-relative" src="{{ fields.thumbnail_url }}">
+        <img class="img-relative ssss" src="{{ fields.thumbnail_url }}">
       {% else %}
         <video preload="metadata" class="img-relative">
           <source src="{{ fields.thumbnail_url }}" type="{{ fields.thumbnail_content_type }}">
@@ -22,6 +22,8 @@
       <label for="is_image_of_the_week">Banner</label>
 
       <input type="hidden" id="fileid" name="fileid">
+      <input type="checkbox" style="margin-left:8px" id="is_image_delete" class="is_image_delete" name="is_image_delete"
+                    data-mfile-id="{{ fields.id }}" value="{{ fields.is_image_delete }}" > <label for="is_image_delete">Delete</label>
     </div>
     {% endif %}
 

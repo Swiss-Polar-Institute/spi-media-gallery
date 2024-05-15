@@ -1130,6 +1130,7 @@ class MediumView(TemplateView):
                     medium_objects.delete()
                     obj = Medium.objects.get(id=id)
                     obj.delete()
+                return HttpResponse("success")
 
             html = render_to_string("filter_projects_medium.tmpl", {"medium": medium})
             return HttpResponse(

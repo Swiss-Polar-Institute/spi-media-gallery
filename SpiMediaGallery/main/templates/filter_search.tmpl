@@ -1,7 +1,7 @@
 {% load static %}
 {% for fields in media %}
   <div class="col-lg-4 selection-img medium-gallery-img">
-    <a href="/media/{{ fields.id }}">
+    <a href="/media/{{ fields.id }}" target="_blank">
       {% if fields.thumbnail_type == "P" %}
         <img class="img-relative" src="{{ fields.thumbnail_url }}">
       {% else %}
