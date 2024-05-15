@@ -271,6 +271,7 @@ if(typeof $.cookie != 'undefined') {
         var order_by_year = $("#order_by_year").val();
         var preselect_status = $("#preselect_status").val();
         var orderby = $("#order_by_id").val();
+        var order_by_dpi = $("#dpi_filter").val();
         $.cookie('project_id', project_id);
         $.cookie('location_id', location_id);
         $.cookie('photographer_id', photographer_id);
@@ -279,6 +280,7 @@ if(typeof $.cookie != 'undefined') {
         $.cookie('order_by_year', order_by_year);
         $.cookie('preselect_status', preselect_status);
         $.cookie('orderby', orderby);
+        $.cookie('order_by_dpi', order_by_dpi);
         $.ajax({
             url: '/medium/',
             type: 'GET',
@@ -291,6 +293,7 @@ if(typeof $.cookie != 'undefined') {
                 order_by_year: order_by_year,
                 preselect_status: preselect_status,
                 orderby: orderby,
+                order_by_dpi: order_by_dpi,
             },
             success: function (response) {
                 $('#page-content').html(response.html);

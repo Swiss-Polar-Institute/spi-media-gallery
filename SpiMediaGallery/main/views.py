@@ -34,6 +34,8 @@ from .decorators import api_key_required
 from .medium_for_view import MediumForView
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
+from django.db.models import F, Func, Value, ExpressionWrapper, FloatField
+
 
 from .serializers import (  # isort:skip
     MediumDataSerializer,
@@ -1076,8 +1078,39 @@ class MediumView(TemplateView):
                     qs = qs.filter(datetime_taken__year=order_by_year)
             if "order_by_dpi" in request.COOKIES.keys():
                 order_by_dpi = request.COOKIES.get("order_by_dpi", "default")
-                if order_by_dpi != "":
-                    qs = qs.filter(file=order_by_dpi)
+                if order_by_dpi == "dpi":
+                    qs = MediumForView.objects.annotate(
+                        dpi=ExpressionWrapper(
+                            Func(
+                                F('width') * F('width') + F('height') * F('height'),
+                                function='SQRT'
+                            ) / ExpressionWrapper(
+                                Func(
+                                    Value(1.0) * Value(1.0),
+                                    function='SQRT'
+                                ),
+                                output_field=FloatField()
+                            ),
+                            output_field=FloatField()
+                        )
+                    ).order_by('dpi')
+                else:
+                    qs = MediumForView.objects.annotate(
+                        dpi=ExpressionWrapper(
+                            Func(
+                                F('width') * F('width') + F('height') * F('height'),
+                                function='SQRT'
+                            ) / ExpressionWrapper(
+                                Func(
+                                    Value(1.0) * Value(1.0),
+                                    function='SQRT'
+                                ),
+                                output_field=FloatField()
+                            ),
+                            output_field=FloatField()
+                        )
+                    ).order_by('-dpi')
+
             if "preselect_status" in request.COOKIES.keys():
                 preselect_status = request.COOKIES.get("preselect_status", "default")
                 if preselect_status != "":
