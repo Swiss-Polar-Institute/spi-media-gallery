@@ -1078,26 +1078,13 @@ class MediumView(TemplateView):
                     qs = qs.filter(datetime_taken__year=order_by_year)
             if "order_by_dpi" in request.COOKIES.keys():
                 order_by_dpi = request.COOKIES.get("order_by_dpi", "default")
-                if order_by_dpi in ["dpi", "-dpi"]:
-                    qs = qs.annotate(
-                        dpi=ExpressionWrapper(
-                            Func(
-                                F('width') * F('width') + F('height') * F('height'),
-                                function='SQRT'
-                            ) / ExpressionWrapper(
-                                Func(
-                                    Value(1.0) * Value(1.0),
-                                    function='SQRT'
-                                ),
-                                output_field=FloatField()
-                            ),
-                            output_field=FloatField()
-                        )
-                    )
-                    if order_by_dpi == "dpi":
-                        qs = qs.order_by('dpi')
-                    else:
-                        qs = qs.order_by('-dpi')
+                if order_by_dpi != "":
+                    STANDARD_DPI = 96
+                    STANDARD_DPI = float(STANDARD_DPI)
+                    order_by_dpi = float(order_by_dpi)
+                    selected_width_pixels = int(order_by_dpi * (1 / STANDARD_DPI))
+                    selected_height_pixels = int(order_by_dpi * (1 / STANDARD_DPI))
+                    qs = qs.filter(width__gte=selected_width_pixels, height__gte=selected_height_pixels)
 
             if "preselect_status" in request.COOKIES.keys():
                 preselect_status = request.COOKIES.get("preselect_status", "default")
