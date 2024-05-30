@@ -1079,12 +1079,12 @@ class MediumView(TemplateView):
             if "order_by_dpi" in request.COOKIES.keys():
                 order_by_dpi = request.COOKIES.get("order_by_dpi", "default")
                 if order_by_dpi != "":
-                    STANDARD_DPI = 96
-                    STANDARD_DPI = float(STANDARD_DPI)
-                    order_by_dpi = float(order_by_dpi)
-                    selected_width_pixels = int(order_by_dpi * (1 / STANDARD_DPI))
-                    selected_height_pixels = int(order_by_dpi * (1 / STANDARD_DPI))
-                    qs = qs.filter(width__gte=selected_width_pixels, height__gte=selected_height_pixels)
+                    STANDARD_DPI = 96.0
+                    desired_dpi = float(order_by_dpi)
+                    scale_factor = desired_dpi / STANDARD_DPI
+                    min_width_pixels = int(scale_factor * STANDARD_DPI)
+                    min_height_pixels = int(scale_factor * STANDARD_DPI)
+                    qs = qs.filter(width__gte=min_width_pixels, height__gte=min_height_pixels)
 
             if "preselect_status" in request.COOKIES.keys():
                 preselect_status = request.COOKIES.get("preselect_status", "default")
