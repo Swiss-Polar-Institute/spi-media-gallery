@@ -81,7 +81,9 @@ document.getElementById("medium_form").addEventListener("submit", function(event
     console.log(tags.length);*/
 
     let data = new FormData();
-    data.append("file", file_input.files[0]);
+    for (let i = 0; i < file_input.files.length; i++) {
+        data.append("files", file_input.files[i]);
+    }
     data.append("medium_type", "P");
     data.append("people", people);
     data.append("location_value", location);

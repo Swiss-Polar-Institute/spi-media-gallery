@@ -686,7 +686,11 @@ class MediumUploadView(APIView):
 
     def post(self, request):
         request.data._mutable = True
-        photographer = request.data["photographer_value"]
+        files = request.FILES.getlist("files")
+
+        # --- Process metadata fields (photographer, license, copyright, etc.) ---
+        # Photographer
+        photographer = request.data.get("photographer_value", "")
         if photographer != "":
             photographer_str_count = len(photographer.split())
             if photographer_str_count > 1:
@@ -700,7 +704,6 @@ class MediumUploadView(APIView):
                         first_name=photographername_split[0],
                         last_name=photographername_split[1],
                     )[:1].get()
-                    request.data["photographer"] = photographers.pk
                 else:
                     photographer_obj = Photographer(
                         first_name=photographername_split[0],
@@ -711,79 +714,107 @@ class MediumUploadView(APIView):
                         first_name=photographername_split[0],
                         last_name=photographername_split[1],
                     )[:1].get()
-                    request.data["photographer"] = photographers.pk
+                request.data["photographer"] = photographers.pk
             else:
-                p_count = Photographer.objects.filter(first_name=photographer).count()
+                p_count = Photographer.objects.filter(
+                    first_name=photographer
+                ).count()
                 if p_count >= 1:
                     photographers = Photographer.objects.filter(
                         first_name=photographer
                     )[:1].get()
-                    request.data["photographer"] = photographers.pk
                 else:
                     photographer_obj = Photographer(first_name=photographer)
                     photographer_obj.save()
                     photographers = Photographer.objects.filter(
                         first_name=photographer
                     )[:1].get()
-                    request.data["photographer"] = photographers.pk
+                request.data["photographer"] = photographers.pk
 
-        copyright = request.data["copyright"]
-        if copyright != "":
+        # Copyright
+        copyright = request.data.get("copyright", None)
+        if copyright is not None:
             c_count = Copyright.objects.filter(holder=copyright).count()
             if c_count >= 1:
                 copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
-                request.data["copyright"] = copyright_data.pk
+                copyright_pk = copyright_data.pk
             else:
                 copyright_obj = Copyright(holder=copyright, public_text=copyright)
                 copyright_obj.save()
                 copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
-                request.data["copyright"] = copyright_data.pk
-        license = request.data["license"]
-        if license != "":
+                copyright_pk = copyright_data.pk
+            request.data["copyright"] = copyright_pk
+
+        # License
+        license = request.data.get("license", None)
+        if license is not None:
             l_count = License.objects.filter(name=license).count()
             if l_count >= 1:
                 license_data = License.objects.filter(name=license)[:1].get()
-                request.data["license"] = license_data.pk
+                license_pk = license_data.pk
             else:
                 license_obj = License(name=license, public_text=license)
                 license_obj.save()
                 license_data = License.objects.filter(name=license)[:1].get()
-                request.data["license"] = license_data.pk
-        if "file" in request.data:
-            medium_file = request.data["file"]
-            spi_s3 = SpiS3Utils(bucket_name="imported")
-            spi_s3.put_object(medium_file.name, medium_file)
-            file = File()
-            file.object_storage_key = medium_file.name
-            file.md5 = utils.hash_of_file(medium_file)
-            file.size = medium_file.size
-            file.bucket = File.IMPORTED
+                license_pk = license_data.pk
+            request.data["license"] = license_pk
+
+        request.data.pop("file", None)
+        created_media = []
+        spi_s3 = SpiS3Utils(bucket_name="imported")
+        for medium_file in files:
+            try:
+                spi_s3.put_object(medium_file.name, medium_file)
+            except Exception as e:
+                return Response(
+                    {"error": f"Failed to upload file {medium_file.name}: {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+            file = File(
+                object_storage_key=medium_file.name,
+                md5=utils.hash_of_file(medium_file),
+                size=medium_file.size,
+                bucket=File.IMPORTED
+            )
             file.save()
-            request.data["file"] = file.pk
+
             width, height = get_image_dimensions(medium_file)
-            request.data["height"] = height
-            request.data["width"] = width
-        tags = []
-        tags_values = request.data["tags_value"]
-        if tags_values != "":
-            tags_str_count = len(tags_values.split(","))
-            tags_split = tags_values.split(",")
-            for i in range(tags_str_count):
-                tags.append(tags_split[i])
-        if "people" in request.data:
-            tags.append(request.data["people"])
-        if "location_value" in request.data:
-            tags.append(request.data["location_value"])
-        if "project" in request.data:
-            tags.append(request.data["project"])
-        if "photographer_value" in request.data:
-            tags.append(f"Photographer/{request.data['photographer_value']}")
-        request.data["tags"] = tags
-        serializer = MediumSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            # Clone original data for each file
+            medium_data = request.data.copy()
+            medium_data["file"] = file.pk
+            medium_data["width"] = width
+            medium_data["height"] = height
+
+            # Process tags for this specific file
+            tags = []
+            tags_values = request.data.get("tags_value", "")
+            if tags_values != "":
+                tags_str_count = len(tags_values.split(","))
+                tags_split = tags_values.split(",")
+                for i in range(tags_str_count):
+                    tags.append(tags_split[i])
+            if "people" in request.data:
+                tags.append(request.data["people"])
+            if "location_value" in request.data:
+                tags.append(request.data["location_value"])
+            if "project" in request.data:
+                tags.append(request.data["project"])
+            if "photographer_value" in request.data:
+                tags.append(f"Photographer/{request.data['photographer_value']}")
+            medium_data["tags"] = tags
+
+            serializer = MediumSerializer(data=medium_data)
+            if serializer.is_valid():
+                serializer.save()
+                created_media.append(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if created_media:
+            return Response(created_media, status=status.HTTP_201_CREATED)
+        return Response({"error": "No files were processed"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MediumUploadxlsxView(APIView):
