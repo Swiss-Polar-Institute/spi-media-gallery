@@ -2,6 +2,7 @@ import csv
 import datetime
 import hashlib
 import json
+import logging
 import os
 import re
 import urllib
@@ -35,6 +36,9 @@ from .medium_for_view import MediumForView
 from .spi_s3_utils import SpiS3Utils
 from .utils import percentage_of
 from django.db.models import F, Func, Value, ExpressionWrapper, FloatField
+
+# Set up logger for upload operations
+logger = logging.getLogger(__name__)
 
 
 from .serializers import (  # isort:skip
@@ -766,10 +770,13 @@ class MediumUploadView(APIView):
             try:
                 spi_s3.put_object(medium_file.name, medium_file)
             except Exception as e:
+                logger.error(f"Failed to upload file {medium_file.name}: {str(e)}")
                 return Response(
                     {"error": f"Failed to upload file {medium_file.name}: {str(e)}"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
+            else:
+                logger.info(f"Successfully uploaded file {medium_file.name}")
 
             file = File(
                 object_storage_key=medium_file.name,
@@ -810,10 +817,13 @@ class MediumUploadView(APIView):
                 serializer.save()
                 created_media.append(serializer.data)
             else:
+                logger.error(f"Failed to save medium for file {medium_file.name}: {serializer.errors}")
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         if created_media:
+            logger.info(f"Successfully processed {len(created_media)} media files.")
             return Response(created_media, status=status.HTTP_201_CREATED)
+        logger.warning("No files were processed.")
         return Response({"error": "No files were processed"}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -823,142 +833,204 @@ class MediumUploadxlsxView(APIView):
     def post(self, request):
         request.data._mutable = True
         uploaded_file = request.FILES["xlsx_file"]
-        wb = openpyxl.load_workbook(uploaded_file)
-        worksheet = wb.active
-        for row in worksheet.iter_rows(min_row=2, values_only=True):
-            picture_data = dict(
-                zip(
-                    [
-                        "file",
-                        "datetime_taken",
-                        "location_value",
-                        "photographer_value",
-                        "people",
-                        "project",
-                        "copyright",
-                        "license",
-                        "tags",
-                    ],
-                    row,
-                )
+        
+        logger.info(f"Starting Excel upload process. File: {uploaded_file.name}, Size: {uploaded_file.size} bytes")
+        
+        try:
+            wb = openpyxl.load_workbook(uploaded_file)
+            worksheet = wb.active
+            logger.info(f"Successfully loaded Excel file with {worksheet.max_row} rows")
+        except Exception as e:
+            logger.error(f"Failed to load Excel file {uploaded_file.name}: {str(e)}")
+            return Response(
+                {"error": f"Failed to load Excel file: {str(e)}"}, 
+                status=status.HTTP_400_BAD_REQUEST
             )
-            picture_data["medium_type"] = "P"
-            photographer = picture_data["photographer_value"]
-            if photographer is not None:
-                photographer_str_count = len(photographer.split())
-                if photographer_str_count > 1:
-                    photographername_split = photographer.split()
-                    p_count = Photographer.objects.filter(
-                        first_name=photographername_split[0],
-                        last_name=photographername_split[1],
-                    ).count()
-                    if p_count >= 1:
-                        photographers = Photographer.objects.filter(
-                            first_name=photographername_split[0],
-                            last_name=photographername_split[1],
-                        )[:1].get()
-                        photographers_pk = photographers.pk
-                    else:
-                        photographer_obj = Photographer(
-                            first_name=photographername_split[0],
-                            last_name=photographername_split[1],
-                        )
-                        photographer_obj.save()
-                        photographers = Photographer.objects.filter(
-                            first_name=photographername_split[0],
-                            last_name=photographername_split[1],
-                        )[:1].get()
-                        photographers_pk = photographers.pk
-                else:
-                    p_count = Photographer.objects.filter(
-                        first_name=photographer
-                    ).count()
-                    if p_count >= 1:
-                        photographers = Photographer.objects.filter(
-                            first_name=photographer
-                        )[:1].get()
-                        photographers_pk = photographers.pk
-                    else:
-                        photographer_obj = Photographer(first_name=photographer)
-                        photographer_obj.save()
-                        photographers = Photographer.objects.filter(
-                            first_name=photographer
-                        )[:1].get()
-                        photographers_pk = photographers.pk
-                picture_data["photographer"] = photographers_pk
-            copyright = picture_data["copyright"]
-            if copyright is not None:
-                c_count = Copyright.objects.filter(holder=copyright).count()
-                if c_count >= 1:
-                    copyright_data = Copyright.objects.filter(holder=copyright)[
-                        :1
-                    ].get()
-                    copyright_pk = copyright_data.pk
-                else:
-                    copyright_obj = Copyright(holder=copyright, public_text=copyright)
-                    copyright_obj.save()
-                    copyright_data = Copyright.objects.filter(holder=copyright)[
-                        :1
-                    ].get()
-                    copyright_pk = copyright_data.pk
-                picture_data["copyright"] = copyright_pk
-            license = picture_data["license"]
-            if license is not None:
-                l_count = License.objects.filter(name=license).count()
-                if l_count >= 1:
-                    license_data = License.objects.filter(name=license)[:1].get()
-                    license_pk = license_data.pk
-                    picture_data["license"] = license_pk
-                else:
-                    license_obj = License(name=license, public_text=license)
-                    license_obj.save()
-                    license_data = License.objects.filter(name=license)[:1].get()
-                    license_pk = license_data.pk
-                    picture_data["license"] = license_pk
-            if picture_data["file"] is not None:
-                filepath = request.data["filepath"]
-                file_name = picture_data["file"]
-                medium_file = filepath + file_name
-                # spi_s3 = SpiS3Utils(bucket_name="imported")
-                # spi_s3.put_object(file_name, medium_file)
-                file = File()
-                file.object_storage_key = file_name
-                file.md5 = get_md5_from_url(request, medium_file)
-                file.size = get_image_file_size_from_url(medium_file)
-                file.bucket = File.IMPORTED
-                file.save()
-                picture_data["file"] = file.pk
-                width, height = get_image_data_from_url(medium_file)
-                picture_data["height"] = height
-                picture_data["width"] = width
-            tags = []
-            tags_values = picture_data["tags"]
-            if tags_values is not None:
-                tags_str_count = len(tags_values.split(";"))
-                tags_split = tags_values.replace("; ", ";").split(";")
-                for i in range(tags_str_count):
-                    tags.append(tags_split[i])
-            if picture_data["people"] is not None:
-                tags.append(f"People/{picture_data['people']}")
-            if picture_data["location_value"] is not None:
-                location_count = len(picture_data["location_value"].split(";"))
-                location_split = (
-                    picture_data["location_value"].replace("; ", ";").split(";")
+        
+        successful_uploads = 0
+        failed_uploads = 0
+        row_number = 2  # Start from row 2 (header is row 1)
+        
+        for row in worksheet.iter_rows(min_row=2, values_only=True):
+            try:
+                logger.info(f"Processing row {row_number}: {row}")
+                
+                picture_data = dict(
+                    zip(
+                        [
+                            "file",
+                            "datetime_taken",
+                            "location_value",
+                            "photographer_value",
+                            "people",
+                            "project",
+                            "copyright",
+                            "license",
+                            "tags",
+                        ],
+                        row,
+                    )
                 )
-                for i in range(location_count):
-                    tags.append(f"Location/{location_split[i]}")
-            if picture_data["project"] is not None:
-                tags.append(f"SPI project/{picture_data['project']}")
-                if picture_data["photographer_value"] is not None:
-                    tags.append(f"Photographer/{picture_data['photographer_value']}")
+                picture_data["medium_type"] = "P"
+                
+                # Process photographer
+                photographer = picture_data["photographer_value"]
+                if photographer is not None:
+                    photographer_str_count = len(photographer.split())
+                    if photographer_str_count > 1:
+                        photographername_split = photographer.split()
+                        p_count = Photographer.objects.filter(
+                            first_name=photographername_split[0],
+                            last_name=photographername_split[1],
+                        ).count()
+                        if p_count >= 1:
+                            photographers = Photographer.objects.filter(
+                                first_name=photographername_split[0],
+                                last_name=photographername_split[1],
+                            )[:1].get()
+                            photographers_pk = photographers.pk
+                        else:
+                            photographer_obj = Photographer(
+                                first_name=photographername_split[0],
+                                last_name=photographername_split[1],
+                            )
+                            photographer_obj.save()
+                            photographers = Photographer.objects.filter(
+                                first_name=photographername_split[0],
+                                last_name=photographername_split[1],
+                            )[:1].get()
+                            photographers_pk = photographers.pk
+                    else:
+                        p_count = Photographer.objects.filter(
+                            first_name=photographer
+                        ).count()
+                        if p_count >= 1:
+                            photographers = Photographer.objects.filter(
+                                first_name=photographer
+                            )[:1].get()
+                            photographers_pk = photographers.pk
+                        else:
+                            photographer_obj = Photographer(first_name=photographer)
+                            photographer_obj.save()
+                            photographers = Photographer.objects.filter(
+                                first_name=photographer
+                            )[:1].get()
+                            photographers_pk = photographers.pk
+                    picture_data["photographer"] = photographers_pk
+                    logger.debug(f"Processed photographer for row {row_number}: {photographer}")
+                
+                # Process copyright
+                copyright = picture_data["copyright"]
+                if copyright is not None:
+                    c_count = Copyright.objects.filter(holder=copyright).count()
+                    if c_count >= 1:
+                        copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
+                        copyright_pk = copyright_data.pk
+                    else:
+                        copyright_obj = Copyright(holder=copyright, public_text=copyright)
+                        copyright_obj.save()
+                        copyright_data = Copyright.objects.filter(holder=copyright)[:1].get()
+                        copyright_pk = copyright_data.pk
+                    picture_data["copyright"] = copyright_pk
+                    logger.debug(f"Processed copyright for row {row_number}: {copyright}")
+                
+                # Process license
+                license = picture_data["license"]
+                if license is not None:
+                    l_count = License.objects.filter(name=license).count()
+                    if l_count >= 1:
+                        license_data = License.objects.filter(name=license)[:1].get()
+                        license_pk = license_data.pk
+                        picture_data["license"] = license_pk
+                    else:
+                        license_obj = License(name=license, public_text=license)
+                        license_obj.save()
+                        license_data = License.objects.filter(name=license)[:1].get()
+                        license_pk = license_data.pk
+                        picture_data["license"] = license_pk
+                    logger.debug(f"Processed license for row {row_number}: {license}")
+                
+                # Process file
+                if picture_data["file"] is not None:
+                    filepath = request.data["filepath"]
+                    file_name = picture_data["file"]
+                    medium_file = filepath + file_name
+                    
+                    logger.info(f"Processing file for row {row_number}: {medium_file}")
+                    
+                    try:
+                        file = File()
+                        file.object_storage_key = file_name
+                        file.md5 = get_md5_from_url(request, medium_file)
+                        file.size = get_image_file_size_from_url(medium_file)
+                        file.bucket = File.IMPORTED
+                        file.save()
+                        picture_data["file"] = file.pk
+                        width, height = get_image_data_from_url(medium_file)
+                        picture_data["height"] = height
+                        picture_data["width"] = width
+                        logger.info(f"Successfully processed file for row {row_number}: {file_name}")
+                    except Exception as e:
+                        logger.error(f"Failed to process file for row {row_number}: {file_name}, Error: {str(e)}")
+                        failed_uploads += 1
+                        row_number += 1
+                        continue
+                
+                # Process tags
+                tags = []
+                tags_values = picture_data["tags"]
+                if tags_values is not None:
+                    tags_str_count = len(tags_values.split(";"))
+                    tags_split = tags_values.replace("; ", ";").split(";")
+                    for i in range(tags_str_count):
+                        tags.append(tags_split[i])
+                if picture_data["people"] is not None:
+                    tags.append(f"People/{picture_data['people']}")
+                if picture_data["location_value"] is not None:
+                    location_count = len(picture_data["location_value"].split(";"))
+                    location_split = (
+                        picture_data["location_value"].replace("; ", ";").split(";")
+                    )
+                    for i in range(location_count):
+                        tags.append(f"Location/{location_split[i]}")
+                if picture_data["project"] is not None:
+                    tags.append(f"SPI project/{picture_data['project']}")
+                    if picture_data["photographer_value"] is not None:
+                        tags.append(f"Photographer/{picture_data['photographer_value']}")
 
-            picture_data["tags"] = tags
-            serializer = MediumSerializer(data=picture_data)
-            if serializer.is_valid():
-                serializer.save()
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_201_CREATED)
+                picture_data["tags"] = tags
+                logger.debug(f"Processed tags for row {row_number}: {tags}")
+                
+                # Save to database
+                serializer = MediumSerializer(data=picture_data)
+                if serializer.is_valid():
+                    serializer.save()
+                    successful_uploads += 1
+                    logger.info(f"Successfully saved medium for row {row_number}")
+                else:
+                    logger.error(f"Failed to save medium for row {row_number}: {serializer.errors}")
+                    failed_uploads += 1
+                    
+            except Exception as e:
+                logger.error(f"Unexpected error processing row {row_number}: {str(e)}")
+                failed_uploads += 1
+            
+            row_number += 1
+        
+        # Log summary
+        logger.info(f"Excel upload completed. Successful: {successful_uploads}, Failed: {failed_uploads}")
+        
+        if failed_uploads > 0:
+            logger.warning(f"Excel upload had {failed_uploads} failures. Check logs for details.")
+            return Response(
+                {"error": f"Upload completed with {failed_uploads} failures. Check logs for details."}, 
+                status=status.HTTP_207_MULTI_STATUS
+            )
+        
+        return Response(
+            {"message": f"Successfully uploaded {successful_uploads} media files."}, 
+            status=status.HTTP_201_CREATED
+        )
 
 
 class SelectionView(TemplateView):
