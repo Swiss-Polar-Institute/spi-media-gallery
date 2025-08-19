@@ -233,19 +233,17 @@ def get_image_data_from_url(url):
     return width, height
 
 
-def get_md5_from_url(request, image_url):
+def get_md5_from_url(image_url):
     try:
-        response = requests.get(image_url)
+        response = requests.get(image_url, timeout=10)
         if response.status_code == 200:
-            # Calculate the MD5 hash
-            md5_hash = hashlib.md5(response.content).hexdigest()
-            return md5_hash
+            return hashlib.md5(response.content).hexdigest()  # always 32-char hex
         else:
-            return HttpResponse(
-                f"Failed to fetch image. Status code: {response.status_code}"
-            )
+            logger.error(f"Failed to fetch image {image_url}, status={response.status_code}")
+            return None
     except Exception as e:
-        return HttpResponse(f"Error: {str(e)}")
+        logger.error(f"Error fetching image {image_url}: {str(e)}")
+        return None
 
 
 def get_image_file_size_from_url(url):
@@ -961,7 +959,10 @@ class MediumUploadxlsxView(APIView):
                     try:
                         file = File()
                         file.object_storage_key = file_name
-                        file.md5 = get_md5_from_url(request, medium_file)
+                        md5_value = get_md5_from_url(medium_file)
+                        if not md5_value:
+                            raise Exception(f"Failed to calculate MD5 for {medium_file}")
+                        file.md5 = md5_value
                         file.size = get_image_file_size_from_url(medium_file)
                         file.bucket = File.IMPORTED
                         file.save()
