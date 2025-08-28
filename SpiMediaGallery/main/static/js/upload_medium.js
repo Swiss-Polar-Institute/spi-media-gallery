@@ -20,8 +20,8 @@ function validateFileExtension(fld) {
         return false;
     }
     const fileSize = fld.files[0].size / 1024 / 1024;
-     if (fileSize > 100) {
-        alert('File size exceeds 100 MiB');
+     if (fileSize > 500) {
+        alert('File size exceeds 500 MiB');
         fld.form.reset();
         fld.focus();
         return false;
