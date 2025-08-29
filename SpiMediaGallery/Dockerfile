@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install --no-install-recommends --yes \
   libexempi8 \
   netcat
 
-ADD https://dechifro.org/dcraw/dcraw.c /tmp/
+ADD https://www.dechifro.org/dcraw/dcraw.c /tmp/
 RUN gcc -o /usr/bin/dcraw -O4 /tmp/dcraw.c -lm -DNODEPS
 RUN rm /tmp/dcraw.c
 # Some photos are bigger than the ImageMagick default size (16KP width and height)
