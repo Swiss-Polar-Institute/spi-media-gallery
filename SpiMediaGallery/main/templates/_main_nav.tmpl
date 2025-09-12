@@ -25,8 +25,9 @@
       </div>
      <form id="medium_form">
        <div class="modal-body" id="uploadModal">
+         <p class="text-muted mb-3">Required fields are marked with an asterisk *</p>
          <div class="form-group">
-          <label for="datereceived">Date taken</label>
+          <label for="datereceived">Date taken *</label>
           <input type="date" class="form-control" id="datereceived" placeholder="Date taken" required>
          </div>
          <div class="form-group">
@@ -34,7 +35,7 @@
             <input type="text" class="form-control" id="location" name="location" placeholder="Location">
          </div>
          <div class="form-group">
-           <label for="photographer">Photographer</label>
+           <label for="photographer">Photographer *</label>
            <input type="text" class="form-control" id="photographer" name="photographer" placeholder="Photographer" required
            >
          </div>
@@ -47,20 +48,22 @@
            <input type="text" class="form-control" id="project" placeholder="Project">
          </div>
          <div class="form-group">
-           <label for="copyright">Copyright</label>
+           <label for="copyright">Copyright *</label>
            <input type="text" class="form-control" id="copyright" name="copyright" placeholder="Copyright" required>
          </div>
          <div class="form-group">
-           <label for="license">License</label>
+           <label for="license">License *</label>
            <input type="text" class="form-control" id="license" name="license" placeholder="license" required>
          </div>
          <div class="form-group">
-           <label for="file_url">File URL</label>
+           <label for="file_url">File URL *</label>
            <input type="file" class="form-control-file" id="file_input" placeholder="File URL" onchange="return validateFileExtension(this)" multiple required>
+           <small class="form-text text-muted">(Max size 500MB)</small>
          </div>
          <input type="hidden" id="medium_type" name="medium_type">
          <button onClick="add(); return false;" type="button" class="btn btn-primary">Add tag</button>
          <div class="form-group">
+           <label>Tags *</label>
            <div class="row mr-0 ml-0" id="tags"><input type="text" name="tag_input[]" class="form-control col-sm-6 pd-2
            " required><input type="text" name="tag_input[]" class="form-control col-sm-6 pd-2" required><input
            type="text" name="tag_input[]" class="form-control col-sm-6 pd-2" required></div>
